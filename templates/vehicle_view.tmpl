@@ -1,0 +1,41 @@
+{% extends "skeleton" %}
+
+{% block body_content %}
+<div class="vehicle">
+	<h1>Vehicle</h1>
+	<table class="header">
+	<tr><th>VIN</th><td>{% if VIN is defined %}{{ VIN|escape }}{% else %}-{% endif %}</td></tr>
+	<tr><th><span title="last known tag assigned">tag</span></th><td>{% if tag is defined %}{{ tag|escape }}{% else %}-{% endif %}</td></tr>
+	<tr><th>Description</th><td>{% if description is defined %}{{ description|escape }}{% else %}-{% endif %}</td></tr>
+	</table>
+
+	<h3>Parking events</h3>
+	<div class="history">
+	{% if parking_event_list|length > 0 %}
+	<table>
+	<tr>
+	<th>Date/Time</th>
+	<th>Reason</th>
+	<th><span title="tag observed at the time of parking event">tag</span></th>
+	<th>Remarks</th>
+	</tr>
+	{% for parking_event in parking_event_list %}
+	<tr>
+	<td><a {{ {'href': '/parking/event/view/%s'|format(parking_event['oid'])}|xmlattr }}><pre>{{ parking_event['dt']|e }}</pre></a></td>
+	<td>{{ parking_event['reason']|e }}</td>
+	<td>{{ parking_event['tag']|e }}</td>
+	<td>{{ parking_event['remarks']|e }}</td>
+	</tr>
+	{% endfor %}
+	</table>
+	{% else %}
+	<p>No items.</p>
+	{% endif %}
+	</div>
+
+	<h3>Actions</h3>
+	<div>
+	<p><a {{ {'href': {'netloc': '', 'path': '/parking/event/new', 'query': {'VIN': VIN, 'tag': tag}}|url}|xmlattr }}>Add new parking event for this vehicle</a></p>
+	</div>
+</div>
+{%- endblock %}

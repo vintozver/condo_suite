@@ -1,20 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import pytz
 import config
-
-basedir = config.basedir
-
-try:
-    path_prefix = config.parser.get('main', 'path_prefix')
-except config.configparser.NoOptionError:
-    path_prefix = '/'
-except config.configparser.NoSectionError:
-    path_prefix = '/'
 
 product_name = 'Parking Enforcement'
 product_description = 'Aspen Grove Condominiums parking enforcement. Kent, WA, USA. All rights reserved.'
+timezone = pytz.timezone('US/Pacific')
 
-timezone = 'Europe/Minsk'
-
-log_dir = 'logs'
-
+__all__ = ['product_name', 'product_description', 'timezone']

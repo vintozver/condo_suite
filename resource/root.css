@@ -28,6 +28,27 @@ table.header th {
 }
 
 
+/* Vehicle view */
+div.vehicle div.history table {
+    border-collapse: separate;
+    border-spacing: 0px;
+}
+div.vehicle div.history table th {
+	background-color: LightGray;
+}
+div.vehicle div.history table th, div.vehicle div.history table td {
+    padding: 2px 2px 2px 2px;
+}
+div.vehicle div.history table tr:nth-child(2n+2) {
+}
+div.vehicle div.history table tr:nth-child(2n+3) {
+	background-color: Lavender;
+}
+div.vehicle div.history table td img {
+	width: 8em;
+	height: 8em;
+}
+
 /* Parking Event view */
 div.parking_event div.history table {
     border-collapse: separate;

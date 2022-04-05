@@ -39,7 +39,7 @@ def preload_roles(l_roles=roles, l_roles_by_uuid=roles_by_uuid, l_roles_by_name=
     from collections import OrderedDict
     with mod_mongo.DbSessionController() as db_session:
         for role_doc in db_session[config.db_mongo.name]['rbac.role'].with_options(mod_mongo.bson.codec_options.CodecOptions(document_class=OrderedDict)).find({}).sort([('sort_order', mod_mongo.pymongo.ASCENDING)]):
-            role_id = role_doc['_id']
+            role_id = role_doc['_id'].as_uuid(uuid_representation=mod_mongo.bson.binary.UuidRepresentation.PYTHON_LEGACY)
             role_name = role_doc['name']
             role_permissions = role_doc['permissions']
             role_obj = {'uuid': role_id, 'name': role_name, 'type': role_doc.get('type'), 'permissions': role_permissions}

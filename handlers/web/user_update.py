@@ -29,7 +29,7 @@ class Handler(util.handler.Handler):
 
         if query_set:
             with mod_mongo.DbSessionController() as db_session:
-                db_session[config.db_mongo.name]['users'].update({'_id': user.id}, {'$set': query_set})
+                db_session[config.db_mongo.name]['users'].update_one({'_id': user.id}, {'$set': query_set})
 
     @classmethod
     def process_ssl_crt_args(cls, args):
@@ -48,7 +48,7 @@ class Handler(util.handler.Handler):
     def process_ssl_crt_add(cls, user, args):
         serial, subject_dn, issuer_dn = cls.process_ssl_crt_args(args)
         with mod_mongo.DbSessionController() as db_session:
-            db_session[config.db_mongo.name]['users'].update({'_id': user.id}, {'$push': {'ssl_crt': {
+            db_session[config.db_mongo.name]['users'].update_one({'_id': user.id}, {'$push': {'ssl_crt': {
                 'serial': serial, 'subject_dn': subject_dn, 'issuer_dn': issuer_dn,
             }}})
 
@@ -56,7 +56,7 @@ class Handler(util.handler.Handler):
     def process_ssl_crt_remove(cls, user, args):
         serial, subject_dn, issuer_dn = cls.process_ssl_crt_args(args)
         with mod_mongo.DbSessionController() as db_session:
-            db_session[config.db_mongo.name]['users'].update({'_id': user.id}, {'$pull': {'ssl_crt': {
+            db_session[config.db_mongo.name]['users'].update_one({'_id': user.id}, {'$pull': {'ssl_crt': {
                 'serial': serial, 'subject_dn': subject_dn, 'issuer_dn': issuer_dn,
             }}}, multi=True)
 
@@ -87,7 +87,7 @@ class Handler(util.handler.Handler):
         if agent is None:
             raise HandlerError('Agent not found', agent_id)
         with mod_mongo.DbSessionController() as db_session:
-            db_session[config.db_mongo.name]['users'].update({'_id': user.id},
+            db_session[config.db_mongo.name]['users'].update_one({'_id': user.id},
                 {'$push': {
                     'agents': mod_mongo.bson.son.SON({
                         '_id': agent.id,
@@ -101,7 +101,7 @@ class Handler(util.handler.Handler):
     def process_user_agent_remove(cls, user, args):
         agent_id, agent_position = cls.process_agent_args(args)
         with mod_mongo.DbSessionController() as db_session:
-            db_session[config.db_mongo.name]['users'].update(
+            db_session[config.db_mongo.name]['users'].update_one(
                 {'_id': user.id}, {'$pull': {'agents': {'_id': agent_id}}},
                 multi=True
             )
@@ -110,7 +110,7 @@ class Handler(util.handler.Handler):
     def process_user_agent_update(cls, user, args):
         agent_id, agent_position = cls.process_agent_args(args)
         with mod_mongo.DbSessionController() as db_session:
-            agent = db_session[config.db_mongo.name]['users'].update(
+            agent = db_session[config.db_mongo.name]['users'].update_one(
                 {'_id': user.id, 'agents._id': agent_id},
                 {'$set': {'agents.$.position': agent_position}},
                 multi=True)
@@ -120,7 +120,7 @@ class Handler(util.handler.Handler):
     def process_role_add(cls, user, role):
         # this handler takes the responsibility of adding the role. Security checks must be performed by caller
         with mod_mongo.DbSessionController() as db_session:
-            db_session[config.db_mongo.name]['users'].update({'_id': user.id}, {'$push': {'rbac.roles': {
+            db_session[config.db_mongo.name]['users'].update_one({'_id': user.id}, {'$push': {'rbac.roles': {
                 '_id': role['uuid'], 'name': role.get('name'),
             }}})
 
@@ -128,7 +128,7 @@ class Handler(util.handler.Handler):
     def process_role_remove(cls, user, role):
         # this handler takes the responsibility of removing the role. Security checks must be performed by caller
         with mod_mongo.DbSessionController() as db_session:
-            db_session[config.db_mongo.name]['users'].update({'_id': user.id}, {'$pull': {'rbac.roles': {
+            db_session[config.db_mongo.name]['users'].update_one({'_id': user.id}, {'$pull': {'rbac.roles': {
                 '_id': role['uuid']
             }}}, multi=True)
 

@@ -12,10 +12,14 @@ import config
 
 class DbSessionController(util.context.AutoRefContextItem):
     def new(self):
-        db_session = pymongo.MongoClient(config.db_mongo.host, config.db_mongo.port, document_class=OrderedDict, tz_aware=True)
+        kwargs = dict()
         if config.db_mongo.user:
-            db_session[config.db_mongo.name].authenticate(config.db_mongo.user, config.db_mongo.password)
-        return db_session
+            kwargs['username'] = config.db_mongo.user
+            kwargs['password'] = config.db_mongo.password
+        return pymongo.MongoClient(
+            config.db_mongo.host, config.db_mongo.port,
+            document_class=OrderedDict, tz_aware=True, uuidRepresentation='pythonLegacy',
+            **kwargs)
 
     def delete(self):
         pass
@@ -28,7 +32,10 @@ if config.db_mongo.user is not None:
     mongoengine_connection_kwargs['password'] = config.db_mongo.password
 mongoengine_connection_kwargs['document_class'] = OrderedDict
 mongoengine_connection_kwargs['tz_aware'] = True
-mongoengine.register_connection(mongoengine_alias, config.db_mongo.name, config.db_mongo.host, config.db_mongo.port, **mongoengine_connection_kwargs)
+mongoengine.register_connection(
+    mongoengine_alias,
+    name=config.db_mongo.name, host=config.db_mongo.host, port=config.db_mongo.port,
+    **mongoengine_connection_kwargs)
 
 
 __all__ = ['bson', 'pymongo', 'gridfs', 'DbSessionController', 'mongoengine', 'mongoengine_alias']

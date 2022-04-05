@@ -90,11 +90,20 @@ embedded_roles = [
         'uuid': uuid.UUID('e02e2b5c6ef742a9afbf6fe9d784e1b1'), 'name': 'Agent close', 'sort_order': 4009,
         'permissions': ['agent/close']
     },
+    # Vehicle
+    {
+        'uuid': uuid.UUID('faf1155a18a849db8416ef84fb14097a'),
+        'name': 'View vehicle details',
+        'sort_order': 1001,
+        'permissions': [
+            'vehicle/view'
+        ]
+    },
     # Parking event
     {
         'uuid': uuid.UUID('c1655e5148b9481fbf2669d60a78138b'),
         'name': 'Create parking event, append parking event history',
-        'sort_order': 1001,
+        'sort_order': 1002,
         'permissions': [
             'parking.event/create', 'parking.event/comment'
         ]
@@ -102,7 +111,7 @@ embedded_roles = [
     {
         'uuid': uuid.UUID('d6a545b991ca4dc0a25ef2196e02c34a'),
         'name': 'View parking event',
-        'sort_order': 1002,
+        'sort_order': 1003,
         'permissions': [
             'parking.event/view'
         ]
@@ -137,7 +146,7 @@ def deploy():
             role_collection.replace_one({'_id': role_doc['_id']}, role_doc, True)
 
         # Remove old records which were not updated
-        role_collection.remove({'updated': {'$lt': dt}}, True)
+        role_collection.delete_many({'updated': {'$lt': dt}})
 
 
 if __name__ == '__main__':

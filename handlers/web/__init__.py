@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import os
 import traceback
 import re
 import http.client
 
 from util.logger import Logger
-import config
 
 import util.handler
 import collections
@@ -18,6 +16,10 @@ class Handler(util.handler.Handler):
     ROUTE_MAP = [
         {'regex': re.compile(r'^/$'), 'handler': 'handlers.web.index'},
         {'regex': re.compile(r'^/static(/.*)$'), 'handler': 'handlers.web.static', 'params': {'path': lambda rex: rex.group(1)}},
+        {'regex': re.compile(r'^/\bvehicle\b'), 'map': [
+            {'regex': re.compile(r'^/?$'), 'handler': 'handlers.web.vehicle_menu'},
+            {'regex': re.compile(r'^/view/([0-9A-HJ-NPR-Z]{17})/?$'), 'handler': 'handlers.web.vehicle_view', 'params': {'vin': lambda rex: rex.group(1)}},
+        ]},
         {'regex': re.compile(r'^/\bparking\b'), 'map': [
             {'regex': re.compile(r'^/?$'), 'handler': 'handlers.web.parking_menu'},
             {'regex': re.compile(r'^/event/?$'), 'handler': 'handlers.web.parking_event_search'},
@@ -124,8 +126,7 @@ class Handler(util.handler.Handler):
                 except handlers.mail.HandlerError as err:
                     raise HandlerError('Error in mail handler', err)
 
-            localpath = os.path.normpath(os.path.join('/', os.path.relpath(self.req.path, config.main.path_prefix)))
-            module = self.handle_map(self.ROUTE_MAP, localpath)
+            module = self.handle_map(self.ROUTE_MAP, self.req.path)
             if module is None:
                 return self.view_notfound('No handler found')
             module_name, module_params = module

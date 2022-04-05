@@ -2,6 +2,7 @@
 
 import http.client
 
+import config
 import handlers.web.skeleton as mod_tmpl
 import handlers.web.decorator as deco
 import handlers.ext.paramed_cgi
@@ -21,7 +22,7 @@ class Handler(handlers.ext.paramed_cgi.Handler):
                 yield {
                     'id': str(txn.id),
                     'type': str(txn.type),
-                    'created': txn.id.generation_time,
+                    'created': txn.id.generation_time.astimezone(config.main.timezone),
                     'last_mod': txn.last_mod,
                     'state': txn.state,
                 }
@@ -31,7 +32,7 @@ class Handler(handlers.ext.paramed_cgi.Handler):
                 yield {
                     'id': str(txn.id),
                     'type': str(txn.type),
-                    'created': txn.id.generation_time,
+                    'created': txn.id.generation_time.astimezone(config.main.timezone),
                     'last_mod': txn.last_mod,
                     'state': txn.state,
                 }

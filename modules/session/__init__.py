@@ -277,7 +277,7 @@ class MongoDbSession(Session):
 
         with mod_mongo.DbSessionController() as db_session:
             db_collection = db_session[config.db_mongo.name]['sessions']
-            db_collection.insert(mod_mongo.bson.son.SON({'_id': self.id, 'hash': self.hash, 'created': self.created, 'data': self.data}))
+            db_collection.insert_one(mod_mongo.bson.son.SON({'_id': self.id, 'hash': self.hash, 'created': self.created, 'data': self.data}))
 
     def load(self, session_id, session_hash):
         # This is necessary for the base class calls. Base class tries to load the session from cookies, but cookies can only handle binary data, not structures
@@ -306,7 +306,7 @@ class MongoDbSession(Session):
         self.updated = datetime.datetime.utcnow()
         with mod_mongo.DbSessionController() as db_session:
             db_collection = db_session[config.db_mongo.name]['sessions']
-            db_collection.update(
+            db_collection.update_one(
                 mod_mongo.bson.son.SON({'_id': self.id}),
                 mod_mongo.bson.son.SON({'$set': {'updated': self.updated, 'data': self.data}}),
             )
@@ -316,6 +316,6 @@ class MongoDbSession(Session):
         dt = datetime.datetime.utcnow()
         with mod_mongo.DbSessionController() as db_session:
             if max_idle:
-                db_session[config.db_mongo.name]['sessions'].remove(mod_mongo.bson.son.SON({'updated': {'$lt': dt - max_idle}}))
+                db_session[config.db_mongo.name]['sessions'].delete_many(mod_mongo.bson.son.SON({'updated': {'$lt': dt - max_idle}}))
             if max_age:
-                db_session[config.db_mongo.name]['sessions'].remove(mod_mongo.bson.son.SON({'created': {'$lt': dt - max_age}}))
+                db_session[config.db_mongo.name]['sessions'].delete_many(mod_mongo.bson.son.SON({'created': {'$lt': dt - max_age}}))

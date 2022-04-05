@@ -6,7 +6,7 @@
 	<table class="header">
 	<tr><th>Date/Time (UTC)</th><td>{% if dt is defined %}{{ dt|datetime('%Y-%m-%d %H:%M') }}{% else %}unknown{% endif %}</td></tr>
 	<tr><th>Reason</th><td>{% if reason is defined %}{{ reason|escape }}{% else %}-{% endif %}</td></tr>
-	<tr><th>VIN</th><td>{% if VIN is defined %}{{ VIN|escape }}{% else %}-{% endif %}</td></tr>
+	<tr><th>VIN</th><td>{% if VIN is defined %}<a {{ {'href': '/vehicle/view/%s'|format(VIN)}|xmlattr }}>{{ VIN|escape }}</a>{% else %}-{% endif %}</td></tr>
 	<tr><th>tag</th><td>{% if tag is defined %}{{ tag|escape }}{% else %}-{% endif %}</td></tr>
 	<tr><th>remarks</th><td>{% if remarks is defined %}{{ remarks|escape }}{% else %}-{% endif %}</td></tr>
 	</table>

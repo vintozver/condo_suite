@@ -81,7 +81,7 @@ class Handler(handlers.ext.paramed_cgi.Handler):
             db_doc['id_token'] = id_token
         # save token to the session
         with mod_mongo.DbSessionController() as db_session:
-            db_session[config.db_mongo.name]['sessions'].update({'_id': req_session.id}, {'$set': {('data.ext.google.credentials.%s' % purpose): db_doc}})
+            db_session[config.db_mongo.name]['sessions'].update_one({'_id': req_session.id}, {'$set': {('data.ext.google.credentials.%s' % purpose): db_doc}})
         # refresh the session because we updated the database externally
         req_session.load(req_session.id, req_session.hash)
 

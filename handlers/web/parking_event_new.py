@@ -119,7 +119,23 @@ class Handler(handlers.ext.paramed_cgi.Handler):
             except handlers.ext.redirect.HandlerError:
                 raise HandlerError('Redirect error')
 
+        try:
+            param_vin = self.cgi_params.param_get('VIN')
+            if param_vin is None:
+                param_vin = ''
+        except self.cgi_params.NotFoundError:
+            param_vin = ''
+
+        try:
+            param_tag = self.cgi_params.param_get('tag')
+            if param_tag is None:
+                param_tag = ''
+        except self.cgi_params.NotFoundError:
+            param_tag = ''
+
         tmpl_args = dict()
+        tmpl_args['vin'] = param_vin
+        tmpl_args['tag'] = param_tag
         content = mod_tmpl.TemplateFactory(self.req, 'parking_event_new').render(tmpl_args)
         self.req.setResponseCode(http.HTTPStatus.OK.value, http.HTTPStatus.OK.phrase)
         self.req.setHeader('Cache-Control', 'public, no-cache')

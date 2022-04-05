@@ -36,7 +36,7 @@ class Handler(handlers.ext.paramed_cgi.Handler):
                 history_item.length = history_file.length
             history_item.description = description
             
-            db_session[config.db_mongo.name]['parking_event'].update({'_id': oid}, {'$push': {'history': history_item.to_mongo()}})
+            db_session[config.db_mongo.name]['parking_event'].update_one({'_id': oid}, {'$push': {'history': history_item.to_mongo()}})
 
         return attachment_oid
 

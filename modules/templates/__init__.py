@@ -50,7 +50,7 @@ from util.values import build_url as _url
 class Environment(jinja2.Environment):
     def __init__(self, template_loader):
         super(Environment, self).__init__(
-            extensions=['jinja2.ext.loopcontrols', 'jinja2.ext.do', 'jinja2.ext.i18n', 'jinja2.ext.with_'],
+            extensions=['jinja2.ext.loopcontrols', 'jinja2.ext.do', 'jinja2.ext.i18n'],
             #bytecode_cache=BytecodeCache(),
             loader=template_loader,
         )

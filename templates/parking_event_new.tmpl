@@ -17,8 +17,8 @@
 	<input type="radio" name="reason" value="obstruction" /> obstruction, double parking, blocking other vehicles
 	<input type="radio" name="reason" value="other" /> other
 	</td></tr>
-        <tr><th>VIN</th><td><input type="text" name="VIN" size="17" maxlength="17" /></td></tr>
-        <tr><th>tag</th><td><input type="text" name="tag" size="10" maxlength="20" /></td></tr>
+        <tr><th>VIN</th><td><input type="text" name="VIN" size="17" maxlength="17" {{ {'value': vin}|xmlattr }} /></td></tr>
+        <tr><th>tag</th><td><input type="text" name="tag" size="10" maxlength="20" {{ {'value': tag}|xmlattr }} /></td></tr>
         <tr><th>remarks</th><td><input type="text" name="remarks" /></td></tr>
 	</table>
 	</td>

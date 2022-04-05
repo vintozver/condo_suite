@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import re
-import datetime
 import http.client
 
 import config
-
 import handlers.web.skeleton as mod_tmpl
-import modules.mongo as mod_mongo
 from modules.mongo.parking_event import Document as ParkingEventDocument
 import handlers.web.decorator as deco
 import handlers.ext.paramed_cgi
@@ -43,7 +39,7 @@ class Handler(handlers.ext.paramed_cgi.Handler):
         for doc in docs:
             doc_data = dict()
             doc_data['oid'] = str(doc.id)
-            doc_data['dt'] = doc.id.generation_time
+            doc_data['dt'] = doc.id.generation_time.astimezone(config.main.timezone)
             doc_data['reason'] = str(doc.reason)
             doc_data['VIN'] = str(doc.vehicle.id)
             doc_data['tag'] = str(doc.vehicle.tag)
