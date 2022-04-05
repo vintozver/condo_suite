@@ -1,0 +1,15 @@
+{% extends "skeleton" %}
+
+{% block body_content %}
+<h1>Transaction</h1>
+<p><strong>id/type:</strong> {{ txn.id|e }}/{{ txn.type|e }}</p>
+<p><strong>state:</strong> {{ txn.state|e }}</p>
+<h2>Linked items</h2>
+<div>
+<ul>
+{% for (entity_type, entity_id) in entities %}
+<li><pre><a {{ {'href': '/%s/view/%s' % (entity_type, entity_id)}|xmlattr }}>{{ '{' }}{{ entity_type|e }}:{{ entity_id|e }}{{ '}' }}</a></pre></li>
+{% endfor %}
+</ul>
+</div>
+{%- endblock %}

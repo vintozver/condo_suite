@@ -1,0 +1,90 @@
+{% extends "skeleton" %}
+
+{% block body_content %}
+<h1>User</h1>
+{% if authenticated|default(False) %}
+
+<div class="user_view">
+<h3>General information</h3>
+<table>
+<tr><th>Name</th><td>{{ user.name|default('-')|e }}</td></tr>
+<tr><th>Email</th><td>{{ user.email|default('-')|e }}</td></tr>
+</table>
+</div>
+
+<div class="ssl_crt">
+<h3>SSL Certificates</h3>
+<table>
+<thead>
+<tr><th>serial</th><th>subject_dn</th><th>issuer_dn</th></tr>
+</thead>
+<tbody><tr><td></td><td></td><td></td></tr></tbody><!-- empty row is necessary to conform w3c -->
+</table>
+</div>
+<script type="text/javascript">
+// raw script begin <![CDATA[
+$(function () {
+
+var user_ssl_crt_table = $("div.ssl_crt table:first");
+user_ssl_crt_table.appendGrid({
+	columns: [
+		{name: "serial", display: "serial", displayCss: {"min-width": "8em", "width": "8em"}, resizable: true, ctrlProp: {readonly: true}},
+		{name: "subject_dn", display: "subject_dn", displayCss: {"min-width": "10em", "width": "24em"}, resizable: true, ctrlProp: {readonly: true}},
+		{name: "issuer_dn", display: "issuer_dn", displayCss: {"min-width": "10em", "width": "24em"}, resizable: true, ctrlProp: {readonly: true}},
+	],
+	i18n: {
+	    rowEmpty: "No SSL certificates"
+	},
+	initRows: 0,
+	hideRowNumColumn: true,
+	hideButtons: { moveUp: true, moveDown: true, insert: true, removeLast: true, append: true, remove: true }
+});
+{{ ssl_crt_list|json }}.forEach(function (user_ssl_crt) {
+    user_ssl_crt_table.appendGrid("appendRow", [{serial: user_ssl_crt.serial, subject_dn: user_ssl_crt.subject_dn, issuer_dn: user_ssl_crt.issuer_dn}]);
+});
+
+});
+//]]> raw script end
+</script>
+
+<div class="ext_auth_google">
+<h3>Auth Ext - Google</h3>
+{% if google_email_list|default([])|length > 0 -%}
+<table>
+{% for google_email in google_email_list %}
+<tr><td>{{ google_email|e }}</td></tr>
+{% endfor %}
+</table>
+{%- else -%}
+<p>No accounts linked.</p>
+{%- endif %}
+</div>
+
+<div class="role">
+<h3>Roles</h3>
+<form action="">
+{% if roles|length > 0 %}
+<table>
+<thead><tr><th>Role</th><th>flag</th></tr></thead><tbody>
+{% for role, role_active in roles %}
+<tr>
+<td>{{ role['name']|default('<no name>')|e }}</td>
+<td><input type="checkbox" {{ {'name': 'role_%s' % role['uuid'].hex, 'value': '1'}|xmlattr }} {% if role_active%}checked="checked"{% endif %} disabled="disabled" /></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% else %}
+<p>No roles.</p>
+{% endif %}
+</form>
+</div>
+
+{% else %}
+<h3>Auth Ext - Gooogle</h3>
+<p><a {{ {'href': google_auth_url}|xmlattr }}>Proceed to Google authentication</a></p>
+<h3>Auth Ext - SSL</h3>
+<p><a {{ {'href': ssl_auth_url}|xmlattr }}>Proceed to SSL authentication</a></p>
+{% endif %}
+{%- endblock %}
+

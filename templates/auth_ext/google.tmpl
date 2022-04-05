@@ -1,0 +1,25 @@
+{% extends "skeleton" %}
+
+{% block body_content %}
+{% if view == 'redirect_authorization' %}
+{% block view_redirect_authorization %}
+<h1>Google authorization</h1>
+<p>Redirecting to <a {{ {'href': url}|xmlattr }}>{{ url }}</a></p>
+{% endblock %}
+{% elif view == 'success' %}
+{% block view_authorization_success %}
+<h1>Google authorization success</h1>
+{% if additional_status is defined %}<p><strong>Additional status:</strong> {{ additional_status|e }}</p>{% endif %}
+{% if return_url is defined %}<p>Going back to <a {{ {'href': return_url}|xmlattr }}>{{ return_url }}</a></p>{% endif %}
+{% endblock %}
+{% elif view == 'failure' %}
+{% block view_authorization_failure %}
+<h1>Google authorization failure</h1>
+{% if error is defined %}<p><strong>error:</strong> {{ error|e }}</p>{% endif %}
+{% if return_url is defined %}<p>Going back to <a {{ {'href': return_url}|xmlattr }}>{{ return_url }}</a></p>{% endif %}
+{% endblock %}
+{% else %}
+<p>Unknown view: {{ view }}</p>
+{% endif %}
+{%- endblock %}
+

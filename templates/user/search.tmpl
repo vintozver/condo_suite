@@ -1,0 +1,126 @@
+{% extends "skeleton" %}
+
+{% macro render_form(token='') %}
+<form action="" method="get" id="user_search">
+<h3>Existing user</h3>
+<p>Name <input type="text" name="name" {{ {'value': token }| xmlattr }} />
+<span id="name_clear" title="Cancel user selection"><a href="#">x</a></span>
+<input type="submit" value="edit" id="user_edit" onclick="user_search_edit();" />
+<input style="display: none" type="submit" id="user_create"  value="create" onclick="create_user();" />
+<input type="hidden" name="id_user" value="" />
+</p>
+<p>You can find the user by typing its name in the text box.</p>
+<p>To create new user enter user name and choose "create new user".</p>
+<p>Delete option is provided through edit functionality. First find the user to delete.</p>
+</form>
+<script type="text/javascript">
+// raw script begin <![CDATA[
+
+var create_user = function(){};
+var perm_user_create = false;
+
+{% if perm_user_create|default(False) %}
+perm_user_create = true;
+create_user = function(){
+    var user_name = user_search.find("input[type=\"text\"][name=\"name\"]").val();
+    var user_params = {name: user_name};
+
+    $.ajax({
+        method: "POST",
+        url: "/user/new",
+        contentType: "application/json",
+        data: JSON.stringify(user_params),
+        dataType: "json",
+        success: function(data, textStatus, jqXHR){
+            var id_user = data.id;
+            window.location.href = sprintf("/user/view/%s", id_user);
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            var notification = $.notify.create("User not created", {type: "error", adjustScroll: true,
+                afterHide: function (event, notify) {
+                    $(this).remove();
+                }
+            });
+            window.setTimeout(function () {
+                notification.notify("hide");
+            }, 3000);
+        },
+        timeout: 3000
+    });
+};
+
+{% endif %}
+
+
+var user_search = $("form#user_search");
+var user_search_id = user_search.find("input[type=\"hidden\"][name=\"id_user\"]");
+var user_search_name = user_search.find("input[type=\"text\"][name=\"name\"]");
+var user_search_name_clear = user_search.find("span#name_clear");
+user_search_name_clear.hide();
+user_search_name.autocomplete({
+    "source": function(request, response) {
+        $.get("/user/helper/autocomplete/search", {"token": request["term"]}, function(data, textStatus, jqXHR) {
+            var ac_data = new Array();
+            data.forEach(function(item) {
+                var display = sprintf("%s (%s)", item["name"] || "<no name>", item["email"] || "<no email>");
+                ac_data.push({"label": display, "value": item["name"], "id": item["id"]});
+            });
+
+            if (perm_user_create) {
+                ac_data.push({"label": "Create new user", "value": request["term"], "id": undefined});
+            }
+
+            response(ac_data);
+        });
+    },
+    "select": function(event, ui) {
+        if (ui.item.id == undefined) {
+            user_search_name.prop("disabled", true);
+            user_search_name_clear.show();
+            $("#user_edit").hide();
+            $("#user_create").show();
+        } else {
+            user_search_id.val(ui.item.id);
+            user_search_name.prop("disabled", true);
+            user_search_name_clear.show();
+        }
+    }
+});
+var user_search_name_clear_handler = function() {
+    if (perm_user_create) {
+        $("#user_edit").show();
+        $("#user_create").hide();
+    }
+    user_search_id.val("");
+    user_search_name.val("");
+    user_search_name.prop("disabled", false);
+    user_search_name_clear.hide();
+};
+user_search_name_clear.click(user_search_name_clear_handler);
+
+user_search.submit(function () {
+        return false;
+});
+
+
+var user_search_edit = function() {
+    var id_user = user_search_id.val();
+    if (id_user){
+        window.location.href = sprintf("/user/view/%s", id_user);
+    }
+};
+
+var user_search_create = function () {
+    window.location.href = "/user/new";
+};
+
+//]]> raw script end
+</script>
+{%- endmacro %}
+
+{% block body_content %}
+<h1>User search</h1>
+<div>
+{{ render_form(**filter|default({})) }}
+</div>
+{%- endblock %}

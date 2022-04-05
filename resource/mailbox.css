@@ -1,0 +1,15 @@
+div.mailbox table {
+    border-collapse: separate;
+    border-spacing: 0px;
+}
+div.mailbox table th {
+	background-color: LightGray;
+}
+div.mailbox table th, div.doc_search_results table td {
+    padding: 2px 2px 2px 2px;
+}
+div.mailbox table tr:nth-child(2n+1) {
+}
+div.mailbox table tr:nth-child(2n) {
+	background-color: Lavender;
+}

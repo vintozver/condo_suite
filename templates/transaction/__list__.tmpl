@@ -1,0 +1,81 @@
+{% extends "skeleton" %}
+
+{% block title %}Transaction list - {{ super() }}{% endblock %}
+
+{% block html_header_content -%}
+{{ super() }}
+<link rel="stylesheet"{{ {'href': {'netloc': '', 'path': '/static/transaction.css'}|url}|xmlattr }} />
+<script type="text/javascript"{{ {'src': {'netloc': '', 'path': '/static/transaction_list.js'}|url}|xmlattr }}></script>
+{%- endblock %}
+
+{% block body_content %}
+<!-- Transaction View dialog -->
+<div id="transaction_view" style="display: none;" title="Transaction details">
+<table>
+<tr><th>id/type</th><td></td></tr>
+<tr><th>state</th><td></td></tr>
+<tr><th>last mod</th><td></td></tr>
+</table>
+<h3>Options</h3>
+<code></code>
+</div>
+
+<div class="transaction_list">
+<form action="" method="post" enctype="multipart/form-data">
+
+<h2>Complete transactions (last {{ txns_complete|length }})</h2>
+{% if txns_complete|length > 0 -%}
+<table class="transactions">
+<tr><th>Created UTC</th><th>Last modified UTC</th><th>Type</th><th>State</th><th>Actions</th></tr>
+{% for txn in txns_complete -%}
+<tr>
+<td>{{ txn['created'] }}</td>
+<td>{{ txn['last_mod'] }}</td>
+<td>{{ txn['type'] }}</td>
+<td>
+{%- if txn['state'] == 'completed' -%}
+<span title="completed">&#x2611;</span>
+{%- elif txn['state'] ==  'cancelled' -%}
+<span title="cancelled">&#x2612;</span>
+{%- else -%}
+<span {{ {'title': txn['state']}|xmlattr }}>&#x26a0;</span>
+{%- endif -%}
+</td>
+<td><input type="button" value="view" {{ {'onclick': 'javascript:transaction_view(%s)'|format(txn['id']|json)}|xmlattr }}/></td>
+</tr>
+{% endfor -%}
+</table>
+{% else %}
+<p>void</p>
+{%- endif %}
+
+<h2>Incomplete transactions (last {{ txns_incomplete|length }})</h2>
+{% if txns_incomplete|length > 0 -%}
+<table class="transactions">
+<tr><th>Created UTC</th><th>Last modified UTC</th><th>Type</th><th>State</th><th>Actions</th></tr>
+{% for txn in txns_incomplete -%}
+<tr>
+<td>{{ txn['created'] }}</td>
+<td>{{ txn['last_mod'] }}</td>
+<td>{{ txn['type'] }}</td>
+<td>&#x26a0; {{ txn['state']|e }}</td>
+<td>
+<input type="button" value="view" {{ {'onclick': 'javascript:transaction_view(%s)'|format(txn['id']|json)}|xmlattr }}/>
+{%- if txn['state'] == 'initial' or txn['state'] == 'pending' -%}
+<input type="button" value="commit" {{ {'onclick': 'javascript:transaction_commit(%s)'|format(txn['id']|json)}|xmlattr }}/>
+{%- elif txn['state'] == 'applied' or txn['state'] == 'cancelling' -%}
+<input type="button" value="recover" {{ {'onclick': 'javascript:transaction_recover(%s)'|format(txn['id']|json)}|xmlattr }}/>
+{%- else -%}
+-
+{%- endif -%}
+</td>
+</tr>
+{% endfor -%}
+</table>
+{% else %}
+<p>void</p>
+{%- endif %}
+
+</form>
+</div>
+{%- endblock %}

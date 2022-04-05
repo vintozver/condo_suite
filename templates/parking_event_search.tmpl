@@ -1,0 +1,48 @@
+{% extends "skeleton" %}
+
+{% macro render_form() %}
+{%- endmacro %}
+
+{% macro render_results(items) %}
+<div class="parking_event_search_results">
+<h3>Search results</h3>
+<table>
+<tr>
+<th>Date/Time</th>
+<th>Reason</th>
+<th>VIN</th>
+<th>tag</th>
+</tr>
+{% for item in items %}
+<tr>
+<td><a {{ {'href': '/parking/event/view/%s'|format(item['oid'])}|xmlattr }}>{{ item['dt']|datetime('%Y-%m-%d %H:%M:%S') }}</a></td>
+<td>{{ item['reason']|default('-')|escape }}</a></td>
+<td>{{ item['VIN']|default('-')|escape }}</a></td>
+<td>{{ item['tag']|default('-')|escape }}</a></td>
+</tr>
+{% endfor %}
+</table>
+</div>
+{%- endmacro %}
+
+{% macro render_results_nothing() %}
+<h3>Search results</h3>
+<p>Sorry, nothing found.</p>
+{%- endmacro %}
+
+{% block body_content %}
+<h1>Parking Event search</h1>
+{%if results is defined %}
+<div>
+{% if results|length > 0 %}
+{{ render_results(results) }}
+{% else %}
+{{ render_results_nothing() }}
+{% endif %}
+</div>
+{% endif %}
+<div>
+{{ render_form() }}
+</div>
+{%- endblock %}
+

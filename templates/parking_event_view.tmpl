@@ -1,0 +1,43 @@
+{% extends "skeleton" %}
+
+{% block body_content %}
+<div class="parking_event">
+	<h1>Parking Event</h1>
+	<table class="header">
+	<tr><th>Date/Time (UTC)</th><td>{% if dt is defined %}{{ dt|datetime('%Y-%m-%d %H:%M') }}{% else %}unknown{% endif %}</td></tr>
+	<tr><th>Reason</th><td>{% if reason is defined %}{{ reason|escape }}{% else %}-{% endif %}</td></tr>
+	<tr><th>VIN</th><td>{% if VIN is defined %}{{ VIN|escape }}{% else %}-{% endif %}</td></tr>
+	<tr><th>tag</th><td>{% if tag is defined %}{{ tag|escape }}{% else %}-{% endif %}</td></tr>
+	<tr><th>remarks</th><td>{% if remarks is defined %}{{ remarks|escape }}{% else %}-{% endif %}</td></tr>
+	</table>
+
+	<h3>History</h3>
+	<div class="history">
+	{% if history|length > 0 %}
+	<table>
+	<tr>
+	<th>Date/Time</th>
+	<th>Description</th>
+	<th>Picture</th>
+	</tr>
+	{% for history_item in history %}
+	<tr>
+	<td><pre>{{ history_item['dt']|e }}</pre></td>
+	<td>{{ history_item['description']|e }}</td>
+	<td>{% if history_item['oid'] %}<a {{ {'href': '/parking/event/view/%s/file/%s'|format(oid, history_item['oid'])}|xmlattr }}><img {{ {'src': '/parking/event/view/%s/file/%s'|format(oid, history_item['oid'])}|xmlattr }} alt="uploaded picture" /></a>{% else %}-{% endif %}</td>
+	</tr>
+	{% endfor %}
+	</table>
+	{% else %}
+	<p>No items.</p>
+	{% endif %}
+	<h3>Upload</h3>
+	<form {{ {'action': '/parking/event/amend/%s'|format(oid)}|xmlattr }} method="post" enctype="multipart/form-data">
+	<div><p>Image to upload <input type="file" name="attachment" /></p></div>
+	<div><p>Description</p><p><textarea rows="4" cols="80" name="description"></textarea></p></div>
+	<div><input type="submit" value="Upload" /></div>
+	</form>
+	</div>
+</div>
+{%- endblock %}
+

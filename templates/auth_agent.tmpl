@@ -1,0 +1,35 @@
+{% extends "skeleton" %}
+
+{% block body_content %}
+<div class="auth">
+    <h1>Agent authentication status</h1>
+    <p>Current user:&nbsp;
+    {%- if current_user is not none -%}
+    {{ current_user.name|default('-')|e }}
+    {%- else -%}
+    <i>&lt;Not authenticated&gt;</i>
+    {%- endif -%}
+    </p>
+    <p>Current agent:&nbsp;
+    {%- if current_agent is not none -%}
+    {{ current_agent.name|default('-')|e }}
+    {%- else -%}
+    <i>&lt;Not selected&gt;</i>
+    {%- endif -%}
+    </p>
+
+    {% if agent_list|length > 0 %}
+    <h2>Available agents</h2>
+    <table>
+    {% for agent in agent_list %}
+    <tr>
+    <td>{{ agent.name|default('<?>')|e }}</td>
+    <td><a {{ {'href': '/agent/switch/%s/%s' % (agent.id, agent.position or '')}|xmlattr }}>select</td>
+    </tr>
+    {% endfor %}
+    </table>
+    {%- else %}
+    {%- endif %}
+</div>
+{%- endblock %}
+

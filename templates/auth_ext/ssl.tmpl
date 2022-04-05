@@ -1,0 +1,9 @@
+{% extends "skeleton" %}
+
+{% block body_content %}
+<h1>SSL Client Information</h1>
+<p><strong>Serial: </strong> {{ serial|default('-')|e }}</a></p>
+<p><strong>Subject DN: </strong> {{ subject_dn|default('-')|e }}</a></p>
+<p><strong>Issuer DN: </strong> {{ issuer_dn|default('-')|e }}</a></p>
+{%- endblock %}
+

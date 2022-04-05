@@ -1,0 +1,18 @@
+/* Transaction list */
+
+div.transaction_list form table {
+    border-collapse: separate;
+    border-spacing: 0px;
+}
+div.transaction_list form table tr th {
+	background-color: LightGray;
+}
+
+div.transaction_list form table tr th, div.transaction_list form table tr td {
+    padding: 2px 2px 2px 2px;
+}
+div.transaction_list form table tr:nth-child(2n+2) {
+}
+div.transaction_list form table tr:nth-child(2n+3) {
+	background-color: Lavender;
+}

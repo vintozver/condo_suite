@@ -1,0 +1,10 @@
+{% extends "skeleton" %}
+
+{% block body_content %}
+<h1>Security status</h1>
+<p>The following status has been returned by security module</p>
+<div><code>{{ err|default('VOID')|e }}</code></div>
+<h2>Authentication</h2>
+<p><a {{ {'href': auth_url|default('/auth/user')}|xmlattr }}>proceed to authentication</a></p>
+{%- endblock %}
+

@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:og="http://ogp.me/ns#" xml:lang="en" lang="en">
+	<head>
+		{% block html_header_content -%}
+		<link rel="stylesheet"{{ {'href': {'netloc': '', 'path': '/static/root.css'}|url}|xmlattr }} />
+		<!-- base meta -->
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<link rel="shortcut icon" href="/favicon.ico" />
+		<!-- libs -->
+		<script type="text/javascript"{{ {'src': {'netloc': '', 'path': '/static/sprintf.js'}|url}|xmlattr }}></script>
+		<!-- jquery -->
+		<script type="text/javascript"{{ {'src': {'netloc': '', 'path': '/static/jquery.js'}|url}|xmlattr }}></script>
+		<!-- jquery notify -->
+		<link rel="stylesheet"{{ {'href': {'netloc': '', 'path': '/static/jquery-notify/main.css'}|url}|xmlattr }} />
+		<script type="text/javascript"{{ {'src': {'netloc': '', 'path': '/static/jquery-notify/main.js'}|url}|xmlattr }}></script>
+		<!-- jquery ui -->
+		<link rel="stylesheet"{{ {'href': {'netloc': '', 'path': '/static/jquery-ui/main.css'}|url}|xmlattr }} />
+		<link rel="stylesheet"{{ {'href': {'netloc': '', 'path': '/static/jquery-ui/structure.css'}|url}|xmlattr }} />
+		<link rel="stylesheet"{{ {'href': {'netloc': '', 'path': '/static/jquery-ui/theme.css'}|url}|xmlattr }} />
+		<script type="text/javascript"{{ {'src': {'netloc': '', 'path': '/static/jquery-ui/main.js'}|url}|xmlattr }}></script>
+		<!-- jquery appendGrid -->
+		<link rel="stylesheet"{{ {'href': {'netloc': '', 'path': '/static/jquery-appendGrid/main.css'}|url}|xmlattr }} />
+		<script type="text/javascript"{{ {'src': {'netloc': '', 'path': '/static/jquery-appendGrid/main.js'}|url}|xmlattr }}></script>
+		<!-- jquery readmore -->
+		<script type="text/javascript"{{ {'src': {'netloc': '', 'path': '/static/readmore/main.js'}|url}|xmlattr }}></script>
+		<!-- jquery superfish -->
+		<link rel="stylesheet" {{ {'href': {'netloc': '', 'path': '/static/superfish/css/superfish.css'}|url}|xmlattr }} media="screen" />
+		<script type="text/javascript"{{ {'src': {'netloc': '', 'path': '/static/superfish/js/hoverIntent.js'}|url}|xmlattr }}></script>
+		<script type="text/javascript"{{ {'src': {'netloc': '', 'path': '/static/superfish/js/superfish.js'}|url}|xmlattr }}></script>
+		{%- endblock %}
+		<title>{% block title %}Aspen Grove Condominiums sytem{% endblock %}</title>
+	</head>
+	<body>
+		<ul class="sf-menu" id="header_links">
+			<li><a href="/">Dashboard</a></li>
+			{% if menu_render_parking|default(False) %}<li><a href="/parking">Parking</a><ul>
+				<li><a href="/parking/event">Search events</a></li>
+				<li><a href="/parking/event/new">New event</a></li>
+				<li><a href="/parking/vehicle">Vehicle database</a></li>
+			</ul></li>{% endif %}
+			<li><a href="/auth">Auth</a><ul>
+				<li><a href="/auth/user">User: <span id="user">{% if menu_user_name is defined %}{{ menu_user_name|e }}{% else %}&lt;User&gt;{% endif %}</span></a></li>
+				<li><a href="/auth/agent">Agent: <span id="agent">{% if menu_agent_name is defined %}{{ menu_agent_name|e }}{% else %}&lt;Agent&gt;{% endif %}</span></a></li>
+				<li><a href="#">Position: <span id="position">{% if menu_agent_position is defined %}{{ menu_agent_position|e }}{% else %}&lt;Position&gt;{% endif %}</span></a></li>
+			</ul></li>
+			{% if menu_render_admin|default(False) -%}
+			<li><a href="#">Admin</a><ul>
+				<li><a href="/user">User management</a></li>
+				<li><a href="/agent">Agent management</a></li>
+				<li><a href="/transaction">Transaction</a></li>
+			</ul></li>
+			{%- endif %}
+		</ul>
+		<div style="clear: both;"></div>
+		<script type="text/javascript">
+		$(document).ready(function() {
+		$("#header_links").superfish({});
+		});
+		</script>
+		{% block whole_canvas -%}
+		{% block header_content -%}
+		<!-- base header -->
+		{%- endblock %}
+		{% block body_content -%}
+		<!-- base body -->
+		{%- endblock %}
+		{% block footer_content -%}
+		<!-- base footer  -->
+		{%- endblock %}
+		{%- endblock whole_canvas %}
+		<div class="footer_links">Developed by Vitaly Greck for Aspen Grove Condominiums, Kent, WA. All rights reserved.</div>
+	 </body>
+</html>

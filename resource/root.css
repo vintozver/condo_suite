@@ -1,0 +1,89 @@
+div.header_links, div.footer_links {
+    background-color: #D3D3D3;
+    color: #000000;
+    padding: 5px;
+}
+div.header_links a, div.footer_links a {
+    margin: 5px;
+}
+div.header_links {
+	margin-bottom: 1em;
+}
+div.footer_links {
+	margin-top: 1em;
+}
+
+
+/* Invoice, Doc, Shipment, Package creation */
+
+table.header {
+	padding-bottom: 1em;
+}
+table.header td {
+	padding-right: 1em;
+}
+
+table.header th {
+	background-color: lightgrey;
+}
+
+
+/* Parking Event view */
+div.parking_event div.history table {
+    border-collapse: separate;
+    border-spacing: 0px;
+}
+div.parking_event div.history table th {
+	background-color: LightGray;
+}
+div.parking_event div.history table th, div.parking_event div.history table td {
+    padding: 2px 2px 2px 2px;
+}
+div.parking_event div.history table tr:nth-child(2n+2) {
+}
+div.parking_event div.history table tr:nth-child(2n+3) {
+	background-color: Lavender;
+}
+div.parking_event div.history table td img {
+	width: 8em;
+	height: 8em;
+}
+
+
+
+/* Parking Event search results */
+
+div.parking_event_search_results table {
+    border-collapse: separate;
+    border-spacing: 0px;
+}
+div.parking_event_search_results table th {
+	background-color: LightGray;
+}
+div.parking_event_search_results table th, div.parking_event_search_results table td {
+    padding: 2px 2px 2px 2px;
+}
+div.parking_event_search_results table tr:nth-child(2n+2) {
+}
+div.parking_event_search_results table tr:nth-child(2n+3) {
+	background-color: Lavender;
+}
+
+
+/* Agent edit dialogs */
+
+div#agent_create select[name=address_country], div#agent_update select[name=address_country] {
+    width: 8em;
+}
+
+div#address_create select[name=country], div#address_update select[name=country] {
+    width: 8em;
+}
+
+
+/* Link */
+span.link {
+    white-space: pre;
+    font-family: monospace;
+    cursor: copy;
+}

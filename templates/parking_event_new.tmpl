@@ -1,0 +1,82 @@
+{% extends "skeleton" %}
+
+{% block html_header_content -%}
+{{ super() }}
+<script type="text/javascript"{{ {'src': {'netloc': '', 'path': '/static/transaction_checker.js'}|url}|xmlattr }}></script>
+{%- endblock %}
+
+{% block body_content %}
+<div class="parking_event">
+<form action="" method="post" enctype="multipart/form-data">
+	<h1>Parking Event</h1>
+	<table class="header">
+	<tr><th>reason</th><td colspan="4">
+	<input type="radio" name="reason" value="visitor" /> visitor parking fact
+	<input type="radio" name="reason" value="disabled_illegal" /> illegal parking on the "disabled" spot
+	<input type="radio" name="reason" value="fire" /> fire lane or fire hydrant
+	<input type="radio" name="reason" value="obstruction" /> obstruction, double parking, blocking other vehicles
+	<input type="radio" name="reason" value="other" /> other
+	</td></tr>
+        <tr><th>VIN</th><td><input type="text" name="VIN" size="17" maxlength="17" /></td></tr>
+        <tr><th>tag</th><td><input type="text" name="tag" size="10" maxlength="20" /></td></tr>
+        <tr><th>remarks</th><td><input type="text" name="remarks" /></td></tr>
+	</table>
+	</td>
+	</tr>
+	</table>
+	<input type="submit" value="Upload data" />
+</form>
+</div>
+<script type="text/javascript">
+// raw script begin <![CDATA[
+$(function() {
+
+var parking_event = $("div.parking_event form");
+var parking_event_vin = parking_event.find("input[type=\"text\"][name=\"VIN\"]");
+var parking_event_tag = parking_event.find("input[type=\"text\"][name=\"tag\"]");
+parking_event_vin.autocomplete({
+    "source": function(request, response) {
+        $.get("/parking/event/helper/autocomplete/VIN", {"token": request["term"]}, function(data, textStatus, jqXHR) {
+            var ac_data = new Array();
+            data.forEach(function(item) {
+                var display = sprintf("%s | %s", item["VIN"] || "---- NO  VIN ----", item["tag"] || "- NO TAG -");
+                ac_data.push({"label": display, "value": item["VIN"], custom: {tag: item["tag"]}});
+            });
+
+            response(ac_data);
+        });
+    },
+    "select": function(event, ui) {
+        if (ui.item != undefined) {
+            parking_event_vin.val(ui.item.value);
+            parking_event_tag.val(ui.item.custom.tag);
+        }
+    }
+});
+parking_event_tag.autocomplete({
+    "source": function(request, response) {
+        $.get("/parking/event/helper/autocomplete/tag", {"token": request["term"]}, function(data, textStatus, jqXHR) {
+            var ac_data = new Array();
+            data.forEach(function(item) {
+                var display = sprintf("%s | %s", item["VIN"] || "---- NO  VIN ----", item["tag"] || "- NO TAG -");
+                ac_data.push({"label": display, "value": item["tag"], custom: {vin: item["VIN"]}});
+            });
+
+            response(ac_data);
+        });
+    },
+    "select": function(event, ui) {
+        if (ui.item != undefined) {
+            parking_event_vin.val(ui.item.custom.vin);
+            parking_event_tag.val(ui.item.value);
+        }
+    }
+});
+
+
+
+});
+//]]> raw script end
+</script>
+{%- endblock %}
+
