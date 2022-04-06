@@ -21,7 +21,7 @@
 	</tr>
 	{% for parking_event in parking_event_list %}
 	<tr>
-	<td><a {{ {'href': '/parking/event/view/%s'|format(parking_event['oid'])}|xmlattr }}><pre>{{ parking_event['dt']|e }}</pre></a></td>
+	<td><a {{ {'href': '/parking/event/view/%s'|format(parking_event['oid'])}|xmlattr }}><pre>{{ parking_event['dt']|datetime('%Y-%m-%d %H:%M') }}</pre></a></td>
 	<td>{{ parking_event['reason']|e }}</td>
 	<td>{{ parking_event['tag']|e }}</td>
 	<td>{{ parking_event['remarks']|e }}</td>

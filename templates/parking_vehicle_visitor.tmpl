@@ -5,20 +5,16 @@
 
 {% macro render_results(items) %}
 <div class="parking_event_search_results">
-<h3>Search results</h3>
+<h3>Visitor Parking Usage</h3>
 <table>
 <tr>
-<th>Date/Time</th>
-<th>Reason</th>
 <th>VIN</th>
-<th>tag</th>
+<th>Counter (days)</th>
 </tr>
-{% for item in items %}
+{% for vin in visitor_aggregate_map %}
 <tr>
-<td><a {{ {'href': '/parking/event/view/%s'|format(item['oid'])}|xmlattr }}>{{ item['dt']|datetime('%Y-%m-%d %H:%M') }}</a></td>
-<td>{{ item['reason']|default('-')|escape }}</td>
-<td><a {{ {'href': '/vehicle/view/%s'|format(item['VIN'])}|xmlattr }}>{{ item['VIN']|default('-')|escape }}</a></td>
-<td>{{ item['tag']|default('-')|escape }}</td>
+<td><a {{ {'href': '/vehicle/view/%s'|format(vin)}|xmlattr }}>{{ vin|e }}</a></td>
+<td>{{ visitor_aggregate_map[vin]|length }}</td>
 </tr>
 {% endfor %}
 </table>
@@ -32,9 +28,9 @@
 
 {% block body_content %}
 <h1>Parking Event search</h1>
-{%if results is defined %}
+{%if visitor_aggregate_map is defined %}
 <div>
-{% if results|length > 0 %}
+{% if visitor_aggregate_map|length > 0 %}
 {{ render_results(results) }}
 {% else %}
 {{ render_results_nothing() }}
@@ -45,4 +41,3 @@
 {{ render_form() }}
 </div>
 {%- endblock %}
-

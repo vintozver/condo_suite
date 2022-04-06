@@ -4,7 +4,7 @@
 <div class="parking_event">
 	<h1>Parking Event</h1>
 	<table class="header">
-	<tr><th>Date/Time (UTC)</th><td>{% if dt is defined %}{{ dt|datetime('%Y-%m-%d %H:%M') }}{% else %}unknown{% endif %}</td></tr>
+	<tr><th>Date/Time</th><td>{% if dt is defined %}{{ dt|datetime('%Y-%m-%d %H:%M') }}{% else %}unknown{% endif %}</td></tr>
 	<tr><th>Reason</th><td>{% if reason is defined %}{{ reason|escape }}{% else %}-{% endif %}</td></tr>
 	<tr><th>VIN</th><td>{% if VIN is defined %}<a {{ {'href': '/vehicle/view/%s'|format(VIN)}|xmlattr }}>{{ VIN|escape }}</a>{% else %}-{% endif %}</td></tr>
 	<tr><th>tag</th><td>{% if tag is defined %}{{ tag|escape }}{% else %}-{% endif %}</td></tr>
@@ -22,7 +22,7 @@
 	</tr>
 	{% for history_item in history %}
 	<tr>
-	<td><pre>{{ history_item['dt']|e }}</pre></td>
+	<td><pre>{{ history_item['dt']|datetime('%Y-%m-%d %H:%M') }}</pre></td>
 	<td>{{ history_item['description']|e }}</td>
 	<td>{% if history_item['oid'] %}<a {{ {'href': '/parking/event/view/%s/file/%s'|format(oid, history_item['oid'])}|xmlattr }}><img {{ {'src': '/parking/event/view/%s/file/%s'|format(oid, history_item['oid'])}|xmlattr }} alt="uploaded picture" /></a>{% else %}-{% endif %}</td>
 	</tr>
