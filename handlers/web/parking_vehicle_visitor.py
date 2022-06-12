@@ -8,6 +8,7 @@ from collections import OrderedDict
 import config
 import handlers.web.skeleton as mod_tmpl
 import modules.mongo as mod_mongo
+from modules.mongo.vehicle import Document as VehicleDocument
 from modules.mongo.parking_event import Document as ParkingEventDocument
 import handlers.web.decorator as deco
 import handlers.ext.paramed_cgi
@@ -41,7 +42,7 @@ class Handler(handlers.ext.paramed_cgi.Handler):
         dt_begin = datetime.datetime(d_begin.year, d_begin.month, d_begin.day, tzinfo=config.main.timezone).astimezone(datetime.timezone.utc)
         dt_end = datetime.datetime(d_end.year, d_end.month, d_end.day, tzinfo=config.main.timezone).astimezone(datetime.timezone.utc)
 
-        visitor_aggregate_map = dict()
+        visitor_aggregate_map = dict()  # {VIN -> {dt: N}, ...} | dt: datetime, N: number of occurences
         parking_event_list = ParkingEventDocument.objects(__raw__={
             'reason': 'visitor',
             '_id': {'$gte': mod_mongo.bson.objectid.ObjectId.from_datetime(dt_begin), '$lt': mod_mongo.bson.objectid.ObjectId.from_datetime(dt_end)}
@@ -56,6 +57,11 @@ class Handler(handlers.ext.paramed_cgi.Handler):
         visitor_aggregate_tuples = list(visitor_aggregate_map.items())
         visitor_aggregate_tuples.sort(key=lambda item: len(item[1]), reverse=True)
         visitor_aggregate_map = OrderedDict(visitor_aggregate_tuples)
+
+        vehicle_map = VehicleDocument.objects.in_bulk(list(visitor_aggregate_map.keys()))
+        # build new map
+        # {VIN -> {tag: <string>, occurrences: {dt: N, ...}, ...}
+        visitor_aggregate_map = OrderedDict((vin, {'tag': vehicle_map[vin].tag, 'occurrences': occurrences}) for vin, occurrences in visitor_aggregate_map.items())
 
         content = mod_tmpl.TemplateFactory(self.req, 'parking_vehicle_visitor').render({'visitor_aggregate_map': visitor_aggregate_map})
         self.req.setResponseCode(http.client.OK, http.client.responses[http.client.OK])

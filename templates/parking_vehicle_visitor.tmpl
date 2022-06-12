@@ -9,12 +9,14 @@
 <table>
 <tr>
 <th>VIN</th>
+<th><span title="last known tag">tag</span></th>
 <th>Counter (days)</th>
 </tr>
 {% for vin in visitor_aggregate_map %}
 <tr>
 <td><a {{ {'href': '/vehicle/view/%s'|format(vin)}|xmlattr }}>{{ vin|e }}</a></td>
-<td>{{ visitor_aggregate_map[vin]|length }}</td>
+<td><span title="last known tag">{{ visitor_aggregate_map[vin]['tag']|e }}</span></td>
+<td>{{ visitor_aggregate_map[vin]['occurrences']|length }}</td>
 </tr>
 {% endfor %}
 </table>
