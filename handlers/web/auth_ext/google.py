@@ -2,6 +2,7 @@
 
 import http.client
 import json
+import traceback
 import oauth2client.client
 import config
 import handlers.web.skeleton as mod_tmpl
@@ -105,12 +106,19 @@ class Handler(handlers.ext.paramed_cgi.Handler):
         self.req.setHeader('Content-Type', 'text/html; charset=utf-8')
         self.req.write(content)
 
+    @staticmethod
+    def _format_exception(summary, err):
+        # Include the exception type/message alongside its traceback so that failures
+        # can be diagnosed without exposing unrelated secrets (e.g. access/refresh tokens).
+        details = ''.join(traceback.format_exception(type(err), err, err.__traceback__))
+        return '%s: %s\n\n%s' % (summary, err, details)
+
     def process_code(self, code, purpose, return_url):
         flow = oauth2client.client.OAuth2WebServerFlow(config.google.client_id, config.google.client_secret, self.calc_perms(purpose), config.google.redirect_uri, auth_uri='https://accounts.google.com/o/oauth2/auth', token_uri='https://accounts.google.com/o/oauth2/token')
         try:
             credentials = flow.step2_exchange(code)
         except oauth2client.client.FlowExchangeError as error:
-            return self.process_error('Flow exchange error', purpose, return_url)
+            return self.process_error(self._format_exception('Flow exchange error', error), purpose, return_url)
         finally:
             del flow
 
@@ -121,7 +129,7 @@ class Handler(handlers.ext.paramed_cgi.Handler):
             try:
                 self.process_authentication()
             except HandlerError as err:
-                additional_status = err.args[0]
+                additional_status = self._format_exception('Authentication error', err)
 
         tmpl_args = dict()
         if return_url:
