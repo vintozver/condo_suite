@@ -9,13 +9,13 @@
 {% elif view == 'success' %}
 {% block view_authorization_success %}
 <h1>Google authorization success</h1>
-{% if additional_status is defined %}<p><strong>Additional status:</strong> {{ additional_status|e }}</p>{% endif %}
+{% if additional_status is defined %}<p><strong>Additional status:</strong></p><pre>{{ additional_status|e }}</pre>{% endif %}
 {% if return_url is defined %}<p>Going back to <a {{ {'href': return_url}|xmlattr }}>{{ return_url }}</a></p>{% endif %}
 {% endblock %}
 {% elif view == 'failure' %}
 {% block view_authorization_failure %}
 <h1>Google authorization failure</h1>
-{% if error is defined %}<p><strong>error:</strong> {{ error|e }}</p>{% endif %}
+{% if error is defined %}<p><strong>error:</strong></p><pre>{{ error|e }}</pre>{% endif %}
 {% if return_url is defined %}<p>Going back to <a {{ {'href': return_url}|xmlattr }}>{{ return_url }}</a></p>{% endif %}
 {% endblock %}
 {% else %}
