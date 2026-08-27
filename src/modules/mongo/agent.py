@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
-from .. import modules
-from ..modules import mongo as mod_mongo
-from ..modules.mongo import address as mod_mongo_address
+from .. import mongo as mod_mongo
+from . import address as mod_mongo_address
 
 
 class AgentDocument(mod_mongo.mongoengine.Document):

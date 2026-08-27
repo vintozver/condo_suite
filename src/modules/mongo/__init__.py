@@ -7,8 +7,8 @@ import gridfs
 import pymongo
 import pymongo.errors
 import mongoengine
-from ..util import context
-from .. import config as config
+from ...util import context
+from ... import config as config
 
 
 class DbSessionController(util.context.AutoRefContextItem):

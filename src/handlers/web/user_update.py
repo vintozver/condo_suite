@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from .. import util
-from .. import modules
-from .. import handlers
+from ... import util
+from ... import modules
+from ... import handlers
 import uuid
 import json
 import http.client
 
-from .. import config as config
+from ... import config as config
 
 from ..modules import mongo as mod_mongo
-from ..modules.mongo import user as mod_mongo_user
-from ..modules.mongo import agent as mod_mongo_agent
+from ...modules.mongo import user as mod_mongo_user
+from ...modules.mongo import agent as mod_mongo_agent
 from ..modules import rbac as mod_rbac
-from ..handlers.web import decorator as deco
+from ...handlers.web import decorator as deco
 from ..util import handler
 
 

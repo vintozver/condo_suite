@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-from .. import modules
-from ..modules import mongo as mod_mongo
+from .. import mongo as mod_mongo
 from ..modules.mongo.vehicle import Ref as VehicleRef
 from ..modules.mongo.security import Ref as SecurityRef
 

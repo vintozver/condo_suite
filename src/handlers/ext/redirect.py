@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 
-from .. import util
+from ... import util
 import http.client
-from ..util import handler
+from ...util import handler
 
 
 class HandlerError(util.handler.HandlerError):

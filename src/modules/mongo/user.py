@@ -3,8 +3,8 @@
 import re
 
 
-from ..modules import mongo as mod_mongo
-from ..modules import rbac as mod_rbac
+from .. import mongo as mod_mongo
+from .. import rbac as mod_rbac
 
 
 class SslCrtDocument(mod_mongo.mongoengine.EmbeddedDocument):

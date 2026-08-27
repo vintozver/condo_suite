@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from .. import util
-from .. import handlers
+from ... import util
+from ... import handlers
 import datetime
 import http.client
 import json
 import pycountry
-from .. import config as config
-from ..handlers.web import skeleton as mod_tmpl
+from ... import config as config
+from ...handlers.web import skeleton as mod_tmpl
 from ..modules import mongo as mod_mongo
-from ..handlers.web import decorator as deco
+from ...handlers.web import decorator as deco
 from ..util import handler
 
 

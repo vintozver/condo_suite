@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from .. import handlers
+from ... import handlers
 from ..modules import mongo as mod_mongo
-from ..handlers.web import decorator as deco
-from ..handlers.ext import paramed_cgi
+from ...handlers.web import decorator as deco
+from ...handlers.ext import paramed_cgi
 
 
 class HandlerError(handlers.ext.paramed_cgi.HandlerError):

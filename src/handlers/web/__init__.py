@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from .. import util
-from .. import handlers
+from ... import util
+from ... import handlers
 import sys
 import traceback
 import re
 import http.client
 
-from ..util.logger import Logger
+from ...util.logger import Logger
 
 from ..util import handler
 import collections

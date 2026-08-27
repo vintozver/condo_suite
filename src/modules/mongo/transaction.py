@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-from ..modules import mongo as mod_mongo
+from .. import mongo as mod_mongo
 
 
 class Transaction(mod_mongo.mongoengine.Document):

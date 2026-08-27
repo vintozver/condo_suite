@@ -266,8 +266,8 @@ class GenericSQLSession(Session):
         Session.__init__(self, **kwargs)
 
 
-from .. import config as config
-from ..modules import mongo as mod_mongo
+from ... import config as config
+from .. import mongo as mod_mongo
 
 
 class MongoDbSession(Session):

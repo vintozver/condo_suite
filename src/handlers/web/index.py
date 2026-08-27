@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from .. import handlers
+from ... import handlers
 import http.client
-from .. import config as config
-from ..handlers.web import skeleton as mod_tmpl
+from ... import config as config
+from ...handlers.web import skeleton as mod_tmpl
 from ..modules import mongo as mod_mongo
-from ..handlers.web import decorator as deco
-from ..handlers.ext import paramed_cgi
+from ...handlers.web import decorator as deco
+from ...handlers.ext import paramed_cgi
 
 
 class HandlerError(handlers.ext.paramed_cgi.HandlerError):

@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from .. import modules
-from .. import handlers
+from ... import modules
+from ... import handlers
 import os
 
 import io
 import http.client
-from .. import config as config
-from ..handlers.web import skeleton as mod_tmpl
+from ... import config as config
+from ...handlers.web import skeleton as mod_tmpl
 from ..modules import mongo as mod_mongo
-from ..modules.mongo.parking_event import Document as ParkingEventDocument
-from ..modules.mongo.parking_event import HistoryItem as ParkingEventHistoryItem
-from ..handlers.web import decorator as deco
-from ..handlers.ext import paramed_cgi
+from ...modules.mongo.parking_event import Document as ParkingEventDocument
+from ...modules.mongo.parking_event import HistoryItem as ParkingEventHistoryItem
+from ...handlers.web import decorator as deco
+from ...handlers.ext import paramed_cgi
 
 
 class HandlerError(handlers.ext.paramed_cgi.HandlerError):

@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 
-from .. import util
-from .. import handlers
-from ..util.web.request import Request, RequestProcessor
+from ... import util
+from ... import handlers
+from .request import Request, RequestProcessor
 
 
 def Application(env, responder):
@@ -19,4 +19,3 @@ def Application(env, responder):
 
 if __name__ == '__main__':
     pass
-

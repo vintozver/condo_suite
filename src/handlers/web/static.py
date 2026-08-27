@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from .. import handlers
+from ... import handlers
 import pkg_resources
 import os.path
 import http.client
 
 
-from ..handlers.ext import paramed_cgi
+from ...handlers.ext import paramed_cgi
 
 
 class HandlerError(handlers.ext.paramed_cgi.HandlerError):

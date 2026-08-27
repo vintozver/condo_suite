@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-from .. import modules
-from .. import handlers
+from ... import modules
+from ... import handlers
 import datetime
 import http.client
 import json
 import pycountry
 
-from ..handlers.web import skeleton as mod_tmpl
+from ...handlers.web import skeleton as mod_tmpl
 from ..modules import mongo as mod_mongo
-from ..modules.mongo.user import UserRef
-from ..modules.mongo.agent import AgentRef
-from ..modules.mongo.security import Ref as SecurityRef
-from ..modules.mongo.vehicle import Document as VehicleDocument
-from ..modules.mongo.vehicle import Ref as VehicleRef
-from ..modules.mongo.parking_event import Document as ParkingEventDocument
-from ..modules.mongo.parking_event import HistoryItem as ParkingEventHistoryItem
-from ..handlers.web import decorator as deco
-from ..handlers.ext import paramed_cgi
+from ...modules.mongo.user import UserRef
+from ...modules.mongo.agent import AgentRef
+from ...modules.mongo.security import Ref as SecurityRef
+from ...modules.mongo.vehicle import Document as VehicleDocument
+from ...modules.mongo.vehicle import Ref as VehicleRef
+from ...modules.mongo.parking_event import Document as ParkingEventDocument
+from ...modules.mongo.parking_event import HistoryItem as ParkingEventHistoryItem
+from ...handlers.web import decorator as deco
+from ...handlers.ext import paramed_cgi
 
 _vehicle_doc_class = VehicleDocument
 _vehicle_doc_database =  mod_mongo.mongoengine.connection.get_db(_vehicle_doc_class._meta['db_alias']).name

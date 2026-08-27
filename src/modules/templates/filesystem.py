@@ -6,7 +6,7 @@ import os.path
 import jinja2
 
 import pkg_resources
-from ..modules import templates as mod
+from .. import templates as mod
 
 
 class TemplateLoader(jinja2.BaseLoader):

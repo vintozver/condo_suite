@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from .. import modules
-from .. import handlers
+from ... import modules
+from ... import handlers
 import datetime
 import http.client
 
-from .. import config as config
+from ... import config as config
 
-from ..handlers.web import skeleton as mod_tmpl
+from ...handlers.web import skeleton as mod_tmpl
 from ..modules import rbac as mod_rbac
 from ..modules import mongo as mod_mongo
-from ..modules.mongo import user as mod_mongo_user
-from ..handlers.web import decorator as deco
-from ..handlers.ext import paramed_cgi
+from ...modules.mongo import user as mod_mongo_user
+from ...handlers.web import decorator as deco
+from ...handlers.ext import paramed_cgi
 
 
 class HandlerError(handlers.ext.paramed_cgi.HandlerError):

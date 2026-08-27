@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from .. import handlers
+from ... import handlers
 import http.client
 import json
 
-from ..handlers.web import decorator as deco
-from ..handlers.ext import paramed_cgi
+from ...handlers.web import decorator as deco
+from ...handlers.ext import paramed_cgi
 
 
 class HandlerError(handlers.ext.paramed_cgi.HandlerError):

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 
-from .. import util
+from ... import util
 import io
 import codecs
 import urllib.parse
 import datetime
 import http.cookies
 import wsgiref.headers
-from ..util import context
+from .. import context
 
 
 class RequestException(BaseException):

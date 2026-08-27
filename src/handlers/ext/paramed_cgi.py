@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 
-from .. import util
-from .. import handlers
-from ..handlers.web import decorator
-from ..util import handler
+from ... import util
+from ... import handlers
+from ...handlers.web import decorator
+from ...util import handler
 
 
 class Params(object):

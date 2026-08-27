@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from .. import util
-from .. import handlers
+from ... import util
+from ... import handlers
 import email
 import email.header
 import email.utils
@@ -9,7 +9,7 @@ import http.client
 import dateutil.parser
 
 
-from .. import config as config
+from ... import config as config
 from ..modules import mongo as mod_mongo
 from ..util import defer
 

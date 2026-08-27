@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .. import util
+from ... import util
 import re
 import os
 import stat
@@ -12,7 +12,7 @@ import email.generator
 import http.client
 
 
-from ..util import handler
+from ...util import handler
 
 
 class HandlerError(util.handler.HandlerError):

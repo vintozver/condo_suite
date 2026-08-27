@@ -5,8 +5,8 @@ import re
 import uuid
 import sys
 
-from .. import config as config
-from ..modules import mongo as mod_mongo
+from ... import config as config
+from ...modules import mongo as mod_mongo
 
 embedded_roles = [
     # Global log group

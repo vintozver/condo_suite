@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .. import modules
-from ..modules import mongo as mod_mongo
+from .. import mongo as mod_mongo
 from ..modules.mongo.agent import AgentRef
 from ..modules.mongo.user import UserRef
 

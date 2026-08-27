@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-from ..modules import mongo as mod_mongo
+from .. import mongo as mod_mongo
 
 
 # document stored in the database

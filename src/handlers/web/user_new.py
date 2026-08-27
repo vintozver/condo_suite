@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from .. import util
-from .. import handlers
+from ... import util
+from ... import handlers
 import json
 import http.client
 
-from .. import config as config
+from ... import config as config
 
 from ..modules import mongo as mod_mongo
-from ..handlers.web import decorator as deco
+from ...handlers.web import decorator as deco
 from ..util import handler
 
 

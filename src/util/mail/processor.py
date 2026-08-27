@@ -2,13 +2,13 @@
 
 
 
-from .. import util
-from .. import handlers
+from ... import util
+from ... import handlers
 import imaplib
-from ..util.web import request
+from ..web import request
 import io
 
-from .. import config as config
+from ... import config as config
 
 
 class MailboxProcessorError(Exception):

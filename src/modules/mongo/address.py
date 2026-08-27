@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pycountry
-from ..modules import mongo as mod_mongo
+from .. import mongo as mod_mongo
 
 
 class Address(mod_mongo.mongoengine.EmbeddedDocument):
