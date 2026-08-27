@@ -24,6 +24,7 @@ dependencies = [
     "pyasn1-modules",
     "lxml",
     "Jinja2",
+    "Cython",
     "qrcode",
 ]
 
