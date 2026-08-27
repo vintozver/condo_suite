@@ -91,7 +91,7 @@ class Handler(util.handler.Handler):
                     return route_item['handler'], params
 
     def view_notfound(self, err):
-        import handlers.web.skeleton as mod_tmpl
+        from ....handlers.web import skeleton as mod_tmpl
         try:
             content = mod_tmpl.TemplateFactory(self.req, 'error_notfound').render({'description': err})
         except mod_tmpl.TemplateError:
@@ -105,7 +105,7 @@ class Handler(util.handler.Handler):
             lambda line_up, line_down: line_up + '\n' + line_down,
             ['%s: %s' % (item[0], item[1]) for item in traceback.extract_tb(err_tb)]
         )
-        import handlers.web.skeleton as mod_tmpl
+        from ....handlers.web import skeleton as mod_tmpl
         try:
             content = mod_tmpl.TemplateFactory(self.req, 'error_internal').render({'err_type': err_type, 'err_value': err_value, 'err_tb': tb})
             self.req.setHeader('Content-Type', 'text/html; charset=utf-8')
@@ -123,7 +123,7 @@ class Handler(util.handler.Handler):
     def __call__(self):
         try:
             if self.req.method == 'MAIL':
-                import handlers.mail
+                from ....handlers import mail
                 try:
                     return handlers.mail.Handler(self.req)()
                 except handlers.mail.HandlerError as err:

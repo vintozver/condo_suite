@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from .. import mongo as mod_mongo
-from ..modules.mongo.agent import AgentRef
-from ..modules.mongo.user import UserRef
+from .agent import AgentRef
+from .user import UserRef
 
 
 class Ref(mod_mongo.mongoengine.DynamicEmbeddedDocument):

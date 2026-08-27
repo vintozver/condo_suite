@@ -2,8 +2,8 @@
 
 
 from .. import mongo as mod_mongo
-from ..modules.mongo.vehicle import Ref as VehicleRef
-from ..modules.mongo.security import Ref as SecurityRef
+from .vehicle import Ref as VehicleRef
+from .security import Ref as SecurityRef
 
 
 class HistoryItem(mod_mongo.mongoengine.EmbeddedDocument):
