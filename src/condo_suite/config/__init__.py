@@ -23,7 +23,7 @@ def _import_sub():
         except ImportError as err:
             return
         module = sys.modules[module_name]
-        partition_name = module.rsplit('.', 1)[-1]
+        partition_name = module_name.rsplit('.', 1)[-1]
         if partition_name in globals():
             globals()[partition_name].__dict__.update(module.__dict__)
         else:
