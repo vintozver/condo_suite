@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "condo_suite"
+version = "0.1.0"
+description = "Condominium management suite"
+requires-python = ">=3.8"
+dependencies = [
+    "gevent",
+    "gunicorn",
+    "pymongo",
+    "mongoengine",
+    "python-dateutil",
+    "httplib2",
+    "urllib3",
+    "oauth2client",
+    "google-api-python-client",
+    "PyYAML",
+    "pycountry",
+    "pytz",
+    "pyasn1",
+    "pyasn1-modules",
+    "lxml",
+    "Jinja2",
+    "Cython",
+    "qrcode",
+]
+
+[project.scripts]
+condo-suite-rbac = "condo_suite.util.deploy.rbac:deploy"
+
+[tool.setuptools]
+packages = ["condo_suite"]
+package-dir = {"condo_suite" = "src"}
+include-package-data = true
+
+[tool.setuptools.package-data]
+condo_suite = ["templates/**/*.tmpl", "resource/**/*"]
