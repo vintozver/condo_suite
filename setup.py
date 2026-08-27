@@ -36,7 +36,6 @@ class build_py(_build_py):
         archives = {
             "jquery-ui": (
                 "https://jqueryui.com/resources/download/jquery-ui-1.13.1.zip",
-                "jquery-ui-1.13.1",
                 {
                     "jquery-ui.min.css": "jquery-ui/main.css",
                     "jquery-ui.structure.min.css": "jquery-ui/structure.css",
@@ -46,25 +45,23 @@ class build_py(_build_py):
             ),
             "jquery-notify": (
                 "https://github.com/vincentkeizer/notify/zipball/0.4.4",
-                "vincentkeizer-notify-97ca89e",
                 {"notify.min.css": "jquery-notify/main.css", "jquery-notify.min.js": "jquery-notify/main.js"},
             ),
             "readmore": (
                 "https://github.com/jedfoster/Readmore.js/archive/refs/tags/2.2.1.zip",
-                "Readmore.js-2.2.1",
                 {"readmore.min.js": "readmore/main.js"},
             ),
             "append-grid": (
                 "https://github.com/hkalbertl/jquery.appendGrid/archive/refs/tags/1.4.2.zip",
-                "jquery.appendGrid-1.4.2",
                 {"jquery.appendGrid-1.4.2.min.css": "jquery-appendGrid/main.css",
                  "jquery.appendGrid-1.4.2.min.js": "jquery-appendGrid/main.js"},
             ),
         }
-        for _, (url, prefix, files) in archives.items():
+        for _, (url, files) in archives.items():
             missing = [target for source, target in files.items() if not (resource_dir / target).exists()]
             if missing:
                 with ZipFile(BytesIO(urlopen(url).read())) as archive:
+                    prefix = archive.namelist()[0].split("/", 1)[0]
                     for source, target in files.items():
                         destination = resource_dir / target
                         if not destination.exists():
