@@ -28,7 +28,7 @@ class Handler(handlers.ext.paramed_cgi.Handler):
         if path.find('/') != 0:
             raise HandlerError('Попытка взлома! Допускается только полный путь к документу')
         rel_path = path[1:]
-        base_path = os.path.normpath(pkg_resources.resource_filename(__name__, '../../run/static'))
+        base_path = os.path.normpath(pkg_resources.resource_filename('condo_suite', 'resource'))
         file_path = os.path.normpath(os.path.join(base_path, rel_path))
         if os.path.commonprefix((base_path, file_path)) != base_path:
             raise HandlerError('Попытка взлома! Путь не находится в базовом каталоге статики')

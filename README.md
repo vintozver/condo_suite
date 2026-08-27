@@ -8,7 +8,7 @@ Build a wheel with pip:
 python -m pip wheel .
 ```
 
-The Python package is located under `src/condo_suite`.
+The Python package is located under `src`.
 Static resources and templates are included in the wheel as package data, so
 building the wheel replaces the Makefile's packaging step.
 
