@@ -5,7 +5,7 @@
 import os.path
 import logging
 
-import condo_suite.config as config
+from . import config as config
 from functools import reduce
 
 

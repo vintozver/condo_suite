@@ -2,10 +2,12 @@
 
 
 
+from ... import modules
+from ... import handlers
 import types
 import urllib.request, urllib.parse, urllib.error
 import http.client
-import condo_suite.modules.mongo.user as mod_mongo_user
+from ...modules.mongo import user as mod_mongo_user
 
 
 class AuthRequired(object):
@@ -36,7 +38,7 @@ class AuthRequired(object):
 
         def view_security(self, req, err):
             tmpl_args = {'err': err, 'auth_url': '/auth/user?return_url=%s' % urllib.parse.quote_plus(req.uri)}
-            import condo_suite.handlers.web.skeleton as mod_tmpl
+            import handlers.web.skeleton as mod_tmpl
             content = mod_tmpl.TemplateFactory(req, 'security').render(tmpl_args)
             req.setResponseCode(http.client.FORBIDDEN, 'Insufficient Permissions')
             req.setHeader('Cache-Control', 'public, no-cache')
@@ -61,7 +63,7 @@ def rbac_has_permission(session_user, permission):
     # create a data model object if another object is passed.
     # in case of non data model object, it must support ``__getitem__()`` and have valid ``rbac`` item
     if not isinstance(session_user, mod_mongo_user.UserDocument):
-        raise RuntimeError('session_user must be instance of condo_suite.modules.mongo.user.UserDocument')
+        raise RuntimeError('session_user must be instance of modules.mongo.user.UserDocument')
 
     return session_user.rbac_has_permission(permission)
 

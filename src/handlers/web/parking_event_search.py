@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
 
+from .. import modules
+from .. import handlers
 import http.client
 
-import condo_suite.config as config
-import condo_suite.handlers.web.skeleton as mod_tmpl
-from condo_suite.modules.mongo.parking_event import Document as ParkingEventDocument
-import condo_suite.handlers.web.decorator as deco
-import condo_suite.handlers.ext.paramed_cgi
+from .. import config as config
+from ..handlers.web import skeleton as mod_tmpl
+from ..modules.mongo.parking_event import Document as ParkingEventDocument
+from ..handlers.web import decorator as deco
+from ..handlers.ext import paramed_cgi
 
 
-class HandlerError(condo_suite.handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(handlers.ext.paramed_cgi.HandlerError):
     pass
 
 
-class Handler(condo_suite.handlers.ext.paramed_cgi.Handler):
+class Handler(handlers.ext.paramed_cgi.Handler):
     PAGE_SIZE = 100
 
     @deco.session.Session()

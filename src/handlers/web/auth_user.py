@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 
+from .. import handlers
 import http.client
 import urllib.request, urllib.parse, urllib.error
 import json
-import condo_suite.modules.rbac as mod_rbac
-import condo_suite.handlers.web.skeleton as mod_tmpl
-import condo_suite.handlers.web.decorator as deco
-import condo_suite.handlers.ext.paramed_cgi
+from ..modules import rbac as mod_rbac
+from ..handlers.web import skeleton as mod_tmpl
+from ..handlers.web import decorator as deco
+from ..handlers.ext import paramed_cgi
 
 
-class HandlerError(condo_suite.handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(handlers.ext.paramed_cgi.HandlerError):
     pass
 
 
-class Handler(condo_suite.handlers.ext.paramed_cgi.Handler):
+class Handler(handlers.ext.paramed_cgi.Handler):
     @deco.session.Session()
     @deco.session.SessionUser()
     def __call__(self):

@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 
+from .. import util
 import io
 import codecs
 import urllib.parse
 import datetime
 import http.cookies
 import wsgiref.headers
-import condo_suite.util.context
+from ..util import context
 
 
 class RequestException(BaseException):
@@ -16,7 +17,7 @@ class RequestException(BaseException):
 
 class Request(object):
     def __init__(self, env):
-        self.context = condo_suite.util.context.Context()
+        self.context = util.context.Context()
 
         self.secure = 'HTTPS' in env
         self.method = env.get('REQUEST_METHOD', 'GET')

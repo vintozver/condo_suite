@@ -2,11 +2,13 @@
 
 
 
+from .. import util
+from .. import handlers
 import imaplib
-import condo_suite.util.web.request
+from ..util.web import request
 import io
 
-import condo_suite.config as config
+from .. import config as config
 
 
 class MailboxProcessorError(Exception):
@@ -30,11 +32,11 @@ class MailboxProcessor(object):
                 fetch_code, fetch_data = self.imap_handle.fetch(message, '(RFC822)')
                 if fetch_code == 'OK':
                     logging.debug('MailoxProcessor: %s', 'Request invocation')
-                    req = condo_suite.util.web.request.Request({'wsgi.input': io.BytesIO(fetch_data[0][1])})
-                    import condo_suite.handlers.mail
+                    req = util.web.request.Request({'wsgi.input': io.BytesIO(fetch_data[0][1])})
+                    import handlers.mail
                     try:
-                        condo_suite.handlers.mail.Handler(req)()
-                    except condo_suite.handlers.mail.HandlerError as err:
+                        handlers.mail.Handler(req)()
+                    except handlers.mail.HandlerError as err:
                         sys.stderr.write('Error processing the request: %s\n' % repr(err))
 
 

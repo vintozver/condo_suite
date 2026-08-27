@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
-import condo_suite.modules.mongo as mod_mongo
-import condo_suite.handlers.web.decorator as deco
-import condo_suite.handlers.ext.paramed_cgi
+from .. import handlers
+from ..modules import mongo as mod_mongo
+from ..handlers.web import decorator as deco
+from ..handlers.ext import paramed_cgi
 
 
-class HandlerError(condo_suite.handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(handlers.ext.paramed_cgi.HandlerError):
     pass
 
 
-class Handler(condo_suite.handlers.ext.paramed_cgi.Handler):
+class Handler(handlers.ext.paramed_cgi.Handler):
     @deco.session.Session()
     @deco.session.SessionUser()
     def __call__(self, id_agent, position=None):
@@ -26,7 +27,7 @@ class Handler(condo_suite.handlers.ext.paramed_cgi.Handler):
         else:
             raise HandlerError('User does not have requested agent allowed')
 
-        import condo_suite.handlers.ext.redirect as redirector
+        import handlers.ext.redirect as redirector
         try:
             return redirector.Handler(self.req)('/auth')
         except redirector.HandlerError as err:

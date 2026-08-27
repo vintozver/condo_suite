@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
+from ... import util
+from ... import modules
+from ... import handlers
 import types
-import condo_suite.util.context
-import condo_suite.modules.session as mod_session
-import condo_suite.modules.mongo.user as mod_mongo_user
-import condo_suite.modules.mongo.agent as mod_mongo_agent
+from ...util import context
+from ...modules import session as mod_session
+from ...modules.mongo import user as mod_mongo_user
+from ...modules.mongo import agent as mod_mongo_agent
 
 
-class SessionController(condo_suite.util.context.AutoRefContextItem):
+class SessionController(util.context.AutoRefContextItem):
     def __init__(self, req):
         super(SessionController, self).__init__()
         self.req = req
@@ -59,7 +62,7 @@ class Session(object):
         return self.Wrapper(method, self.require)
 
 
-class SessionUserController(condo_suite.util.context.AutoRefContextItem):
+class SessionUserController(util.context.AutoRefContextItem):
     def __init__(self, req):
         super(SessionUserController, self).__init__()
         self.req = req
@@ -68,7 +71,7 @@ class SessionUserController(condo_suite.util.context.AutoRefContextItem):
         id_user = self.req.context.session.get('id_user')
         if id_user is None:
             # Try authenticating user by SSL certificate if it's provided by user
-            import condo_suite.handlers.web.auth_ext.ssl as handler_ssl
+            import handlers.web.auth_ext.ssl as handler_ssl
             try:
                 if handler_ssl.Handler(self.req).check():
                     id_user = self.req.context.session.get('id_user')
@@ -119,7 +122,7 @@ class SessionUser(object):
         return self.Wrapper(method)
 
 
-class SessionAgentController(condo_suite.util.context.AutoRefContextItem):
+class SessionAgentController(util.context.AutoRefContextItem):
     def __init__(self, req):
         super(SessionAgentController, self).__init__()
         self.req = req
@@ -127,7 +130,7 @@ class SessionAgentController(condo_suite.util.context.AutoRefContextItem):
     def new(self):
         id_agent = self.req.context.session.get('id_agent')
         if id_agent is None:
-            import condo_suite.handlers.web.auth_agent as handler_agent
+            import handlers.web.auth_agent as handler_agent
             try:
                 if handler_agent.Handler(self.req).check():
                     id_agent = self.req.context.session.get('id_agent')

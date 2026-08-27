@@ -1,23 +1,25 @@
 # -*- coding: utf-8 -*-
 
+from .. import modules
+from .. import handlers
 import os
 
 import io
 import http.client
-import condo_suite.config as config
-import condo_suite.handlers.web.skeleton as mod_tmpl
-import condo_suite.modules.mongo as mod_mongo
-from condo_suite.modules.mongo.parking_event import Document as ParkingEventDocument
-from condo_suite.modules.mongo.parking_event import HistoryItem as ParkingEventHistoryItem
-import condo_suite.handlers.web.decorator as deco
-import condo_suite.handlers.ext.paramed_cgi
+from .. import config as config
+from ..handlers.web import skeleton as mod_tmpl
+from ..modules import mongo as mod_mongo
+from ..modules.mongo.parking_event import Document as ParkingEventDocument
+from ..modules.mongo.parking_event import HistoryItem as ParkingEventHistoryItem
+from ..handlers.web import decorator as deco
+from ..handlers.ext import paramed_cgi
 
 
-class HandlerError(condo_suite.handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(handlers.ext.paramed_cgi.HandlerError):
     pass
 
 
-class Handler(condo_suite.handlers.ext.paramed_cgi.Handler):
+class Handler(handlers.ext.paramed_cgi.Handler):
     def execute(self, oid: mod_mongo.bson.objectid.ObjectId, description: str, stream: io.BytesIO, content_type: str):
         with mod_mongo.DbSessionController() as db_session:
             attachment_oid = mod_mongo.bson.objectid.ObjectId()
@@ -93,10 +95,10 @@ class Handler(condo_suite.handlers.ext.paramed_cgi.Handler):
 
             self.execute(doc.id, description, attachment_stream, content_type)
 
-            import condo_suite.handlers.ext.redirect
+            import handlers.ext.redirect
             try:
-                return condo_suite.handlers.ext.redirect.Handler(self.req)('/parking/event/view/%s' % oid)
-            except condo_suite.handlers.ext.redirect.HandlerError:
+                return handlers.ext.redirect.Handler(self.req)('/parking/event/view/%s' % oid)
+            except handlers.ext.redirect.HandlerError:
                 raise HandlerError('Redirect error')
         else:
             raise HandlerError('Method unsupported')

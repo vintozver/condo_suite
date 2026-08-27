@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 
-import condo_suite.modules.mongo as mod_mongo
-from  condo_suite.modules.mongo.vehicle import Ref as VehicleRef
-from condo_suite.modules.mongo.security import Ref as SecurityRef
+from .. import modules
+from ..modules import mongo as mod_mongo
+from ..modules.mongo.vehicle import Ref as VehicleRef
+from ..modules.mongo.security import Ref as SecurityRef
 
 
 class HistoryItem(mod_mongo.mongoengine.EmbeddedDocument):

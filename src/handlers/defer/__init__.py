@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 
 
+from .. import util
+from .. import modules
 import typing
 import datetime
-import condo_suite.modules.mongo as mod_mongo
-import condo_suite.modules.mongo.transaction as mod_mongo_transaction
-import condo_suite.config as config
-import condo_suite.util.defer
+from ..modules import mongo as mod_mongo
+from ..modules.mongo import transaction as mod_mongo_transaction
+from .. import config as config
+from ..util import defer
 
 
 transaction_class_registry = dict()  # type: typing.Mapping
 
 
-class Transaction(condo_suite.util.defer.Task):
+class Transaction(util.defer.Task):
     abstract = True
     ignore_result = True
 
@@ -153,7 +155,7 @@ class TransactionRetryError(TransactionError):
     pass
 
 
-class TransactionProcessor(condo_suite.util.defer.Task):
+class TransactionProcessor(util.defer.Task):
     ignore_result = True
 
     def run(self, id_txn, action='acquire'):
@@ -168,7 +170,7 @@ class TransactionProcessor(condo_suite.util.defer.Task):
         except KeyError:
             raise TransactionError('Transaction type is unknown or not registered', txn_type)
 
-        condo_suite.util.defer.the_app.send_task('%s.%s' % (txn_cls.__module__, txn_cls.__name__), kwargs={
+        util.defer.the_app.send_task('%s.%s' % (txn_cls.__module__, txn_cls.__name__), kwargs={
             'id_txn': oid_txn,
             'action': action,
         })

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pycountry
-import condo_suite.modules.mongo as mod_mongo
+from ..modules import mongo as mod_mongo
 
 
 class Address(mod_mongo.mongoengine.EmbeddedDocument):

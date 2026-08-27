@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
 
+from ... import modules
+from ... import handlers
 import http.client
 import json
-import condo_suite.handlers.web.decorator as deco
-import condo_suite.handlers.ext.paramed_cgi
-import condo_suite.modules.mongo as mod_mongo
-import condo_suite.modules.mongo.transaction as mod_mongo_transaction
-import condo_suite.handlers.defer
-import condo_suite.util.defer as util_defer
+from ...handlers.web import decorator as deco
+from ...handlers.ext import paramed_cgi
+from ...modules import mongo as mod_mongo
+from ...modules.mongo import transaction as mod_mongo_transaction
+from ...handlers import defer
+from ...util import defer as util_defer
 
 
-class HandlerError(condo_suite.handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(handlers.ext.paramed_cgi.HandlerError):
     pass
 
 
-class Handler(condo_suite.handlers.ext.paramed_cgi.Handler):
+class Handler(handlers.ext.paramed_cgi.Handler):
     def render_forbidden(self):
         self.req.setResponseCode(http.client.FORBIDDEN, http.client.responses[http.client.FORBIDDEN])
         self.req.setHeader('Cache-Control', 'public, no-cache')
@@ -45,7 +47,7 @@ class Handler(condo_suite.handlers.ext.paramed_cgi.Handler):
             return self.render_forbidden()
 
         if action in ('commit', 'cancel', 'recover'):
-            util_defer.the_app.send_task('condo_suite.handlers.defer.TransactionProcessor', kwargs={
+            util_defer.the_app.send_task('handlers.defer.TransactionProcessor', kwargs={
                 'id_txn': oid_txn,
                 'action': action,
             })

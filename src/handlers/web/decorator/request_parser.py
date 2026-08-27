@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
 
+from ... import util
 import types
 import io
 import cgi
 import json
 import urllib.parse
-import condo_suite.util.context
+from ...util import context
 
 
 def _params_ex(fs, param, not_found_exc):
@@ -47,7 +48,7 @@ class QueryString(object):
             raise self.NotFoundError
 
 
-class QueryStringContextItem(condo_suite.util.context.AutoRefContextItem):
+class QueryStringContextItem(util.context.AutoRefContextItem):
     def __init__(self, req):
         super(QueryStringContextItem, self).__init__()
         self.req = req
@@ -157,7 +158,7 @@ class RequestBodyParserImpl(object):
         return Form(cgi.FieldStorage(io.BytesIO(self.req.request_body), environ=environ, keep_blank_values=True, strict_parsing=True))
 
 
-class RequestBodyParserContextItem(condo_suite.util.context.AutoRefContextItem):
+class RequestBodyParserContextItem(util.context.AutoRefContextItem):
     def __init__(self, req):
         super(RequestBodyParserContextItem, self).__init__()
         self.req = req
@@ -202,7 +203,7 @@ class RequestBodyParser(object):
         return self.Wrapper(method)
 
 
-class RequestBodyFormContextItem(condo_suite.util.context.AutoRefContextItem):
+class RequestBodyFormContextItem(util.context.AutoRefContextItem):
     def __init__(self, req):
         super(RequestBodyFormContextItem, self).__init__()
         self.req = req

@@ -10,6 +10,7 @@
 # PERMISSION: {"resource": "document", "action": "view"}
 
 
+from .. import modules
 import typing
 
 
@@ -35,7 +36,7 @@ def preload_roles(l_roles=roles, l_roles_by_uuid=roles_by_uuid, l_roles_by_name=
     l_roles_by_name.clear()
 
     import config
-    import condo_suite.modules.mongo as mod_mongo
+    import modules.mongo as mod_mongo
     from collections import OrderedDict
     with mod_mongo.DbSessionController() as db_session:
         for role_doc in db_session[config.name]['rbac.role'].with_options(mod_mongo.bson.codec_options.CodecOptions(document_class=OrderedDict)).find({}).sort([('sort_order', mod_mongo.pymongo.ASCENDING)]):

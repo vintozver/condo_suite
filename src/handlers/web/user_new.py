@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
 
+from .. import util
+from .. import handlers
 import json
 import http.client
 
-import condo_suite.config as config
+from .. import config as config
 
-import condo_suite.modules.mongo as mod_mongo
-import condo_suite.handlers.web.decorator as deco
-import condo_suite.util.handler
+from ..modules import mongo as mod_mongo
+from ..handlers.web import decorator as deco
+from ..util import handler
 
 
-class HandlerError(condo_suite.util.handler.HandlerError):
+class HandlerError(util.handler.HandlerError):
     pass
 
 
-class Handler(condo_suite.util.handler.Handler):
+class Handler(util.handler.Handler):
     @classmethod
     def process_user_create(cls, user_name):
         user = mod_mongo.bson.son.SON()

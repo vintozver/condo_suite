@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import condo_suite.modules.mongo as mod_mongo
+from ..modules import mongo as mod_mongo
 
 
 class Transaction(mod_mongo.mongoengine.Document):

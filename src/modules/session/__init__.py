@@ -266,8 +266,8 @@ class GenericSQLSession(Session):
         Session.__init__(self, **kwargs)
 
 
-import condo_suite.config as config
-import condo_suite.modules.mongo as mod_mongo
+from .. import config as config
+from ..modules import mongo as mod_mongo
 
 
 class MongoDbSession(Session):

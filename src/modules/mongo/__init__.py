@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 
+from .. import util
 from collections import OrderedDict
 import bson
 import gridfs
 import pymongo
 import pymongo.errors
 import mongoengine
-import condo_suite.util.context
-import condo_suite.config as config
+from ..util import context
+from .. import config as config
 
 
-class DbSessionController(condo_suite.util.context.AutoRefContextItem):
+class DbSessionController(util.context.AutoRefContextItem):
     def new(self):
         return pymongo.MongoClient(
             config.mongodb_uri,

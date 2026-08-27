@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import condo_suite.modules.mongo as mod_mongo
-from condo_suite.modules.mongo.agent import AgentRef
-from condo_suite.modules.mongo.user import UserRef
+from .. import modules
+from ..modules import mongo as mod_mongo
+from ..modules.mongo.agent import AgentRef
+from ..modules.mongo.user import UserRef
 
 
 class Ref(mod_mongo.mongoengine.DynamicEmbeddedDocument):

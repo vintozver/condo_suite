@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 
-import condo_suite.handlers.web.decorator
-import condo_suite.util.handler
+from .. import util
+from .. import handlers
+from ..handlers.web import decorator
+from ..util import handler
 
 
 class Params(object):
@@ -10,13 +12,13 @@ class Params(object):
         pass
 
     def __init__(self, req):
-        self.query_string = condo_suite.handlers.web.decorator.request_parser.QueryString(req)
+        self.query_string = handlers.web.decorator.request_parser.QueryString(req)
         if req.method == 'POST':
             content_type = req.requestHeaders.get('Content-Type')
             if content_type == 'application/json' or content_type == 'text/json':
-                self.form = condo_suite.handlers.web.decorator.request_parser.RequestBodyParserImpl(req).as_json()
+                self.form = handlers.web.decorator.request_parser.RequestBodyParserImpl(req).as_json()
             else:
-                self.form = condo_suite.handlers.web.decorator.request_parser.RequestBodyParserImpl(req).as_form()
+                self.form = handlers.web.decorator.request_parser.RequestBodyParserImpl(req).as_form()
         else:
             self.form = None
 
@@ -69,11 +71,11 @@ class Params(object):
             raise self.NotFoundError
 
 
-class HandlerError(condo_suite.util.handler.HandlerError):
+class HandlerError(util.handler.HandlerError):
     pass
 
 
-class Handler(condo_suite.util.handler.Handler):
+class Handler(util.handler.Handler):
     def __init__(self, req):
         super(Handler, self).__init__(req)
 

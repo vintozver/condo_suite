@@ -1,24 +1,26 @@
 # -*- coding: utf-8 -*-
 
+from .. import modules
+from .. import handlers
 import datetime
 import dateutil.relativedelta
 import http.client
 from collections import OrderedDict
 
-import condo_suite.config as config
-import condo_suite.handlers.web.skeleton as mod_tmpl
-import condo_suite.modules.mongo as mod_mongo
-from condo_suite.modules.mongo.vehicle import Document as VehicleDocument
-from condo_suite.modules.mongo.parking_event import Document as ParkingEventDocument
-import condo_suite.handlers.web.decorator as deco
-import condo_suite.handlers.ext.paramed_cgi
+from .. import config as config
+from ..handlers.web import skeleton as mod_tmpl
+from ..modules import mongo as mod_mongo
+from ..modules.mongo.vehicle import Document as VehicleDocument
+from ..modules.mongo.parking_event import Document as ParkingEventDocument
+from ..handlers.web import decorator as deco
+from ..handlers.ext import paramed_cgi
 
 
-class HandlerError(condo_suite.handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(handlers.ext.paramed_cgi.HandlerError):
     pass
 
 
-class Handler(condo_suite.handlers.ext.paramed_cgi.Handler):
+class Handler(handlers.ext.paramed_cgi.Handler):
     @deco.session.Session()
     @deco.session.SessionUser()
     @deco.session.SessionAgent()

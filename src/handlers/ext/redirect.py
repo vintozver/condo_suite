@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
 
+from .. import util
 import http.client
-import condo_suite.util.handler
+from ..util import handler
 
 
-class HandlerError(condo_suite.util.handler.HandlerError):
+class HandlerError(util.handler.HandlerError):
     pass
 
 
-class Handler(condo_suite.util.handler.Handler):
+class Handler(util.handler.Handler):
     def __call__(self, address, code=http.client.FOUND, message=http.client.responses[http.client.FOUND]):
         self.req.setResponseCode(code, message)
         self.req.setHeader('Location', address)

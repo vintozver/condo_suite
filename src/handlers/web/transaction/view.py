@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 
+from ... import modules
+from ... import handlers
 import typing
 import sys
 import json
 import http
-import condo_suite.modules.mongo as mod_mongo
-import condo_suite.modules.mongo.transaction as mod_mongo_transaction
-import condo_suite.modules.mongo.agent as mod_mongo_agent
-import condo_suite.modules.mongo.user as mod_mongo_user
-import condo_suite.handlers.web.decorator as deco
-import condo_suite.handlers.ext.paramed_cgi
+from ...modules import mongo as mod_mongo
+from ...modules.mongo import transaction as mod_mongo_transaction
+from ...modules.mongo import agent as mod_mongo_agent
+from ...modules.mongo import user as mod_mongo_user
+from ...handlers.web import decorator as deco
+from ...handlers.ext import paramed_cgi
 
 
-class HandlerError(condo_suite.handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(handlers.ext.paramed_cgi.HandlerError):
     pass
 
 
@@ -38,7 +40,7 @@ class ViewHandler(object):
         raise NotImplementedError()
 
 
-class Handler(condo_suite.handlers.ext.paramed_cgi.Handler):
+class Handler(handlers.ext.paramed_cgi.Handler):
     @deco.session.Session()
     @deco.session.SessionUser()
     @deco.session.SessionAgent()
@@ -64,7 +66,7 @@ class Handler(condo_suite.handlers.ext.paramed_cgi.Handler):
         # Import module based on transaction type
         if not txn.type:
             raise HandlerError('Transaction type is not set', id_transaction)
-        mod_view_type = 'condo_suite.handlers.web.transaction.view_%s' % txn.type
+        mod_view_type = 'handlers.web.transaction.view_%s' % txn.type
         try:
             __import__(mod_view_type)
         except ImportError:

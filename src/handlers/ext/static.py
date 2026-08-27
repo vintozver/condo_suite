@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from .. import util
 import re
 import os
 import stat
@@ -11,10 +12,10 @@ import email.generator
 import http.client
 
 
-import condo_suite.util.handler
+from ..util import handler
 
 
-class HandlerError(condo_suite.util.handler.HandlerError):
+class HandlerError(util.handler.HandlerError):
     pass
 
 
@@ -22,7 +23,7 @@ class NotFoundError(HandlerError):
     pass
 
 
-class Handler(condo_suite.util.handler.Handler):
+class Handler(util.handler.Handler):
     @classmethod
     def get_etag(cls, fileobj, filelen):
         filegen = cls.file_generator_limited(fileobj, filelen)

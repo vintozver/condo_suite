@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 
 
-from condo_suite.util.web.request import Request, RequestProcessor
+from .. import util
+from .. import handlers
+from ..util.web.request import Request, RequestProcessor
 
 
 def Application(env, responder):
     req = Request(env)
 
-    from condo_suite.handlers.web import Handler, HandlerError
+    from handlers.web import Handler, HandlerError
     try:
         return RequestProcessor(Handler, req=req).process(env, responder)
     except HandlerError as err:

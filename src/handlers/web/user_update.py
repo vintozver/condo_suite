@@ -1,24 +1,27 @@
 # -*- coding: utf-8 -*-
 
+from .. import util
+from .. import modules
+from .. import handlers
 import uuid
 import json
 import http.client
 
-import condo_suite.config as config
+from .. import config as config
 
-import condo_suite.modules.mongo as mod_mongo
-import condo_suite.modules.mongo.user as mod_mongo_user
-import condo_suite.modules.mongo.agent as mod_mongo_agent
-import condo_suite.modules.rbac as mod_rbac
-import condo_suite.handlers.web.decorator as deco
-import condo_suite.util.handler
+from ..modules import mongo as mod_mongo
+from ..modules.mongo import user as mod_mongo_user
+from ..modules.mongo import agent as mod_mongo_agent
+from ..modules import rbac as mod_rbac
+from ..handlers.web import decorator as deco
+from ..util import handler
 
 
-class HandlerError(condo_suite.util.handler.HandlerError):
+class HandlerError(util.handler.HandlerError):
     pass
 
 
-class Handler(condo_suite.util.handler.Handler):
+class Handler(util.handler.Handler):
     @classmethod
     def process_info_set(cls, user, args):
         query_set = dict()

@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
 
+from ... import modules
+from ... import handlers
 import http.client
 
-import condo_suite.config as config
-import condo_suite.handlers.web.skeleton as mod_tmpl
-import condo_suite.handlers.web.decorator as deco
-import condo_suite.handlers.ext.paramed_cgi
-import condo_suite.modules.mongo.transaction as mod_mongo_transaction
+from ... import config as config
+from ...handlers.web import skeleton as mod_tmpl
+from ...handlers.web import decorator as deco
+from ...handlers.ext import paramed_cgi
+from ...modules.mongo import transaction as mod_mongo_transaction
 
 
-class HandlerError(condo_suite.handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(handlers.ext.paramed_cgi.HandlerError):
     pass
 
 
-class Handler(condo_suite.handlers.ext.paramed_cgi.Handler):
+class Handler(handlers.ext.paramed_cgi.Handler):
     @deco.session.Session()
     @deco.auth.AuthRequired(render='html')
     def __call__(self):

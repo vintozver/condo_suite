@@ -3,8 +3,8 @@
 import re
 
 
-import condo_suite.modules.mongo as mod_mongo
-import condo_suite.modules.rbac as mod_rbac
+from ..modules import mongo as mod_mongo
+from ..modules import rbac as mod_rbac
 
 
 class SslCrtDocument(mod_mongo.mongoengine.EmbeddedDocument):

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from .. import util
+from .. import handlers
 import email
 import email.header
 import email.utils
@@ -7,15 +9,15 @@ import http.client
 import dateutil.parser
 
 
-import condo_suite.config as config
-import condo_suite.modules.mongo as mod_mongo
-import condo_suite.util.defer
+from .. import config as config
+from ..modules import mongo as mod_mongo
+from ..util import defer
 
 
-import condo_suite.util.handler
+from ..util import handler
 
 
-class Handler(condo_suite.util.handler.Handler):
+class Handler(util.handler.Handler):
     def __call__(self):
         msg = email.message_from_bytes(self.req.request_body)
 
@@ -72,12 +74,12 @@ class Handler(condo_suite.util.handler.Handler):
                     pass
 
             # Queue a task to process a message from the mailbox
-            condo_suite.util.defer.the_app.send_task('condo_suite.handlers.defer.mail.%s.Process' % mailbox, args=(messageId, ))
+            util.defer.the_app.send_task('handlers.defer.mail.%s.Process' % mailbox, args=(messageId, ))
 
         self.req.setResponseCode(http.client.OK, http.client.responses[http.client.OK])
         self.req.setHeader('Content-Type', 'text/plain; charset=utf-8')
         self.req.write('Mail processed')
 
 
-class HandlerError(condo_suite.util.handler.HandlerError):
+class HandlerError(util.handler.HandlerError):
     pass

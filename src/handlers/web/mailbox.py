@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
 
+from .. import handlers
 import http.client
 import email.utils
 
-import condo_suite.config as config
+from .. import config as config
 
-import condo_suite.handlers.web.skeleton as mod_tmpl
-import condo_suite.modules.rbac as mod_rbac
-import condo_suite.modules.mongo as mod_mongo
-import condo_suite.handlers.web.decorator as deco
-import condo_suite.handlers.ext.paramed_cgi
+from ..handlers.web import skeleton as mod_tmpl
+from ..modules import rbac as mod_rbac
+from ..modules import mongo as mod_mongo
+from ..handlers.web import decorator as deco
+from ..handlers.ext import paramed_cgi
 
 
-class HandlerError(condo_suite.handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(handlers.ext.paramed_cgi.HandlerError):
     pass
 
 
-class Handler(condo_suite.handlers.ext.paramed_cgi.Handler):
+class Handler(handlers.ext.paramed_cgi.Handler):
     def view(self, mailbox):
         def msgs_query():
             def case_addr(value):

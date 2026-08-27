@@ -1,31 +1,33 @@
 # -*- coding: utf-8 -*-
 
+from .. import modules
+from .. import handlers
 import datetime
 import http.client
 import json
 import pycountry
 
-import condo_suite.handlers.web.skeleton as mod_tmpl
-import condo_suite.modules.mongo as mod_mongo
-from condo_suite.modules.mongo.user import UserRef
-from condo_suite.modules.mongo.agent import AgentRef
-from condo_suite.modules.mongo.security import Ref as SecurityRef
-from condo_suite.modules.mongo.vehicle import Document as VehicleDocument
-from condo_suite.modules.mongo.vehicle import Ref as VehicleRef
-from condo_suite.modules.mongo.parking_event import Document as ParkingEventDocument
-from condo_suite.modules.mongo.parking_event import HistoryItem as ParkingEventHistoryItem
-import condo_suite.handlers.web.decorator as deco
-import condo_suite.handlers.ext.paramed_cgi
+from ..handlers.web import skeleton as mod_tmpl
+from ..modules import mongo as mod_mongo
+from ..modules.mongo.user import UserRef
+from ..modules.mongo.agent import AgentRef
+from ..modules.mongo.security import Ref as SecurityRef
+from ..modules.mongo.vehicle import Document as VehicleDocument
+from ..modules.mongo.vehicle import Ref as VehicleRef
+from ..modules.mongo.parking_event import Document as ParkingEventDocument
+from ..modules.mongo.parking_event import HistoryItem as ParkingEventHistoryItem
+from ..handlers.web import decorator as deco
+from ..handlers.ext import paramed_cgi
 
 _vehicle_doc_class = VehicleDocument
 _vehicle_doc_database =  mod_mongo.mongoengine.connection.get_db(_vehicle_doc_class._meta['db_alias']).name
 _vehicle_doc_collection = _vehicle_doc_class._meta['collection']
 
-class HandlerError(condo_suite.handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(handlers.ext.paramed_cgi.HandlerError):
     pass
 
 
-class Handler(condo_suite.handlers.ext.paramed_cgi.Handler):
+class Handler(handlers.ext.paramed_cgi.Handler):
     def get_ref(self) -> SecurityRef:
         session_agent = self.req.context.session_agent
         session_user = self.req.context.session_user
@@ -113,10 +115,10 @@ class Handler(condo_suite.handlers.ext.paramed_cgi.Handler):
         if self.req.method == 'POST':
             doc_oid = self.execute()
 
-            import condo_suite.handlers.ext.redirect
+            import handlers.ext.redirect
             try:
-                return condo_suite.handlers.ext.redirect.Handler(self.req)('/parking/event/view/%s' % str(doc_oid))
-            except condo_suite.handlers.ext.redirect.HandlerError:
+                return handlers.ext.redirect.Handler(self.req)('/parking/event/view/%s' % str(doc_oid))
+            except handlers.ext.redirect.HandlerError:
                 raise HandlerError('Redirect error')
 
         try:

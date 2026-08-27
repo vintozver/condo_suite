@@ -32,31 +32,9 @@ dependencies = [
 condo-suite-rbac = "condo_suite.util.deploy.rbac:deploy"
 
 [tool.setuptools]
-package-dir = {condo_suite = "src"}
+packages = ["condo_suite"]
+package-dir = {"condo_suite" = "src"}
 include-package-data = true
-
-packages = [
-    "condo_suite",
-    "condo_suite.config",
-    "condo_suite.handlers",
-    "condo_suite.handlers.defer",
-    "condo_suite.handlers.defer.mail",
-    "condo_suite.handlers.ext",
-    "condo_suite.handlers.mail",
-    "condo_suite.handlers.web",
-    "condo_suite.handlers.web.auth_ext",
-    "condo_suite.handlers.web.decorator",
-    "condo_suite.handlers.web.transaction",
-    "condo_suite.modules",
-    "condo_suite.modules.mongo",
-    "condo_suite.modules.rbac",
-    "condo_suite.modules.session",
-    "condo_suite.modules.templates",
-    "condo_suite.util",
-    "condo_suite.util.deploy",
-    "condo_suite.util.mail",
-    "condo_suite.util.web",
-]
 
 [tool.setuptools.package-data]
 condo_suite = ["templates/**/*.tmpl", "resource/**/*"]
