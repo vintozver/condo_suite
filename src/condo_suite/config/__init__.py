@@ -2,6 +2,7 @@
 
 import os
 import os.path
+import sys
 
 import yaml
 
@@ -16,20 +17,19 @@ except FileNotFoundError:
 
 
 def _import_sub():
-    def inject(module):
+    def inject(module_path):
         try:
-            module_name = 'condo_suite.%s' % module
+            module_name = 'condo_suite.%s' % module_path
             __import__(module_name)
-        except ImportError as err:
+        except ImportError:
             return
-        module = sys.modules[module_name]
+        mod = sys.modules[module_name]
         partition_name = module_name.rsplit('.', 1)[-1]
         if partition_name in globals():
-            globals()[partition_name].__dict__.update(module.__dict__)
+            globals()[partition_name].__dict__.update(mod.__dict__)
         else:
-            globals()[partition_name] = module
+            globals()[partition_name] = mod
 
-    import sys
     partitions = ['config.main', 'config.db_mongo', 'config.google']
     for partition in partitions:
         inject(partition)

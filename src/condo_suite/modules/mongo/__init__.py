@@ -26,7 +26,7 @@ mongoengine_connection_kwargs['document_class'] = OrderedDict
 mongoengine_connection_kwargs['tz_aware'] = True
 mongoengine.register_connection(
     mongoengine_alias,
-    name=config.db_mongo.name, host=config.db_mongo.mongodb_uri,
+    host=config.db_mongo.mongodb_uri,
     **mongoengine_connection_kwargs)
 
 
