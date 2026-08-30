@@ -33,6 +33,7 @@ class build_py(_build_py):
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 destination.write_bytes(urlopen(url).read())
 
+        jquery_ui_archive_name = "jquery-ui"
         archives = {
             "jquery-ui": (
                 "https://jqueryui.com/resources/download/jquery-ui-1.13.1.zip",
@@ -59,7 +60,7 @@ class build_py(_build_py):
         }
         for archive_name, (url, files) in archives.items():
             missing = [target for source, target in files.items() if not (resource_dir / target).exists()]
-            if archive_name == "jquery-ui" and not (resource_dir / "jquery-ui/images").is_dir():
+            if archive_name == jquery_ui_archive_name and not (resource_dir / "jquery-ui/images").is_dir():
                 missing.append("jquery-ui/images")
             if missing:
                 with ZipFile(BytesIO(urlopen(url).read())) as archive:
@@ -69,7 +70,7 @@ class build_py(_build_py):
                         if not destination.exists():
                             destination.parent.mkdir(parents=True, exist_ok=True)
                             destination.write_bytes(archive.read("%s/%s" % (prefix, source)))
-                    if archive_name == "jquery-ui":
+                    if archive_name == jquery_ui_archive_name:
                         image_prefix = "%s/images/" % prefix
                         for member in archive.namelist():
                             if member.startswith(image_prefix) and not member.endswith("/"):
