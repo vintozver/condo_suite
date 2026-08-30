@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import collections
+import collections.abc
 from functools import reduce
 import importlib
 import http.client
@@ -82,7 +82,7 @@ class Handler(_Handler):
                 else:
                     params = dict()
                     for param_key, param_value in route_item.get('params', {}).items():
-                        if isinstance(param_value, collections.Callable):
+                        if isinstance(param_value, collections.abc.Callable):
                             params[param_key] = param_value(match)
                         else:
                             params[param_key] = param_value
