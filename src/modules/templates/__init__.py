@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ...util.values import build_url as _url
 import jinja2
 from ... import config as config
 
@@ -45,6 +44,7 @@ class Template(jinja2.Template):
 
 import datetime
 import json
+from ...util.values import build_url as _url
 
 
 class Environment(jinja2.Environment):

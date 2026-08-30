@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
-from ...handlers import mail as _mail
 import sys
 import traceback
 import re
@@ -123,6 +122,7 @@ class Handler(_Handler):
     def __call__(self):
         try:
             if self.req.method == 'MAIL':
+                from ...handlers import mail as _mail
                 try:
                     return _mail.Handler(self.req)()
                 except _mail.HandlerError as err:
