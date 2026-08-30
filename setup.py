@@ -57,8 +57,8 @@ class build_py(_build_py):
         for url, actions in ARCHIVE_URLS.items():
             missing = [
                 target for source, target in actions
-                if source.endswith("/") and not (resource_dir / target).is_dir()
-                or not source.endswith("/") and not (resource_dir / target).exists()
+                if (source.endswith("/") and not (resource_dir / target).is_dir())
+                or (not source.endswith("/") and not (resource_dir / target).exists())
             ]
             if missing:
                 with ZipFile(BytesIO(urlopen(url).read())) as archive:
