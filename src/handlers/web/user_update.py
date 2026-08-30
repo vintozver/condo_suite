@@ -59,7 +59,7 @@ class Handler(_Handler):
         with mod_mongo.DbSessionController() as db_session:
             db_session[config.name]['users'].update_one({'_id': user.id}, {'$pull': {'ssl_crt': {
                 'serial': serial, 'subject_dn': subject_dn, 'issuer_dn': issuer_dn,
-            }}}, multi=True)
+            }}})
 
     @classmethod
     def process_agent_args(cls, args):
@@ -103,8 +103,7 @@ class Handler(_Handler):
         agent_id, agent_position = cls.process_agent_args(args)
         with mod_mongo.DbSessionController() as db_session:
             db_session[config.name]['users'].update_one(
-                {'_id': user.id}, {'$pull': {'agents': {'_id': agent_id}}},
-                multi=True
+                {'_id': user.id}, {'$pull': {'agents': {'_id': agent_id}}}
             )
 
     @classmethod
@@ -113,8 +112,7 @@ class Handler(_Handler):
         with mod_mongo.DbSessionController() as db_session:
             agent = db_session[config.name]['users'].update_one(
                 {'_id': user.id, 'agents._id': agent_id},
-                {'$set': {'agents.$.position': agent_position}},
-                multi=True)
+                {'$set': {'agents.$.position': agent_position}})
             return agent
 
     @classmethod
@@ -131,7 +129,7 @@ class Handler(_Handler):
         with mod_mongo.DbSessionController() as db_session:
             db_session[config.name]['users'].update_one({'_id': user.id}, {'$pull': {'rbac.roles': {
                 '_id': role['uuid']
-            }}}, multi=True)
+            }}})
 
     @deco.request_parser.RequestBodyParser()
     @deco.session.Session()
