@@ -63,9 +63,8 @@ class build_py(_build_py):
         }
         for archive_name, (url, files, image_directory) in archives.items():
             missing = [target for source, target in files.items() if not (resource_dir / target).exists()]
-            if image_directory and not (resource_dir / archive_name / image_directory).is_dir():
-                missing.append("%s/%s" % (archive_name, image_directory))
-            if missing:
+            needs_images = image_directory and not (resource_dir / archive_name / image_directory).is_dir()
+            if missing or needs_images:
                 with ZipFile(BytesIO(urlopen(url).read())) as archive:
                     members = archive.namelist()
                     prefix = members[0].split("/", 1)[0]
