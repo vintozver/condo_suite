@@ -4,7 +4,7 @@ import yaml
 import urllib.parse
 
 try:
-    with open('run/config.yaml', encoding='utf-8') as config_file:
+    with open('config.yaml', encoding='utf-8') as config_file:
         settings = yaml.safe_load(config_file) or {}
 except FileNotFoundError:
     settings = {}
