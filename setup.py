@@ -33,7 +33,6 @@ class build_py(_build_py):
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 destination.write_bytes(urlopen(url).read())
 
-        jquery_ui_archive_name = "jquery-ui"
         archives = {
             "jquery-ui": (
                 "https://jqueryui.com/resources/download/jquery-ui-1.13.1.zip",
@@ -43,25 +42,29 @@ class build_py(_build_py):
                     "jquery-ui.theme.min.css": "jquery-ui/theme.css",
                     "jquery-ui.min.js": "jquery-ui/main.js",
                 },
+                "images",
             ),
             "jquery-notify": (
                 "https://github.com/vincentkeizer/notify/zipball/0.4.4",
                 {"notify.min.css": "jquery-notify/main.css", "jquery-notify.min.js": "jquery-notify/main.js"},
+                None,
             ),
             "readmore": (
                 "https://github.com/jedfoster/Readmore.js/archive/refs/tags/2.2.1.zip",
                 {"readmore.min.js": "readmore/main.js"},
+                None,
             ),
             "append-grid": (
                 "https://github.com/hkalbertl/jquery.appendGrid/archive/refs/tags/1.4.2.zip",
                 {"jquery.appendGrid-1.4.2.min.css": "jquery-appendGrid/main.css",
                  "jquery.appendGrid-1.4.2.min.js": "jquery-appendGrid/main.js"},
+                None,
             ),
         }
-        for archive_name, (url, files) in archives.items():
+        for archive_name, (url, files, image_directory) in archives.items():
             missing = [target for source, target in files.items() if not (resource_dir / target).exists()]
-            if archive_name == jquery_ui_archive_name and not (resource_dir / "jquery-ui/images").is_dir():
-                missing.append("jquery-ui/images")
+            if image_directory and not (resource_dir / archive_name / image_directory).is_dir():
+                missing.append("%s/%s" % (archive_name, image_directory))
             if missing:
                 with ZipFile(BytesIO(urlopen(url).read())) as archive:
                     prefix = archive.namelist()[0].split("/", 1)[0]
@@ -70,11 +73,11 @@ class build_py(_build_py):
                         if not destination.exists():
                             destination.parent.mkdir(parents=True, exist_ok=True)
                             destination.write_bytes(archive.read("%s/%s" % (prefix, source)))
-                    if archive_name == jquery_ui_archive_name:
-                        image_prefix = "%s/images/" % prefix
+                    if image_directory:
+                        image_prefix = "%s/%s/" % (prefix, image_directory)
                         for member in archive.namelist():
                             if member.startswith(image_prefix) and not member.endswith("/"):
-                                target = resource_dir / "jquery-ui" / member[len(prefix) + 1:]
+                                target = resource_dir / archive_name / member[len(prefix) + 1:]
                                 if not target.exists():
                                     target.parent.mkdir(parents=True, exist_ok=True)
                                     target.write_bytes(archive.read(member))
