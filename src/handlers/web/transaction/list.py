@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
+from ....handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
 import http.client
 
-from ... import config as config
-from ...handlers.web import skeleton as mod_tmpl
-from ...handlers.web import decorator as deco
-from ...modules.mongo import transaction as mod_mongo_transaction
+from .... import config as config
+from ....handlers.web import skeleton as mod_tmpl
+from ....handlers.web import decorator as deco
+from ....modules.mongo import transaction as mod_mongo_transaction
 
 
 class HandlerError(_HandlerError):

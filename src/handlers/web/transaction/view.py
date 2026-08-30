@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
+from ....handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
 import typing
 import sys
 import json
 import http
-from ...modules import mongo as mod_mongo
-from ...modules.mongo import transaction as mod_mongo_transaction
-from ...modules.mongo import agent as mod_mongo_agent
-from ...modules.mongo import user as mod_mongo_user
-from ...handlers.web import decorator as deco
+from ....modules import mongo as mod_mongo
+from ....modules.mongo import transaction as mod_mongo_transaction
+from ....modules.mongo import agent as mod_mongo_agent
+from ....modules.mongo import user as mod_mongo_user
+from ....handlers.web import decorator as deco
 
 
 class HandlerError(_HandlerError):
