@@ -1,20 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from ... import util
-from ... import handlers
+import collections.abc
+from functools import reduce
+import importlib
+import http.client
+import re
 import sys
 import traceback
-import re
-import http.client
 
+from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
 from ...util.logger import Logger
 
-from ..util import handler
-import collections
-from functools import reduce
 
-
-class Handler(util.handler.Handler):
+class Handler(_Handler):
     ROUTE_MAP = [
         {'regex': re.compile(r'^/$'), 'handler': 'handlers.web.index'},
         {'regex': re.compile(r'^/static(/.*)$'), 'handler': 'handlers.web.static', 'params': {'path': lambda rex: rex.group(1)}},
@@ -84,14 +82,14 @@ class Handler(util.handler.Handler):
                 else:
                     params = dict()
                     for param_key, param_value in route_item.get('params', {}).items():
-                        if isinstance(param_value, collections.Callable):
+                        if isinstance(param_value, collections.abc.Callable):
                             params[param_key] = param_value(match)
                         else:
                             params[param_key] = param_value
                     return route_item['handler'], params
 
     def view_notfound(self, err):
-        from ....handlers.web import skeleton as mod_tmpl
+        from ...handlers.web import skeleton as mod_tmpl
         try:
             content = mod_tmpl.TemplateFactory(self.req, 'error_notfound').render({'description': err})
         except mod_tmpl.TemplateError:
@@ -105,7 +103,7 @@ class Handler(util.handler.Handler):
             lambda line_up, line_down: line_up + '\n' + line_down,
             ['%s: %s' % (item[0], item[1]) for item in traceback.extract_tb(err_tb)]
         )
-        from ....handlers.web import skeleton as mod_tmpl
+        from ...handlers.web import skeleton as mod_tmpl
         try:
             content = mod_tmpl.TemplateFactory(self.req, 'error_internal').render({'err_type': err_type, 'err_value': err_value, 'err_tb': tb})
             self.req.setHeader('Content-Type', 'text/html; charset=utf-8')
@@ -123,10 +121,10 @@ class Handler(util.handler.Handler):
     def __call__(self):
         try:
             if self.req.method == 'MAIL':
-                from ....handlers import mail
+                from ...handlers import mail as _mail
                 try:
-                    return handlers.mail.Handler(self.req)()
-                except handlers.mail.HandlerError as err:
+                    return _mail.Handler(self.req)()
+                except _mail.HandlerError as err:
                     raise HandlerError('Error in mail handler', err)
 
             module = self.handle_map(self.ROUTE_MAP, self.req.path)
@@ -134,9 +132,8 @@ class Handler(util.handler.Handler):
                 return self.view_notfound('No handler found')
             module_name, module_params = module
 
-            __import__(module_name)
-
-            module_handler = sys.modules[module_name].Handler(self.req)
+            module = importlib.import_module('...' + module_name, package=__package__)
+            module_handler = module.Handler(self.req)
             return module_handler(**module_params)
         except:
             err_type, err_value, err_tb = sys.exc_info()
@@ -144,5 +141,5 @@ class Handler(util.handler.Handler):
             return self.view_error(err_type, err_value, err_tb)
 
 
-class HandlerError(util.handler.HandlerError):
+class HandlerError(_HandlerError):
     pass

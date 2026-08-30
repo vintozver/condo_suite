@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ... import modules
-from ... import handlers
+from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
 import datetime
 import dateutil.relativedelta
 import http.client
@@ -9,18 +8,17 @@ from collections import OrderedDict
 
 from ... import config as config
 from ...handlers.web import skeleton as mod_tmpl
-from ..modules import mongo as mod_mongo
+from ...modules import mongo as mod_mongo
 from ...modules.mongo.vehicle import Document as VehicleDocument
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
 from ...handlers.web import decorator as deco
-from ...handlers.ext import paramed_cgi
 
 
-class HandlerError(handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
-class Handler(handlers.ext.paramed_cgi.Handler):
+class Handler(_Handler):
     @deco.session.Session()
     @deco.session.SessionUser()
     @deco.session.SessionAgent()
@@ -38,11 +36,11 @@ class Handler(handlers.ext.paramed_cgi.Handler):
         if not session_user.rbac_has_permission(perm):
             raise deco.auth.SecurityError('Permission required', perm)
 
-        d_today = datetime.datetime.now(datetime.timezone.utc).astimezone(config.main.timezone).date()
+        d_today = datetime.datetime.now(datetime.timezone.utc).astimezone(config.timezone).date()
         d_begin = d_today + dateutil.relativedelta.relativedelta(day=1)
         d_end = d_today + dateutil.relativedelta.relativedelta(day=1, months=1)
-        dt_begin = datetime.datetime(d_begin.year, d_begin.month, d_begin.day, tzinfo=config.main.timezone).astimezone(datetime.timezone.utc)
-        dt_end = datetime.datetime(d_end.year, d_end.month, d_end.day, tzinfo=config.main.timezone).astimezone(datetime.timezone.utc)
+        dt_begin = datetime.datetime(d_begin.year, d_begin.month, d_begin.day, tzinfo=config.timezone).astimezone(datetime.timezone.utc)
+        dt_end = datetime.datetime(d_end.year, d_end.month, d_end.day, tzinfo=config.timezone).astimezone(datetime.timezone.utc)
 
         visitor_aggregate_map = dict()  # {VIN -> {dt: N}, ...} | dt: datetime, N: number of occurences
         parking_event_list = ParkingEventDocument.objects(__raw__={
@@ -50,7 +48,7 @@ class Handler(handlers.ext.paramed_cgi.Handler):
             '_id': {'$gte': mod_mongo.bson.objectid.ObjectId.from_datetime(dt_begin), '$lt': mod_mongo.bson.objectid.ObjectId.from_datetime(dt_end)}
         })
         for parking_event in parking_event_list:
-            parking_event_d = parking_event.id.generation_time.astimezone(config.main.timezone).date()
+            parking_event_d = parking_event.id.generation_time.astimezone(config.timezone).date()
             parking_event_vin = parking_event.vehicle.id
             visitor_aggregate_map.setdefault(parking_event_vin, {})
             visitor_aggregate_map[parking_event_vin].setdefault(parking_event_d, 0)

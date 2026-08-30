@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from ... import handlers
-from ..modules import mongo as mod_mongo
+from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
+from ...modules import mongo as mod_mongo
 from ...handlers.web import decorator as deco
-from ...handlers.ext import paramed_cgi
 
 
-class HandlerError(handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
-class Handler(handlers.ext.paramed_cgi.Handler):
+class Handler(_Handler):
     @deco.session.Session()
     @deco.session.SessionUser()
     def __call__(self, id_agent, position=None):
@@ -27,7 +26,7 @@ class Handler(handlers.ext.paramed_cgi.Handler):
         else:
             raise HandlerError('User does not have requested agent allowed')
 
-        import handlers.ext.redirect as redirector
+        from ...handlers.ext import redirect as redirector
         try:
             return redirector.Handler(self.req)('/auth')
         except redirector.HandlerError as err:

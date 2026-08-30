@@ -1,27 +1,25 @@
 # -*- coding: utf-8 -*-
 
-from ... import util
-from ... import modules
-from ... import handlers
+from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
 import uuid
 import json
 import http.client
 
 from ... import config as config
 
-from ..modules import mongo as mod_mongo
+from ...modules import mongo as mod_mongo
 from ...modules.mongo import user as mod_mongo_user
 from ...modules.mongo import agent as mod_mongo_agent
-from ..modules import rbac as mod_rbac
+from ...modules import rbac as mod_rbac
 from ...handlers.web import decorator as deco
-from ..util import handler
+from ...util import handler
 
 
-class HandlerError(util.handler.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
-class Handler(util.handler.Handler):
+class Handler(_Handler):
     @classmethod
     def process_info_set(cls, user, args):
         query_set = dict()
@@ -61,7 +59,7 @@ class Handler(util.handler.Handler):
         with mod_mongo.DbSessionController() as db_session:
             db_session[config.name]['users'].update_one({'_id': user.id}, {'$pull': {'ssl_crt': {
                 'serial': serial, 'subject_dn': subject_dn, 'issuer_dn': issuer_dn,
-            }}}, multi=True)
+            }}})
 
     @classmethod
     def process_agent_args(cls, args):
@@ -105,8 +103,7 @@ class Handler(util.handler.Handler):
         agent_id, agent_position = cls.process_agent_args(args)
         with mod_mongo.DbSessionController() as db_session:
             db_session[config.name]['users'].update_one(
-                {'_id': user.id}, {'$pull': {'agents': {'_id': agent_id}}},
-                multi=True
+                {'_id': user.id}, {'$pull': {'agents': {'_id': agent_id}}}
             )
 
     @classmethod
@@ -115,8 +112,7 @@ class Handler(util.handler.Handler):
         with mod_mongo.DbSessionController() as db_session:
             agent = db_session[config.name]['users'].update_one(
                 {'_id': user.id, 'agents._id': agent_id},
-                {'$set': {'agents.$.position': agent_position}},
-                multi=True)
+                {'$set': {'agents.$.position': agent_position}})
             return agent
 
     @classmethod
@@ -133,7 +129,7 @@ class Handler(util.handler.Handler):
         with mod_mongo.DbSessionController() as db_session:
             db_session[config.name]['users'].update_one({'_id': user.id}, {'$pull': {'rbac.roles': {
                 '_id': role['uuid']
-            }}}, multi=True)
+            }}})
 
     @deco.request_parser.RequestBodyParser()
     @deco.session.Session()

@@ -1,25 +1,21 @@
 # -*- coding: utf-8 -*-
 
-from ... import modules
-from ... import handlers
-import datetime
+from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
 import http.client
 
-from ... import config as config
 
 from ...handlers.web import skeleton as mod_tmpl
-from ..modules import rbac as mod_rbac
-from ..modules import mongo as mod_mongo
+from ...modules import rbac as mod_rbac
+from ...modules import mongo as mod_mongo
 from ...modules.mongo import user as mod_mongo_user
 from ...handlers.web import decorator as deco
-from ...handlers.ext import paramed_cgi
 
 
-class HandlerError(handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
-class Handler(handlers.ext.paramed_cgi.Handler):
+class Handler(_Handler):
     @deco.session.Session()
     @deco.session.SessionUser()
     def search(self):

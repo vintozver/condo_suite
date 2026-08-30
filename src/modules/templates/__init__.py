@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ... import util
 import jinja2
 from ... import config as config
 

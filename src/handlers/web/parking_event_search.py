@@ -1,21 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from ... import modules
-from ... import handlers
+from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
 import http.client
 
 from ... import config as config
 from ...handlers.web import skeleton as mod_tmpl
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
 from ...handlers.web import decorator as deco
-from ...handlers.ext import paramed_cgi
 
 
-class HandlerError(handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
-class Handler(handlers.ext.paramed_cgi.Handler):
+class Handler(_Handler):
     PAGE_SIZE = 100
 
     @deco.session.Session()
@@ -41,7 +39,7 @@ class Handler(handlers.ext.paramed_cgi.Handler):
         for doc in docs:
             doc_data = dict()
             doc_data['oid'] = str(doc.id)
-            doc_data['dt'] = doc.id.generation_time.astimezone(config.main.timezone)
+            doc_data['dt'] = doc.id.generation_time.astimezone(config.timezone)
             doc_data['reason'] = str(doc.reason)
             doc_data['VIN'] = str(doc.vehicle.id)
             doc_data['tag'] = str(doc.vehicle.tag)

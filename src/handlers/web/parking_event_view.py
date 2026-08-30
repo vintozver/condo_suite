@@ -1,22 +1,20 @@
 # -*- coding: utf-8 -*-
 
-from ... import modules
-from ... import handlers
+from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
 import http.client
 
 from ... import config as config
 from ...handlers.web import skeleton as mod_tmpl
-from ..modules import mongo as mod_mongo
+from ...modules import mongo as mod_mongo
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
 from ...handlers.web import decorator as deco
-from ...handlers.ext import paramed_cgi
 
 
-class HandlerError(handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
-class Handler(handlers.ext.paramed_cgi.Handler):
+class Handler(_Handler):
     @deco.session.Session()
     @deco.session.SessionUser()
     @deco.session.SessionAgent()
@@ -40,14 +38,14 @@ class Handler(handlers.ext.paramed_cgi.Handler):
 
         tmpl_data = dict()
         tmpl_data['oid'] = doc.id
-        tmpl_data['dt'] = doc.id.generation_time.astimezone(config.main.timezone)
+        tmpl_data['dt'] = doc.id.generation_time.astimezone(config.timezone)
         tmpl_data['reason'] = doc.reason
         tmpl_data['VIN'] = doc.vehicle.id
         tmpl_data['tag'] = doc.vehicle.tag
         tmpl_data['remarks'] = doc.remarks
         tmpl_data['history'] = list({
             'oid': str(history_item.id) if history_item.length else None,
-            'dt': history_item.id.generation_time.astimezone(config.main.timezone),
+            'dt': history_item.id.generation_time.astimezone(config.timezone),
             'description': history_item.description
         } for history_item in doc.history)
 

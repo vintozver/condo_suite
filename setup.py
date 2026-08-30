@@ -19,6 +19,27 @@ STATIC_URLS = {
     "superfish/js/hoverIntent.js": "https://raw.githubusercontent.com/joeldbirch/superfish/v1.7.10/dist/js/hoverIntent.js",
 }
 
+ARCHIVE_URLS = {
+    "https://jqueryui.com/resources/download/jquery-ui-1.13.1.zip": [
+        ("jquery-ui.min.css", "jquery-ui/main.css"),
+        ("jquery-ui.structure.min.css", "jquery-ui/structure.css"),
+        ("jquery-ui.theme.min.css", "jquery-ui/theme.css"),
+        ("jquery-ui.min.js", "jquery-ui/main.js"),
+        ("images/", "jquery-ui/images/"),
+    ],
+    "https://github.com/vincentkeizer/notify/zipball/0.4.4": [
+        ("notify.min.css", "jquery-notify/main.css"),
+        ("jquery-notify.min.js", "jquery-notify/main.js"),
+    ],
+    "https://github.com/jedfoster/Readmore.js/archive/refs/tags/2.2.1.zip": [
+        ("readmore.min.js", "readmore/main.js"),
+    ],
+    "https://github.com/hkalbertl/jquery.appendGrid/archive/refs/tags/1.4.2.zip": [
+        ("jquery.appendGrid-1.4.2.min.css", "jquery-appendGrid/main.css"),
+        ("jquery.appendGrid-1.4.2.min.js", "jquery-appendGrid/main.js"),
+    ],
+}
+
 
 class build_py(_build_py):
     def run(self):
@@ -33,40 +54,31 @@ class build_py(_build_py):
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 destination.write_bytes(urlopen(url).read())
 
-        archives = {
-            "jquery-ui": (
-                "https://jqueryui.com/resources/download/jquery-ui-1.13.1.zip",
-                {
-                    "jquery-ui.min.css": "jquery-ui/main.css",
-                    "jquery-ui.structure.min.css": "jquery-ui/structure.css",
-                    "jquery-ui.theme.min.css": "jquery-ui/theme.css",
-                    "jquery-ui.min.js": "jquery-ui/main.js",
-                },
-            ),
-            "jquery-notify": (
-                "https://github.com/vincentkeizer/notify/zipball/0.4.4",
-                {"notify.min.css": "jquery-notify/main.css", "jquery-notify.min.js": "jquery-notify/main.js"},
-            ),
-            "readmore": (
-                "https://github.com/jedfoster/Readmore.js/archive/refs/tags/2.2.1.zip",
-                {"readmore.min.js": "readmore/main.js"},
-            ),
-            "append-grid": (
-                "https://github.com/hkalbertl/jquery.appendGrid/archive/refs/tags/1.4.2.zip",
-                {"jquery.appendGrid-1.4.2.min.css": "jquery-appendGrid/main.css",
-                 "jquery.appendGrid-1.4.2.min.js": "jquery-appendGrid/main.js"},
-            ),
-        }
-        for _, (url, files) in archives.items():
-            missing = [target for source, target in files.items() if not (resource_dir / target).exists()]
+        for url, actions in ARCHIVE_URLS.items():
+            missing = [
+                target for source, target in actions
+                if (source.endswith("/") and not (resource_dir / target).is_dir())
+                or (not source.endswith("/") and not (resource_dir / target).exists())
+            ]
             if missing:
                 with ZipFile(BytesIO(urlopen(url).read())) as archive:
-                    prefix = archive.namelist()[0].split("/", 1)[0]
-                    for source, target in files.items():
-                        destination = resource_dir / target
-                        if not destination.exists():
-                            destination.parent.mkdir(parents=True, exist_ok=True)
-                            destination.write_bytes(archive.read("%s/%s" % (prefix, source)))
+                    members = archive.namelist()
+                    prefix = members[0].split("/", 1)[0]
+                    for source, target in actions:
+                        archive_path = "%s/%s" % (prefix, source.rstrip("/"))
+                        if source.endswith("/"):
+                            source_prefix = "%s/" % archive_path
+                            for member in members:
+                                if member.startswith(source_prefix) and not member.endswith("/"):
+                                    destination = resource_dir / target / member[len(source_prefix):]
+                                    if not destination.exists():
+                                        destination.parent.mkdir(parents=True, exist_ok=True)
+                                        destination.write_bytes(archive.read(member))
+                        else:
+                            destination = resource_dir / target
+                            if not destination.exists():
+                                destination.parent.mkdir(parents=True, exist_ok=True)
+                                destination.write_bytes(archive.read(archive_path))
 
 
 setup(

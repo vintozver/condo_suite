@@ -10,10 +10,10 @@ class SessionError(Exception):
     pass
 
 
-import collections
+import collections.abc
 
 
-class Session(collections.MutableMapping):
+class Session(collections.abc.MutableMapping):
     def create(self):
         """Create a new session ID and hash
         This function must insert the new session ID into self.id, the new session hash into self.hash
