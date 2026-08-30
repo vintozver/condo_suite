@@ -39,7 +39,7 @@ class Handler(_Handler):
         for doc in docs:
             doc_data = dict()
             doc_data['oid'] = str(doc.id)
-            doc_data['dt'] = doc.id.generation_time.astimezone(config.main.timezone)
+            doc_data['dt'] = doc.id.generation_time.astimezone(config.timezone)
             doc_data['reason'] = str(doc.reason)
             doc_data['VIN'] = str(doc.vehicle.id)
             doc_data['tag'] = str(doc.vehicle.tag)

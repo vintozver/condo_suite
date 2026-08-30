@@ -18,6 +18,7 @@ Create `run/config.yaml`:
 
 ```yaml
 mongodb_uri: mongodb://localhost/parking-enforcement
+timezone: UTC
 google:
   client_id: ""
   client_secret: ""

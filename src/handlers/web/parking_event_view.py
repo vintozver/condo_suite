@@ -38,14 +38,14 @@ class Handler(_Handler):
 
         tmpl_data = dict()
         tmpl_data['oid'] = doc.id
-        tmpl_data['dt'] = doc.id.generation_time.astimezone(config.main.timezone)
+        tmpl_data['dt'] = doc.id.generation_time.astimezone(config.timezone)
         tmpl_data['reason'] = doc.reason
         tmpl_data['VIN'] = doc.vehicle.id
         tmpl_data['tag'] = doc.vehicle.tag
         tmpl_data['remarks'] = doc.remarks
         tmpl_data['history'] = list({
             'oid': str(history_item.id) if history_item.length else None,
-            'dt': history_item.id.generation_time.astimezone(config.main.timezone),
+            'dt': history_item.id.generation_time.astimezone(config.timezone),
             'description': history_item.description
         } for history_item in doc.history)
 

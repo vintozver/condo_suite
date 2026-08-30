@@ -22,7 +22,7 @@ class Handler(_Handler):
                 yield {
                     'id': str(txn.id),
                     'type': str(txn.type),
-                    'created': txn.id.generation_time.astimezone(config.main.timezone),
+                    'created': txn.id.generation_time.astimezone(config.timezone),
                     'last_mod': txn.last_mod,
                     'state': txn.state,
                 }
@@ -32,7 +32,7 @@ class Handler(_Handler):
                 yield {
                     'id': str(txn.id),
                     'type': str(txn.type),
-                    'created': txn.id.generation_time.astimezone(config.main.timezone),
+                    'created': txn.id.generation_time.astimezone(config.timezone),
                     'last_mod': txn.last_mod,
                     'state': txn.state,
                 }

@@ -2,6 +2,7 @@
 
 import yaml
 import urllib.parse
+from zoneinfo import ZoneInfo
 
 try:
     with open('config.yaml', encoding='utf-8') as config_file:
@@ -16,5 +17,6 @@ google_client_id = google.get('client_id')
 google_client_secret = google.get('client_secret')
 google_redirect_uri = google.get('redirect_uri')
 google_javascript_origin = google.get('javascript_origin')
+timezone = ZoneInfo(settings.get('timezone', 'UTC'))
 
-__all__ = ['settings', 'mongodb_uri', 'name', 'google']
+__all__ = ['settings', 'mongodb_uri', 'name', 'google', 'timezone']

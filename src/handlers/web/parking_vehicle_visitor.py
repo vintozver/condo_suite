@@ -36,11 +36,11 @@ class Handler(_Handler):
         if not session_user.rbac_has_permission(perm):
             raise deco.auth.SecurityError('Permission required', perm)
 
-        d_today = datetime.datetime.now(datetime.timezone.utc).astimezone(config.main.timezone).date()
+        d_today = datetime.datetime.now(datetime.timezone.utc).astimezone(config.timezone).date()
         d_begin = d_today + dateutil.relativedelta.relativedelta(day=1)
         d_end = d_today + dateutil.relativedelta.relativedelta(day=1, months=1)
-        dt_begin = datetime.datetime(d_begin.year, d_begin.month, d_begin.day, tzinfo=config.main.timezone).astimezone(datetime.timezone.utc)
-        dt_end = datetime.datetime(d_end.year, d_end.month, d_end.day, tzinfo=config.main.timezone).astimezone(datetime.timezone.utc)
+        dt_begin = datetime.datetime(d_begin.year, d_begin.month, d_begin.day, tzinfo=config.timezone).astimezone(datetime.timezone.utc)
+        dt_end = datetime.datetime(d_end.year, d_end.month, d_end.day, tzinfo=config.timezone).astimezone(datetime.timezone.utc)
 
         visitor_aggregate_map = dict()  # {VIN -> {dt: N}, ...} | dt: datetime, N: number of occurences
         parking_event_list = ParkingEventDocument.objects(__raw__={
@@ -48,7 +48,7 @@ class Handler(_Handler):
             '_id': {'$gte': mod_mongo.bson.objectid.ObjectId.from_datetime(dt_begin), '$lt': mod_mongo.bson.objectid.ObjectId.from_datetime(dt_end)}
         })
         for parking_event in parking_event_list:
-            parking_event_d = parking_event.id.generation_time.astimezone(config.main.timezone).date()
+            parking_event_d = parking_event.id.generation_time.astimezone(config.timezone).date()
             parking_event_vin = parking_event.vehicle.id
             visitor_aggregate_map.setdefault(parking_event_vin, {})
             visitor_aggregate_map[parking_event_vin].setdefault(parking_event_d, 0)

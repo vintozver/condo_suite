@@ -44,7 +44,7 @@ class Handler(_Handler):
         for parking_event in ParkingEventDocument.objects(__raw__={'vehicle._id': vin}).order_by('-_id')[:100]:
             parking_event_item = dict()
             parking_event_item['oid'] = str(parking_event.id)
-            parking_event_item['dt'] = parking_event.id.generation_time.astimezone(config.main.timezone)
+            parking_event_item['dt'] = parking_event.id.generation_time.astimezone(config.timezone)
             parking_event_item['reason'] = str(parking_event.reason)
             parking_event_item['tag'] = str(parking_event.vehicle.tag)
             parking_event_item['remarks'] = str(parking_event.remarks)
