@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ... import util
-from ... import modules
-from ... import handlers
+from ...util.context import AutoRefContextItem
 import types
 from ...util import context
 from ...modules import session as mod_session
@@ -10,7 +8,7 @@ from ...modules.mongo import user as mod_mongo_user
 from ...modules.mongo import agent as mod_mongo_agent
 
 
-class SessionController(util.context.AutoRefContextItem):
+class SessionController(AutoRefContextItem):
     def __init__(self, req):
         super(SessionController, self).__init__()
         self.req = req
@@ -62,7 +60,7 @@ class Session(object):
         return self.Wrapper(method, self.require)
 
 
-class SessionUserController(util.context.AutoRefContextItem):
+class SessionUserController(AutoRefContextItem):
     def __init__(self, req):
         super(SessionUserController, self).__init__()
         self.req = req
@@ -122,7 +120,7 @@ class SessionUser(object):
         return self.Wrapper(method)
 
 
-class SessionAgentController(util.context.AutoRefContextItem):
+class SessionAgentController(AutoRefContextItem):
     def __init__(self, req):
         super(SessionAgentController, self).__init__()
         self.req = req

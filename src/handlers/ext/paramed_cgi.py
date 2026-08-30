@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
-from ... import util
-from ... import handlers
-from ...handlers.web import decorator
+from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
+from ...handlers.web.decorator import request_parser
 from ...util import handler
 
 
@@ -12,13 +11,13 @@ class Params(object):
         pass
 
     def __init__(self, req):
-        self.query_string = handlers.web.decorator.request_parser.QueryString(req)
+        self.query_string = request_parser.QueryString(req)
         if req.method == 'POST':
             content_type = req.requestHeaders.get('Content-Type')
             if content_type == 'application/json' or content_type == 'text/json':
-                self.form = handlers.web.decorator.request_parser.RequestBodyParserImpl(req).as_json()
+                self.form = request_parser.RequestBodyParserImpl(req).as_json()
             else:
-                self.form = handlers.web.decorator.request_parser.RequestBodyParserImpl(req).as_form()
+                self.form = request_parser.RequestBodyParserImpl(req).as_form()
         else:
             self.form = None
 
@@ -71,11 +70,11 @@ class Params(object):
             raise self.NotFoundError
 
 
-class HandlerError(util.handler.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
-class Handler(util.handler.Handler):
+class Handler(_Handler):
     def __init__(self, req):
         super(Handler, self).__init__(req)
 

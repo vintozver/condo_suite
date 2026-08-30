@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 
-from ... import handlers
+from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
 import pkg_resources
 import os.path
 import http.client
 
 
-from ...handlers.ext import paramed_cgi
 
 
-class HandlerError(handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
-class Handler(handlers.ext.paramed_cgi.Handler):
+class Handler(_Handler):
     def view_notfound(self, err):
-        import handlers.web.skeleton as mod_tmpl
+        from ...handlers.web import skeleton as mod_tmpl
         try:
             content = mod_tmpl.TemplateFactory(self.req, 'error_notfound').render({'description': err})
         except mod_tmpl.TemplateError:
@@ -33,7 +32,7 @@ class Handler(handlers.ext.paramed_cgi.Handler):
         if os.path.commonprefix((base_path, file_path)) != base_path:
             raise HandlerError('Попытка взлома! Путь не находится в базовом каталоге статики')
 
-        import handlers.ext.static as mod
+        from ...handlers.ext import static as mod
         try:
             return mod.Handler(self.req)(path=file_path)
         except mod.NotFoundError as err:

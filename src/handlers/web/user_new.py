@@ -1,22 +1,21 @@
 # -*- coding: utf-8 -*-
 
-from ... import util
-from ... import handlers
+from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
 import json
 import http.client
 
 from ... import config as config
 
-from ...modules import mongo as mod_mongo
+from ..modules import mongo as mod_mongo
 from ...handlers.web import decorator as deco
-from ...util import handler
+from ..util import handler
 
 
-class HandlerError(util.handler.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
-class Handler(util.handler.Handler):
+class Handler(_Handler):
     @classmethod
     def process_user_create(cls, user_name):
         user = mod_mongo.bson.son.SON()

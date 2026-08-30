@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ... import util
+from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
 import re
 import os
 import stat
@@ -15,7 +15,7 @@ import http.client
 from ...util import handler
 
 
-class HandlerError(util.handler.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
@@ -23,7 +23,7 @@ class NotFoundError(HandlerError):
     pass
 
 
-class Handler(util.handler.Handler):
+class Handler(_Handler):
     @classmethod
     def get_etag(cls, fileobj, filelen):
         filegen = cls.file_generator_limited(fileobj, filelen)

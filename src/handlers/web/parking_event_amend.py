@@ -1,25 +1,23 @@
 # -*- coding: utf-8 -*-
 
-from ... import modules
-from ... import handlers
+from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
 import os
 
 import io
 import http.client
 from ... import config as config
 from ...handlers.web import skeleton as mod_tmpl
-from ...modules import mongo as mod_mongo
+from ..modules import mongo as mod_mongo
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
 from ...modules.mongo.parking_event import HistoryItem as ParkingEventHistoryItem
 from ...handlers.web import decorator as deco
-from ...handlers.ext import paramed_cgi
 
 
-class HandlerError(handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
-class Handler(handlers.ext.paramed_cgi.Handler):
+class Handler(_Handler):
     def execute(self, oid: mod_mongo.bson.objectid.ObjectId, description: str, stream: io.BytesIO, content_type: str):
         with mod_mongo.DbSessionController() as db_session:
             attachment_oid = mod_mongo.bson.objectid.ObjectId()
@@ -95,10 +93,10 @@ class Handler(handlers.ext.paramed_cgi.Handler):
 
             self.execute(doc.id, description, attachment_stream, content_type)
 
-            import handlers.ext.redirect
+            from ...handlers.ext import redirect
             try:
-                return handlers.ext.redirect.Handler(self.req)('/parking/event/view/%s' % oid)
-            except handlers.ext.redirect.HandlerError:
+                return redirect.Handler(self.req)('/parking/event/view/%s' % oid)
+            except redirect.HandlerError:
                 raise HandlerError('Redirect error')
         else:
             raise HandlerError('Method unsupported')

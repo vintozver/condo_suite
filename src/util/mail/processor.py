@@ -2,8 +2,8 @@
 
 
 
-from ... import util
-from ... import handlers
+from ...util.web.request import Request
+from ...handlers.mail import Handler as _Handler, HandlerError as _HandlerError
 import imaplib
 from ..web import request
 import io
@@ -32,11 +32,10 @@ class MailboxProcessor(object):
                 fetch_code, fetch_data = self.imap_handle.fetch(message, '(RFC822)')
                 if fetch_code == 'OK':
                     logging.debug('MailoxProcessor: %s', 'Request invocation')
-                    req = util.web.request.Request({'wsgi.input': io.BytesIO(fetch_data[0][1])})
-                    import handlers.mail
+                    req = Request({'wsgi.input': io.BytesIO(fetch_data[0][1])})
                     try:
-                        handlers.mail.Handler(req)()
-                    except handlers.mail.HandlerError as err:
+                        _Handler(req)()
+                    except _HandlerError as err:
                         sys.stderr.write('Error processing the request: %s\n' % repr(err))
 
 
@@ -78,4 +77,3 @@ if __name__ == '__main__':
         M.close()
         logging.info('%s', 'Disconnecting from mailbox')
         M.logout()
-

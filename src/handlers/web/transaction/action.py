@@ -1,22 +1,20 @@
 # -*- coding: utf-8 -*-
 
-from ... import modules
-from ... import handlers
+from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
 import http.client
 import json
 from ...handlers.web import decorator as deco
-from ...handlers.ext import paramed_cgi
 from ...modules import mongo as mod_mongo
 from ...modules.mongo import transaction as mod_mongo_transaction
 from ...handlers import defer
 from ...util import defer as util_defer
 
 
-class HandlerError(handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
-class Handler(handlers.ext.paramed_cgi.Handler):
+class Handler(_Handler):
     def render_forbidden(self):
         self.req.setResponseCode(http.client.FORBIDDEN, http.client.responses[http.client.FORBIDDEN])
         self.req.setHeader('Cache-Control', 'public, no-cache')

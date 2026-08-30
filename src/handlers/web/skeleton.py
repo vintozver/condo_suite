@@ -1,18 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from ... import util
-from ... import modules
-from ... import handlers
-from ...util import handler
+from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
+from ..util import handler
 from ...handlers.web import decorator as deco
 from ...modules.templates import filesystem as mod_tmpl_fs
 
 
-class HandlerError(util.handler.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
-class Handler(util.handler.Handler):
+class Handler(_Handler):
     @deco.session.Session()
     @deco.session.SessionUser()
     @deco.session.SessionAgent()

@@ -1,27 +1,25 @@
 # -*- coding: utf-8 -*-
 
-from ... import util
-from ... import modules
-from ... import handlers
+from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
 import uuid
 import json
 import http.client
 
 from ... import config as config
 
-from ...modules import mongo as mod_mongo
+from ..modules import mongo as mod_mongo
 from ...modules.mongo import user as mod_mongo_user
 from ...modules.mongo import agent as mod_mongo_agent
-from ...modules import rbac as mod_rbac
+from ..modules import rbac as mod_rbac
 from ...handlers.web import decorator as deco
-from ...util import handler
+from ..util import handler
 
 
-class HandlerError(util.handler.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
-class Handler(util.handler.Handler):
+class Handler(_Handler):
     @classmethod
     def process_info_set(cls, user, args):
         query_set = dict()

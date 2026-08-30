@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from ... import util
-from ... import handlers
+from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
+from ...util.defer import the_app
 import email
 import email.header
 import email.utils
@@ -10,14 +10,14 @@ import dateutil.parser
 
 
 from ... import config as config
-from ...modules import mongo as mod_mongo
-from ...util import defer
+from ..modules import mongo as mod_mongo
+from ..util import defer
 
 
-from ...util import handler
+from ..util import handler
 
 
-class Handler(util.handler.Handler):
+class Handler(_Handler):
     def __call__(self):
         msg = email.message_from_bytes(self.req.request_body)
 
@@ -74,12 +74,12 @@ class Handler(util.handler.Handler):
                     pass
 
             # Queue a task to process a message from the mailbox
-            util.defer.the_app.send_task('handlers.defer.mail.%s.Process' % mailbox, args=(messageId, ))
+            the_app.send_task('handlers.defer.mail.%s.Process' % mailbox, args=(messageId, ))
 
         self.req.setResponseCode(http.client.OK, http.client.responses[http.client.OK])
         self.req.setHeader('Content-Type', 'text/plain; charset=utf-8')
         self.req.write('Mail processed')
 
 
-class HandlerError(util.handler.HandlerError):
+class HandlerError(_HandlerError):
     pass

@@ -2,15 +2,13 @@
 # -*- coding: utf-8 -*-
 
 
-from ... import util
-from ... import handlers
 from .request import Request, RequestProcessor
 
 
 def Application(env, responder):
     req = Request(env)
 
-    from handlers.web import Handler, HandlerError
+    from ...handlers.web import Handler, HandlerError
     try:
         return RequestProcessor(Handler, req=req).process(env, responder)
     except HandlerError as err:

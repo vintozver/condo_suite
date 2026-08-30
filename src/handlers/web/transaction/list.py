@@ -1,21 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from ... import modules
-from ... import handlers
+from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
 import http.client
 
 from ... import config as config
 from ...handlers.web import skeleton as mod_tmpl
 from ...handlers.web import decorator as deco
-from ...handlers.ext import paramed_cgi
 from ...modules.mongo import transaction as mod_mongo_transaction
 
 
-class HandlerError(handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
-class Handler(handlers.ext.paramed_cgi.Handler):
+class Handler(_Handler):
     @deco.session.Session()
     @deco.auth.AuthRequired(render='html')
     def __call__(self):

@@ -2,8 +2,6 @@
 
 
 
-from ... import modules
-from ... import handlers
 import types
 import urllib.request, urllib.parse, urllib.error
 import http.client

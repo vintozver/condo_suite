@@ -1,23 +1,22 @@
 # -*- coding: utf-8 -*-
 
-from ... import handlers
+from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
 import http.client
 import email.utils
 
 from ... import config as config
 
 from ...handlers.web import skeleton as mod_tmpl
-from ...modules import rbac as mod_rbac
-from ...modules import mongo as mod_mongo
+from ..modules import rbac as mod_rbac
+from ..modules import mongo as mod_mongo
 from ...handlers.web import decorator as deco
-from ...handlers.ext import paramed_cgi
 
 
-class HandlerError(handlers.ext.paramed_cgi.HandlerError):
+class HandlerError(_HandlerError):
     pass
 
 
-class Handler(handlers.ext.paramed_cgi.Handler):
+class Handler(_Handler):
     def view(self, mailbox):
         def msgs_query():
             def case_addr(value):
