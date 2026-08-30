@@ -77,7 +77,7 @@ class build_py(_build_py):
                         image_prefix = "%s/%s/" % (prefix, image_directory)
                         for member in members:
                             if member.startswith(image_prefix) and not member.endswith("/"):
-                                target = resource_dir / archive_name / member[len(prefix) + 1:]
+                                target = resource_dir / archive_name / image_directory / member[len(image_prefix):]
                                 if not target.exists():
                                     target.parent.mkdir(parents=True, exist_ok=True)
                                     target.write_bytes(archive.read(member))
