@@ -3,7 +3,6 @@
 
 from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
 import http.client
-from ...util import handler
 
 
 class HandlerError(_HandlerError):
