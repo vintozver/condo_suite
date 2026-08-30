@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
-from ...util.defer import the_app
+from ..util.handler import Handler as _Handler, HandlerError as _HandlerError
+from ..util.defer import the_app
 import email
 import email.header
 import email.utils
@@ -10,7 +10,7 @@ import dateutil.parser
 
 
 from ... import config as config
-from ...modules import mongo as mod_mongo
+from ..modules import mongo as mod_mongo
 
 
 

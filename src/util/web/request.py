@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-from ...util.context import Context
+from ..context import Context
 import io
 import codecs
 import urllib.parse

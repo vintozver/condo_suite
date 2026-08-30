@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from ...util.context import AutoRefContextItem
+from ..util.context import AutoRefContextItem
 from collections import OrderedDict
 import bson
 import gridfs
 import pymongo
 import pymongo.errors
 import mongoengine
-from ... import config as config
+from .. import config as config
 
 
 class DbSessionController(AutoRefContextItem):
