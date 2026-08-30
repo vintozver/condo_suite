@@ -8,7 +8,7 @@ import io
 import http.client
 from ... import config as config
 from ...handlers.web import skeleton as mod_tmpl
-from ..modules import mongo as mod_mongo
+from ...modules import mongo as mod_mongo
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
 from ...modules.mongo.parking_event import HistoryItem as ParkingEventHistoryItem
 from ...handlers.web import decorator as deco
@@ -102,4 +102,3 @@ class Handler(handlers.ext.paramed_cgi.Handler):
                 raise HandlerError('Redirect error')
         else:
             raise HandlerError('Method unsupported')
-

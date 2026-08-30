@@ -4,7 +4,7 @@ from ... import handlers
 import http.client
 import urllib.request, urllib.parse, urllib.error
 import json
-from ..modules import rbac as mod_rbac
+from ...modules import rbac as mod_rbac
 from ...handlers.web import skeleton as mod_tmpl
 from ...handlers.web import decorator as deco
 from ...handlers.ext import paramed_cgi

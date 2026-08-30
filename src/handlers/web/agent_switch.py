@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ... import handlers
-from ..modules import mongo as mod_mongo
+from ...modules import mongo as mod_mongo
 from ...handlers.web import decorator as deco
 from ...handlers.ext import paramed_cgi
 

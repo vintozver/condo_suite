@@ -8,7 +8,7 @@ import json
 import pycountry
 
 from ...handlers.web import skeleton as mod_tmpl
-from ..modules import mongo as mod_mongo
+from ...modules import mongo as mod_mongo
 from ...modules.mongo.user import UserRef
 from ...modules.mongo.agent import AgentRef
 from ...modules.mongo.security import Ref as SecurityRef

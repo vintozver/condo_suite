@@ -3,7 +3,7 @@
 from ... import util
 from ... import modules
 from ... import handlers
-from ..util import handler
+from ...util import handler
 from ...handlers.web import decorator as deco
 from ...modules.templates import filesystem as mod_tmpl_fs
 

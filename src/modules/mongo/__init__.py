@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .. import util
+from ... import util
 from collections import OrderedDict
 import bson
 import gridfs
