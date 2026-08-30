@@ -73,7 +73,7 @@ class build_py(_build_py):
                         if not destination.exists():
                             destination.parent.mkdir(parents=True, exist_ok=True)
                             destination.write_bytes(archive.read("%s/%s" % (prefix, source)))
-                    if image_directory and needs_images:
+                    if needs_images:
                         image_prefix = "%s/%s/" % (prefix, image_directory)
                         for member in members:
                             if member.startswith(image_prefix) and not member.endswith("/"):
