@@ -36,7 +36,7 @@ class AuthRequired(object):
 
         def view_security(self, req, err):
             tmpl_args = {'err': err, 'auth_url': '/auth/user?return_url=%s' % urllib.parse.quote_plus(req.uri)}
-            from ....handlers.web import skeleton as mod_tmpl
+            from ...handlers.web import skeleton as mod_tmpl
             content = mod_tmpl.TemplateFactory(req, 'security').render(tmpl_args)
             req.setResponseCode(http.client.FORBIDDEN, 'Insufficient Permissions')
             req.setHeader('Cache-Control', 'public, no-cache')

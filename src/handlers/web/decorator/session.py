@@ -69,7 +69,7 @@ class SessionUserController(AutoRefContextItem):
         id_user = self.req.context.session.get('id_user')
         if id_user is None:
             # Try authenticating user by SSL certificate if it's provided by user
-            from ....handlers.web.auth_ext import ssl as handler_ssl
+            from ...handlers.web.auth_ext import ssl as handler_ssl
             try:
                 if handler_ssl.Handler(self.req).check():
                     id_user = self.req.context.session.get('id_user')
@@ -128,7 +128,7 @@ class SessionAgentController(AutoRefContextItem):
     def new(self):
         id_agent = self.req.context.session.get('id_agent')
         if id_agent is None:
-            from ....handlers.web import auth_agent as handler_agent
+            from ...handlers.web import auth_agent as handler_agent
             try:
                 if handler_agent.Handler(self.req).check():
                     id_agent = self.req.context.session.get('id_agent')

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
-from ..util import handler
+from ...util import handler
 from ...handlers.web import decorator as deco
 from ...modules.templates import filesystem as mod_tmpl_fs
 

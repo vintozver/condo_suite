@@ -9,7 +9,7 @@ import http.client
 
 from ...util.logger import Logger
 
-from ..util import handler
+from ...util import handler
 import collections
 from functools import reduce
 
@@ -91,7 +91,7 @@ class Handler(_Handler):
                     return route_item['handler'], params
 
     def view_notfound(self, err):
-        from ....handlers.web import skeleton as mod_tmpl
+        from ...handlers.web import skeleton as mod_tmpl
         try:
             content = mod_tmpl.TemplateFactory(self.req, 'error_notfound').render({'description': err})
         except mod_tmpl.TemplateError:
@@ -105,7 +105,7 @@ class Handler(_Handler):
             lambda line_up, line_down: line_up + '\n' + line_down,
             ['%s: %s' % (item[0], item[1]) for item in traceback.extract_tb(err_tb)]
         )
-        from ....handlers.web import skeleton as mod_tmpl
+        from ...handlers.web import skeleton as mod_tmpl
         try:
             content = mod_tmpl.TemplateFactory(self.req, 'error_internal').render({'err_type': err_type, 'err_value': err_value, 'err_tb': tb})
             self.req.setHeader('Content-Type', 'text/html; charset=utf-8')

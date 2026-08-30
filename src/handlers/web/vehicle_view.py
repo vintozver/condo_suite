@@ -5,7 +5,7 @@ import http.client
 
 from ... import config as config
 from ...handlers.web import skeleton as mod_tmpl
-from ..modules import mongo as mod_mongo
+from ...modules import mongo as mod_mongo
 from ...modules.mongo.vehicle import Document as VehicleDocument
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
 from ...handlers.web import decorator as deco

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
-from ..modules import mongo as mod_mongo
+from ...modules import mongo as mod_mongo
 from ...handlers.web import decorator as deco
 
 

@@ -6,7 +6,7 @@ import json
 import re
 
 from ... import config as config
-from ..modules import mongo as mod_mongo
+from ...modules import mongo as mod_mongo
 from ...handlers.web import decorator as deco
 
 
