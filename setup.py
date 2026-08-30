@@ -67,7 +67,8 @@ class build_py(_build_py):
                 missing.append("%s/%s" % (archive_name, image_directory))
             if missing:
                 with ZipFile(BytesIO(urlopen(url).read())) as archive:
-                    prefix = archive.namelist()[0].split("/", 1)[0]
+                    members = archive.namelist()
+                    prefix = members[0].split("/", 1)[0]
                     for source, target in files.items():
                         destination = resource_dir / target
                         if not destination.exists():
@@ -75,7 +76,7 @@ class build_py(_build_py):
                             destination.write_bytes(archive.read("%s/%s" % (prefix, source)))
                     if image_directory:
                         image_prefix = "%s/%s/" % (prefix, image_directory)
-                        for member in archive.namelist():
+                        for member in members:
                             if member.startswith(image_prefix) and not member.endswith("/"):
                                 target = resource_dir / archive_name / member[len(prefix) + 1:]
                                 if not target.exists():
