@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
-import sys
-import traceback
-import re
-import http.client
-
-from ...util.logger import Logger
-
 import collections
 from functools import reduce
+import importlib
+import http.client
+import re
+import sys
+import traceback
+
+from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
+from ...util.logger import Logger
 
 
 class Handler(_Handler):
@@ -132,9 +132,8 @@ class Handler(_Handler):
                 return self.view_notfound('No handler found')
             module_name, module_params = module
 
-            __import__(module_name)
-
-            module_handler = sys.modules[module_name].Handler(self.req)
+            module = importlib.import_module('...' + module_name, package=__package__)
+            module_handler = module.Handler(self.req)
             return module_handler(**module_params)
         except:
             err_type, err_value, err_tb = sys.exc_info()

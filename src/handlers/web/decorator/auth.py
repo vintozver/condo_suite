@@ -5,7 +5,7 @@
 import types
 import urllib.request, urllib.parse, urllib.error
 import http.client
-from ...modules.mongo import user as mod_mongo_user
+from ....modules.mongo import user as mod_mongo_user
 
 
 class AuthRequired(object):
