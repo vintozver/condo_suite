@@ -5,7 +5,6 @@
 from ...util.web.request import Request
 from ...handlers.mail import Handler as _Handler, HandlerError as _HandlerError
 import imaplib
-from ..web import request
 import io
 
 from ... import config as config

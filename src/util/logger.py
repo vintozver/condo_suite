@@ -5,7 +5,6 @@
 import os.path
 import logging
 
-from .. import config as config
 from functools import reduce
 
 

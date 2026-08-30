@@ -4,7 +4,6 @@ from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _Ha
 import http.client
 
 from ...handlers.web import skeleton as mod_tmpl
-from ...modules.mongo import agent as mod_mongo_agent
 from ...handlers.web import decorator as deco
 
 

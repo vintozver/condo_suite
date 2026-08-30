@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
-import collections
 import http.client
 import json
 import re

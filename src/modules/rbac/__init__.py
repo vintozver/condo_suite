@@ -10,7 +10,6 @@
 # PERMISSION: {"resource": "document", "action": "view"}
 
 
-import typing
 
 
 # List of permissions and roles available

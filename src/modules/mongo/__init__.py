@@ -7,7 +7,6 @@ import gridfs
 import pymongo
 import pymongo.errors
 import mongoengine
-from ...util import context
 from ... import config as config
 
 

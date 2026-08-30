@@ -12,7 +12,6 @@ import email.generator
 import http.client
 
 
-from ...util import handler
 
 
 class HandlerError(_HandlerError):

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-import types
-import operator
 
 
 class Context(object):

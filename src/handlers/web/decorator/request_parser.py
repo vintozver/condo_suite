@@ -7,7 +7,6 @@ import io
 import cgi
 import json
 import urllib.parse
-from ...util import context
 
 
 def _params_ex(fs, param, not_found_exc):

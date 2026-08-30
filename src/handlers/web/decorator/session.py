@@ -2,7 +2,6 @@
 
 from ...util.context import AutoRefContextItem
 import types
-from ...util import context
 from ...modules import session as mod_session
 from ...modules.mongo import user as mod_mongo_user
 from ...modules.mongo import agent as mod_mongo_agent

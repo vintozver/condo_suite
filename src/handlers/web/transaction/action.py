@@ -6,7 +6,6 @@ import json
 from ...handlers.web import decorator as deco
 from ...modules import mongo as mod_mongo
 from ...modules.mongo import transaction as mod_mongo_transaction
-from ...handlers import defer
 from ...util import defer as util_defer
 
 

@@ -8,7 +8,6 @@ import http.client
 
 from ...util.logger import Logger
 
-from ...util import handler
 import collections
 from functools import reduce
 

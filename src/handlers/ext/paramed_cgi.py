@@ -3,7 +3,6 @@
 
 from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
 from ...handlers.web.decorator import request_parser
-from ...util import handler
 
 
 class Params(object):

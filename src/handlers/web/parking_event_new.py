@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
-import datetime
 import http.client
-import json
-import pycountry
 
 from ...handlers.web import skeleton as mod_tmpl
 from ...modules import mongo as mod_mongo
@@ -14,7 +11,6 @@ from ...modules.mongo.security import Ref as SecurityRef
 from ...modules.mongo.vehicle import Document as VehicleDocument
 from ...modules.mongo.vehicle import Ref as VehicleRef
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
-from ...modules.mongo.parking_event import HistoryItem as ParkingEventHistoryItem
 from ...handlers.web import decorator as deco
 
 _vehicle_doc_class = VehicleDocument

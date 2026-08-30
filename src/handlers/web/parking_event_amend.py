@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
-import os
 
 import io
-import http.client
 from ... import config as config
-from ...handlers.web import skeleton as mod_tmpl
 from ...modules import mongo as mod_mongo
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
 from ...modules.mongo.parking_event import HistoryItem as ParkingEventHistoryItem

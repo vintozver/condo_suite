@@ -8,7 +8,6 @@ import urllib.parse
 import datetime
 import http.cookies
 import wsgiref.headers
-from .. import context
 
 
 class RequestException(BaseException):

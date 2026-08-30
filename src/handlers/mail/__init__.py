@@ -11,10 +11,8 @@ import dateutil.parser
 
 from ... import config as config
 from ...modules import mongo as mod_mongo
-from ...util import defer
 
 
-from ...util import handler
 
 
 class Handler(_Handler):
