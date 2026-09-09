@@ -67,15 +67,7 @@ class SessionUserController(AutoRefContextItem):
     def new(self):
         id_user = self.req.context.session.get('id_user')
         if id_user is None:
-            # Try authenticating user by SSL certificate if it's provided by user
-            from ....handlers.web.auth_ext import ssl as handler_ssl
-            try:
-                if handler_ssl.Handler(self.req).check():
-                    id_user = self.req.context.session.get('id_user')
-                else:
-                    return None
-            except handler_ssl.HandlerError:
-                return None
+            return None
 
         user = mod_mongo_user.UserDocument.objects(id=id_user).first()
         if user is None:

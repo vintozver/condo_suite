@@ -7,10 +7,11 @@ from .. import mongo as mod_mongo
 from .. import rbac as mod_rbac
 
 
-class SslCrtDocument(mod_mongo.mongoengine.EmbeddedDocument):
-    serial = mod_mongo.mongoengine.StringField(max_length=128, required=True)
-    subject_dn = mod_mongo.mongoengine.StringField(max_length=256, required=True)
-    issuer_dn = mod_mongo.mongoengine.StringField(max_length=256, required=True)
+class Fido2CredentialDocument(mod_mongo.mongoengine.EmbeddedDocument):
+    credential_id = mod_mongo.mongoengine.BinaryField(required=True)
+    credential_data = mod_mongo.mongoengine.BinaryField(required=True)
+    sign_count = mod_mongo.mongoengine.IntField(default=0)
+    name = mod_mongo.mongoengine.StringField(max_length=128)
 
 
 class GoogleExtDocument(mod_mongo.mongoengine.EmbeddedDocument):
@@ -42,8 +43,8 @@ class UserDocument(mod_mongo.mongoengine.Document):
     # basic info
     name = mod_mongo.mongoengine.StringField(max_length=128)
     email = mod_mongo.mongoengine.StringField(max_length=64)
-    # SSL certificate list
-    ssl_crt = mod_mongo.mongoengine.EmbeddedDocumentListField(SslCrtDocument, default=list)
+    # WebAuthn/FIDO2 credentials
+    fido2 = mod_mongo.mongoengine.EmbeddedDocumentListField(Fido2CredentialDocument, default=list)
     # External modules
     ext = mod_mongo.mongoengine.EmbeddedDocumentField(ExtDocument, default=ExtDocument)
     # linked agents

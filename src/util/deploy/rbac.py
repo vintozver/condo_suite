@@ -34,9 +34,9 @@ embedded_roles = [
     },
     {
         'uuid': uuid.UUID('c74c27f13bab4130807d67b4902ffa05'),
-        'name': 'User SSL certificate management',
+        'name': 'User FIDO2 credential management',
         'sort_order': 20,
-        'permissions': ['user.ssl_crt/add', 'user.ssl_crt/remove']
+        'permissions': ['user.fido2/remove']
     },
     {
         'uuid': uuid.UUID('26a4af63f943477898eb9d6e9f4755ef'), 'name': 'User agent management', 'sort_order': 21,

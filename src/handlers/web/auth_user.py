@@ -23,10 +23,6 @@ class Handler(_Handler):
         if session_user is not None:
             tmpl_args['authenticated'] = True
             tmpl_args['user'] = session_user
-            tmpl_args['ssl_crt_list'] = [
-                {'serial': crt.serial, 'subject_dn': crt.subject_dn, 'issuer_dn': crt.issuer_dn}
-                for crt in session_user.ssl_crt
-            ]
             user_rbac_role_set = {role.id for role in session_user.rbac.roles}
             tmpl_args['roles'] = [(role, (role['uuid'] in user_rbac_role_set)) for role in mod_rbac.roles]
 
@@ -48,7 +44,7 @@ class Handler(_Handler):
         else:
             google_auth_url = '/auth/ext/google'
         tmpl_args['google_auth_url'] = google_auth_url
-        tmpl_args['ssl_auth_url'] = '/auth/ext/ssl'
+        tmpl_args['fido2_auth_url'] = '/auth/ext/fido2'
 
         content = mod_tmpl.TemplateFactory(self.req, 'auth_user').render(tmpl_args)
         self.req.setResponseCode(http.client.OK, http.client.responses[http.client.OK])

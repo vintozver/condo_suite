@@ -23,33 +23,39 @@
 </form>
 </div>
 
-<div class="ssl_crt">
-<h3>SSL Certificates</h3>
+<div class="fido2">
+<h3>FIDO2 credentials</h3>
 <table>
-<thead>
-<tr><th>serial</th><th>subject_dn</th><th>issuer_dn</th></tr>
-</thead>
-<tbody><tr><td></td><td></td><td></td></tr></tbody><!-- empty row is necessary to conform w3c -->
+<thead><tr><th>Name</th><th>Credential ID</th></tr></thead>
+<tbody>
+{% for credential in fido2_list %}
+<tr><td>{{ credential.name|default('Security key')|e }}</td><td>{{ credential.credential_id|e }}</td>
+{% if perm_fido2_remove|default(False) %}<td><button type="button" class="fido2_remove" data-credential-id="{{ credential.credential_id|e }}">Remove</button></td>{% endif %}</tr>
+{% else %}<tr><td colspan="2">No FIDO2 credentials</td></tr>{% endfor %}
+</tbody>
 </table>
-
-<div style="display: none;" id="ssl_crt_add" title="Add certificate">
-  <p class="validateTips">All form fields are required.</p>
-  <form id="ssl_crt_form" action="">
-  <table>
-      <tr><td><label for="serial">serial</label></td><td><input type="text" name="serial" id="serial" value="" class="text ui-widget-content ui-corner-all" /></td></tr>
-      <tr><td><label for="subject_dn">subject_dn</label></td><td><input type="text" name="subject_dn" id="subject_dn" value="" class="text ui-widget-content ui-corner-all" /></td></tr>
-      <tr><td><label for="issuer_dn">issuer_dn</label></td><td><input type="text" name="issuer_dn" id="issuer_dn" value="" class="text ui-widget-content ui-corner-all" /></td></tr>
-  </table>
-  <!-- Allow form submission with keyboard without duplicating the dialog button -->
-  <div style="display: none;"><input type="submit" /></div>
-  </form>
+{% if myself %}<p><button type="button" id="fido2_register">Add this device</button></p>{% endif %}
 </div>
-
-<div style="display: none;" id="ssl_crt_remove_confirm" title="Delete certificate?">
-<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Certificate reference will be permanently deleted and cannot be recovered. Are you sure?</p>
-</div>
-
-</div>
+<script>
+$("#fido2_register").click(function () {
+    $.getJSON("/auth/ext/fido2?op=register", function (options) {
+        options.challenge = Uint8Array.from(atob(options.challenge.replace(/-/g, "+").replace(/_/g, "/") + "=="), function (c) { return c.charCodeAt(0); });
+        if (options.user) options.user.id = Uint8Array.from(atob(options.user.id.replace(/-/g, "+").replace(/_/g, "/") + "=="), function (c) { return c.charCodeAt(0); });
+        navigator.credentials.create({publicKey: options}).then(function (credential) {
+            var response = credential.response;
+            var encode = function (value) { return btoa(String.fromCharCode.apply(null, new Uint8Array(value))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); };
+            $.ajax({method: "POST", url: "/auth/ext/fido2", contentType: "application/json",
+                data: JSON.stringify({response: {clientDataJSON: encode(response.clientDataJSON), attestationObject: encode(response.attestationObject)}}),
+                success: function () { window.location.reload(); }});
+        });
+    });
+});
+$(".fido2_remove").click(function () {
+    $.ajax({method: "POST", url: "/user/update/{{ user.id }}", contentType: "application/json",
+        data: JSON.stringify({op: "fido2/remove", args: {credential_id: $(this).data("credential-id")}}),
+        success: function () { window.location.reload(); }});
+});
+</script>
 
 <div class="agent">
     <h3>Assigned agents</h3>
@@ -161,118 +167,7 @@ wrap_text_edit("user_email", "email");
 {%- endif %}
 
 
-// SSL certificate
-
-var user_ssl_crt_table = $("div.ssl_crt table:first");
-var user_ssl_crt_table_customFooterButtons = new Array();
-{% if perm_ssl_crt_add|default(False) %}
-user_ssl_crt_table_customFooterButtons.push({uiButton: { icons: { primary: "ui-icon-plus" }, text: false }, btnAttr: { title: "Add a certificate" }, atTheFront: true,
-    click: function (evt) {
-        ssl_crt_add_dialog.dialog("open");
-    }
-});
-var ssl_crt_add_dialog = $("div#ssl_crt_add");
-ssl_crt_add_dialog.dialog({autoOpen: false, height: 250, width: 350, modal: true,
-    buttons: {
-        "Add a certificate": function () {
-            user_ssl_crt_table_handler_add();
-        },
-        Cancel: function () {
-            ssl_crt_add_dialog.dialog("close");
-        }
-    },
-    close: function () {
-        ssl_crt_add_dialog.find("#ssl_crt_form").trigger("reset");
-    }
-});
-ssl_crt_add_dialog.find("#ssl_crt_form").submit(function (event) {
-    event.preventDefault();
-    user_ssl_crt_table_handler_add();
-});
-var user_ssl_crt_table_handler_add = function () {
-    dialog = $("div#ssl_crt_add");
-    var serial = dialog.find("#ssl_crt_form input[type=text][name=serial]").val();
-    var subject_dn = dialog.find("#ssl_crt_form input[type=text][name=subject_dn]").val();
-    var issuer_dn = dialog.find("#ssl_crt_form input[type=text][name=issuer_dn]").val();
-
-    ssl_crt_add(serial, subject_dn, issuer_dn,
-        function () {
-            user_ssl_crt_table.appendGrid("appendRow", [{serial: serial, subject_dn: subject_dn, issuer_dn: issuer_dn}]);
-            ssl_crt_add_dialog.dialog("close");
-        },
-        function () {
-            ssl_crt_add_dialog.dialog("close");
-        }
-    );
-};
-{% endif %}
-var user_ssl_crt_table_customRowButtons = new Array();
-{% if perm_ssl_crt_remove|default(False) %}
-user_ssl_crt_table_customRowButtons.push({ uiButton: { icons: { primary: "ui-icon-minus" }, text: false }, btnAttr: { title: "Remove certificate" }, atTheFront: true,
-    click: function (evt, uniqueIndex, rowData) {
-        var ssl_crt_remove_confirm_dialog = $("div#ssl_crt_remove_confirm");
-        ssl_crt_remove_confirm_dialog.dialog({autoOpen: false, resizable: false, width: 400, height: 200, modal: true,
-            buttons: {
-                "Proceed to delete": function () {
-                    ssl_crt_remove(rowData.serial, rowData.subject_dn, rowData.issuer_dn,
-                        function () {
-                            user_ssl_crt_table.appendGrid("removeRow", user_ssl_crt_table.appendGrid("getRowIndex", uniqueIndex));
-                            ssl_crt_remove_confirm_dialog.dialog("close");
-                        },
-                        function () {
-                            ssl_crt_remove_confirm_dialog.dialog("close");
-                        }
-                    );
-                },
-                Cancel: function () {
-                    ssl_crt_remove_confirm_dialog.dialog("close");
-                }
-            }
-        });
-        ssl_crt_remove_confirm_dialog.dialog("open");
-    }
-});
-{% endif %}
-user_ssl_crt_table.appendGrid({
-	columns: [
-		{name: "serial", display: "serial", displayCss: {"min-width": "8em", "width": "8em"}, resizable: true, ctrlProp: {readonly: true}},
-		{name: "subject_dn", display: "subject_dn", displayCss: {"min-width": "10em", "width": "24em"}, resizable: true, ctrlProp: {readonly: true}},
-		{name: "issuer_dn", display: "issuer_dn", displayCss: {"min-width": "10em", "width": "24em"}, resizable: true, ctrlProp: {readonly: true}},
-	],
-	i18n: {
-	    rowEmpty: "No SSL certificates"
-	},
-	initRows: 0,
-	hideRowNumColumn: true,
-	customRowButtons: user_ssl_crt_table_customRowButtons,
-	customFooterButtons: user_ssl_crt_table_customFooterButtons,
-	hideButtons: { moveUp: true, moveDown: true, insert: true, removeLast: true, append: true, remove: true }
-});
-{{ ssl_crt_list|json }}.forEach(function (user_ssl_crt) {
-    user_ssl_crt_table.appendGrid("appendRow", [{serial: user_ssl_crt.serial, subject_dn: user_ssl_crt.subject_dn, issuer_dn: user_ssl_crt.issuer_dn}]);
-});
-
-var ssl_crt_manage = function (op, serial, subject_dn, issuer_dn, success_callback, failure_callback) {
-    $.ajax({method: "POST", url: sprintf("/user/update/%s", user_id),
-        contentType: "application/json",
-        data: JSON.stringify({op: sprintf("ssl_crt/%s", op), args: {serial: serial, subject_dn: subject_dn, issuer_dn: issuer_dn}}),
-        dataType: "json",
-        success: function (data, textStatus, jqXHR) {
-            success_callback();
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            failure_callback();
-        },
-        timeout: 3000
-    });
-};
-var ssl_crt_add = function (serial, subject_dn, issuer_dn, success_callback, failure_callback) {
-    return ssl_crt_manage("add", serial, subject_dn, issuer_dn, success_callback, failure_callback);
-};
-var ssl_crt_remove = function (serial, subject_dn, issuer_dn, success_callback, failure_callback) {
-    return ssl_crt_manage("remove", serial, subject_dn, issuer_dn, success_callback, failure_callback);
-};
-
+// FIDO2 credentials are managed through the authentication ceremony.
 
 // Agent
 var user_agent_table = $("div.agent table:first");
