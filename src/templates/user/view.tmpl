@@ -84,7 +84,7 @@ $("#keyset_add").click(function () {
 });
 $(".keyset_remove").click(function () {
     $.ajax({method: "POST", url: "/user/update/{{ user.id }}", contentType: "application/json",
-        data: JSON.stringify({op: "keyset/remove", args: {id: $(this).data("key-id")}},
+        data: JSON.stringify({op: "keyset/remove", args: {id: $(this).data("key-id")}}),
         success: function () { window.location.reload(); }});
 });
 </script>

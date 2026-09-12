@@ -70,7 +70,7 @@ class Handler(_Handler):
         with mod_mongo.DbSessionController() as db_session:
             db_session[config.name]['users'].update_one(
                 {'_id': user.id},
-                {'$push': {'keyset': mod_mongo.bson.son.SON({'id': key_id, **values}}},
+                {'$push': {'keyset': mod_mongo.bson.son.SON({'id': key_id, **values})}},
             )
 
     @classmethod
