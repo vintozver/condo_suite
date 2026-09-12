@@ -180,6 +180,8 @@ class Handler(_Handler):
             perm = 'user.fido2/remove'
             if not session_user.rbac_has_permission(perm):
                 raise deco.auth.SecurityError('Permission required', perm)
+            if user.id == session_user.id and args.get('confirm') is not True:
+                raise HandlerError('Confirmation required to remove your own FIDO2 credential')
             self.process_fido2_remove(user, args)
         elif operation == 'keyset/add':
             perm = 'user.keyset/add'
