@@ -29,8 +29,8 @@
 <thead><tr><th>Name</th><th>Credential ID</th></tr></thead>
 <tbody>
 {% for credential in fido2_list %}
-<tr><td>{{ credential.name|default('Security key')|e }}</td><td>{{ credential.credential_id|e }}</td>
-{% if perm_fido2_remove|default(False) %}<td><button type="button" class="fido2_remove" data-credential-id="{{ credential.credential_id|e }}">Remove</button></td>{% endif %}</tr>
+<tr><td>{{ credential.name|default('Security key')|e }}</td><td>{{ credential.id|e }}</td>
+{% if perm_fido2_remove|default(False) %}<td><button type="button" class="fido2_remove" data-credential-id="{{ credential.id|e }}">Remove</button></td>{% endif %}</tr>
 {% else %}<tr><td colspan="2">No FIDO2 credentials</td></tr>{% endfor %}
 </tbody>
 </table>
@@ -52,7 +52,7 @@ $("#fido2_register").click(function () {
 });
 $(".fido2_remove").click(function () {
     $.ajax({method: "POST", url: "/user/update/{{ user.id }}", contentType: "application/json",
-        data: JSON.stringify({op: "fido2/remove", args: {credential_id: $(this).data("credential-id")}}),
+        data: JSON.stringify({op: "fido2/remove", args: {id: $(this).data("credential-id")}}),
         success: function () { window.location.reload(); }});
 });
 </script>

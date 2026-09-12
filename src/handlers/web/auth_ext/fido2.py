@@ -64,7 +64,7 @@ class Handler(_Handler):
                     id=session_user.id.binary,
                     display_name=session_user.name,
                 )
-                credentials = [PublicKeyCredentialDescriptor(c.credential_id) for c in session_user.fido2]
+                credentials = [PublicKeyCredentialDescriptor(c.id) for c in session_user.fido2_credentials]
                 options, state = _server().register_begin(
                     user, credentials, user_verification=UserVerificationRequirement.PREFERRED
                 )
@@ -85,15 +85,15 @@ class Handler(_Handler):
                 if session_user is None:
                     raise HandlerError('Authentication is required to register a credential')
                 auth_data = _server().register_complete(pending['state'], response)
-                credential_data = auth_data.credential_data
-                if credential_data is None:
+                credential = auth_data.credential_data
+                if credential is None:
                     raise HandlerError('FIDO2 response did not contain credential data')
                 with mod_mongo.DbSessionController() as db_session:
                     db_session[config.name]['users'].update_one(
-                        {'_id': session_user.id, 'fido2.credential_id': {'$ne': credential_data.credential_id}},
-                        {'$push': {'fido2': {
-                            'credential_id': credential_data.credential_id,
-                            'credential_data': bytes(credential_data),
+                        {'_id': session_user.id, 'fido2_credentials.id': {'$ne': credential.credential_id}},
+                        {'$push': {'fido2_credentials': {
+                            'id': credential.credential_id,
+                            'data': bytes(credential),
                             'sign_count': auth_data.counter,
                         }}},
                     )
@@ -101,24 +101,24 @@ class Handler(_Handler):
             else:
                 credential_id = _unb64(response['id'])
                 credentials = []
-                users = mod_mongo_user.UserDocument.objects(fido2__credential_id=credential_id)
+                users = mod_mongo_user.UserDocument.objects(fido2_credentials__id=credential_id)
                 for user in users:
-                    credentials.extend(user.fido2)
+                    credentials.extend(user.fido2_credentials)
                 if not credentials:
                     raise HandlerError('Unknown FIDO2 credential')
                 credential = _server().authenticate_complete(
                     pending['state'],
-                    [AttestedCredentialData(c.credential_data) for c in credentials],
+                    [AttestedCredentialData(c.data) for c in credentials],
                     response,
                 )
-                user = next(user for user in users if any(c.credential_id == credential.credential_id for c in user.fido2))
+                user = next(user for user in users if any(c.id == credential.credential_id for c in user.fido2_credentials))
                 session['id_user'] = user.id
                 session.save()
                 sign_count = AuthenticatorData(_unb64(response['response']['authenticatorData'])).counter
                 with mod_mongo.DbSessionController() as db_session:
                     db_session[config.name]['users'].update_one(
-                        {'_id': user.id, 'fido2.credential_id': credential.credential_id},
-                        {'$set': {'fido2.$.sign_count': sign_count}},
+                        {'_id': user.id, 'fido2_credentials.id': credential.credential_id},
+                        {'$set': {'fido2_credentials.$.sign_count': sign_count}},
                     )
                 response = {}
         self.req.setResponseCode(http.client.OK, http.client.responses[http.client.OK])

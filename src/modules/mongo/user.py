@@ -8,8 +8,8 @@ from .. import rbac as mod_rbac
 
 
 class Fido2CredentialDocument(mod_mongo.mongoengine.EmbeddedDocument):
-    credential_id = mod_mongo.mongoengine.BinaryField(required=True)
-    credential_data = mod_mongo.mongoengine.BinaryField(required=True)
+    id = mod_mongo.mongoengine.BinaryField(required=True)
+    data = mod_mongo.mongoengine.BinaryField(required=True)
     sign_count = mod_mongo.mongoengine.IntField(default=0)
     name = mod_mongo.mongoengine.StringField(max_length=128)
 
@@ -44,7 +44,7 @@ class UserDocument(mod_mongo.mongoengine.Document):
     name = mod_mongo.mongoengine.StringField(max_length=128)
     email = mod_mongo.mongoengine.StringField(max_length=64)
     # WebAuthn/FIDO2 credentials
-    fido2 = mod_mongo.mongoengine.EmbeddedDocumentListField(Fido2CredentialDocument, default=list)
+    fido2_credentials = mod_mongo.mongoengine.EmbeddedDocumentListField(Fido2CredentialDocument, default=list)
     # External modules
     ext = mod_mongo.mongoengine.EmbeddedDocumentField(ExtDocument, default=ExtDocument)
     # linked agents

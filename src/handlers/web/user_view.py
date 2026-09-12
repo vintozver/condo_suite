@@ -48,9 +48,9 @@ class Handler(_Handler):
         tmpl_data = dict()
         tmpl_data['user'] = user
         tmpl_data['fido2_list'] = [
-            {'credential_id': __import__('base64').urlsafe_b64encode(credential.credential_id).rstrip(b'=').decode('ascii'),
+            {'id': __import__('base64').urlsafe_b64encode(credential.id).rstrip(b'=').decode('ascii'),
              'name': credential.name or ''}
-            for credential in user.fido2
+            for credential in user.fido2_credentials
         ]
 
         user_agent_list = [

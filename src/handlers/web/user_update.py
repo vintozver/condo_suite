@@ -34,13 +34,13 @@ class Handler(_Handler):
 
     @classmethod
     def process_fido2_remove(cls, user, args):
-        credential_id = args.get('credential_id')
+        credential_id = args.get('id')
         if not credential_id or not isinstance(credential_id, str):
-            raise HandlerError('Parameter error', 'credential_id')
+            raise HandlerError('Parameter error', 'id')
         with mod_mongo.DbSessionController() as db_session:
             db_session[config.name]['users'].update_one(
                 {'_id': user.id},
-                {'$pull': {'fido2': {'credential_id': __import__('base64').urlsafe_b64decode(
+                {'$pull': {'fido2_credentials': {'id': __import__('base64').urlsafe_b64decode(
                     credential_id + '=' * (-len(credential_id) % 4)
                 )}}},
             )

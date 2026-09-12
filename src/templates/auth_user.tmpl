@@ -15,7 +15,7 @@
 <div class="fido2">
 <h3>FIDO2 credentials</h3>
 <ul>
-{% for credential in user.fido2 %}<li>{{ credential.name|default('Security key')|e }}</li>{% else %}<li>No FIDO2 credentials</li>{% endfor %}
+{% for credential in user.fido2_credentials %}<li>{{ credential.name|default('Security key')|e }}</li>{% else %}<li>No FIDO2 credentials</li>{% endfor %}
 </ul>
 </div>
 
