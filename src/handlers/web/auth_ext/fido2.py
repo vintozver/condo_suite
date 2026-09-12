@@ -10,6 +10,8 @@ from fido2.webauthn import (
     AttestedCredentialData,
     AttestationConveyancePreference,
     AttestationObject,
+    AuthenticationResponse,
+    AuthenticatorAssertionResponse,
     AuthenticatorAttestationResponse,
     AuthenticatorData,
     CollectedClientData,
@@ -130,8 +132,16 @@ class Handler(_Handler):
                     )
                 response = {}
             else:
-                response = body
-                credential_id = _unb64(response['id'])
+                try:
+                    response = body['response']
+                    credential_id = _unb64(body['id'])
+                    client_data = CollectedClientData(_unb64(response['clientDataJSON']))
+                    authenticator_data = AuthenticatorData(_unb64(response['authenticatorData']))
+                    signature = _unb64(response['signature'])
+                    user_handle = response.get('userHandle')
+                    user_handle = _unb64(user_handle) if user_handle else None
+                except (KeyError, TypeError, ValueError):
+                    raise HandlerError('FIDO2 authentication response is malformed')
                 credentials = []
                 users = mod_mongo_user.UserDocument.objects(fido2_credentials__id=credential_id)
                 for user in users:
@@ -141,12 +151,20 @@ class Handler(_Handler):
                 credential = _server(self.req).authenticate_complete(
                     state=pending['state'],
                     credentials=[AttestedCredentialData(c.data) for c in credentials],
-                    response=response,
+                    response=AuthenticationResponse(
+                        raw_id=credential_id,
+                        response=AuthenticatorAssertionResponse(
+                            client_data=client_data,
+                            authenticator_data=authenticator_data,
+                            signature=signature,
+                            user_handle=user_handle,
+                        )
+                    ),
                 )
                 user = next(user for user in users if any(c.id == credential.credential_id for c in user.fido2_credentials))
                 session['id_user'] = user.id
                 session.save()
-                sign_count = AuthenticatorData(_unb64(response['response']['authenticatorData'])).counter
+                sign_count = authenticator_data.counter
                 with mod_mongo.DbSessionController() as db_session:
                     db_session[config.name]['users'].update_one(
                         {'_id': user.id, 'fido2_credentials.id': credential.credential_id},
