@@ -49,6 +49,7 @@ def _server(req):
 
 
 def _json(value):
+    # This JSON is embedded in an HTML script block by the authentication page.
     return json.dumps(dict(value)).replace('<', '\\u003c')
 
 

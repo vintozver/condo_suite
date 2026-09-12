@@ -37,6 +37,7 @@
 </div>
 <script>
 $(".fido2_remove").click(function () {
+    if (!window.confirm("Remove this FIDO2 credential? You may be unable to authenticate with FIDO2 afterwards.")) return;
     $.ajax({method: "POST", url: "/user/update/{{ user.id }}", contentType: "application/json",
         data: JSON.stringify({op: "fido2/remove", args: {id: $(this).data("credential-id")}}),
         success: function () { window.location.reload(); }});
