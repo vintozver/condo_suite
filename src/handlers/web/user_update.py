@@ -218,11 +218,14 @@ class Handler(_Handler):
                 raise deco.auth.SecurityError('Permission required', perm)
             self.process_info_set(user, args)
         elif operation == 'fido2/remove':
-            perm = 'user.fido2/remove'
-            if not session_user.rbac_has_permission(perm):
-                raise deco.auth.SecurityError('Permission required', perm)
-            if user.id == session_user.id and args.get('confirm') is not True:
-                raise HandlerError('Confirmation required to remove your own FIDO2 credential')
+            if user.id == session_user.id:
+                # users always manage their own credentials, an explicit confirmation is required
+                if args.get('confirm') is not True:
+                    raise HandlerError('Confirmation required to remove your own FIDO2 credential')
+            else:
+                perm = 'user.fido2/remove'
+                if not session_user.rbac_has_permission(perm):
+                    raise deco.auth.SecurityError('Permission required', perm)
             self.process_fido2_remove(user, args)
         elif operation == 'fido2/rename':
             # FIDO2 credentials can be renamed by their owner only

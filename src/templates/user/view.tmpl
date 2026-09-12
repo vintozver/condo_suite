@@ -32,17 +32,6 @@
 <tbody><tr><td></td><td></td></tr></tbody><!-- empty row is necessary to conform w3c -->
 </table>
 
-<div style="display: none;" id="fido2_rename" title="Rename the FIDO2 credential">
-<p class="validateTips">The name is required.</p>
-<form action="">
-<table>
-<tr><td><label for="fido2_rename__credential_name">Name</label></td><td><input type="text" name="credential_name" value="" size="32" maxlength="128" id="fido2_rename__credential_name" class="text ui-widget-content ui-corner-all" /></td></tr>
-</table>
-<!-- Allow form submission with keyboard without duplicating the dialog button -->
-<div style="display: none;"><input type="submit" /></div>
-</form>
-</div>
-
 <div style="display: none;" id="fido2_remove_confirm" title="Remove the FIDO2 credential?">
 <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>The credential will be permanently removed and you may be unable to authenticate with FIDO2 afterwards. Are you sure?</p>
 </div>
@@ -185,7 +174,8 @@ wrap_text_edit("user_email", "email");
 {%- endif %}
 
 
-// FIDO2 credentials are registered through the authentication ceremony, they can only be renamed and removed here.
+// FIDO2 credentials are registered through the authentication ceremony, they can only be removed here.
+// Renaming is available to the credential owner on the authentication page only.
 var fido2_table = $("div.fido2 table:first");
 var fido2_table_customRowButtons = new Array();
 
@@ -205,83 +195,9 @@ var fido2_manage = function (action, args, success_callback, failure_callback) {
         timeout: 3000
     });
 };
-var fido2_rename = function (credential_id, credential_name, success_callback, failure_callback) {
-    return fido2_manage("rename", {id: credential_id, name: credential_name}, success_callback, failure_callback);
-};
 var fido2_remove = function (credential_id, success_callback, failure_callback) {
     return fido2_manage("remove", {id: credential_id, confirm: true}, success_callback, failure_callback);
 };
-
-{% if perm_fido2_rename|default(False) %}
-// transform fido2_rename html block to popup dialog
-var show_fido2_rename_dialog = function (credential_name, confirm_callback /* credential_name, finalize_callback */) {
-    var thedialog = $("div#fido2_rename");
-
-    thedialog.find("form input[type=text][name=credential_name]").val(credential_name);
-
-    var finalize = function () {
-        thedialog.dialog("close");
-    };
-
-    var confirm = function () {
-        var new_name = $.trim(thedialog.find("form input[type=text][name=credential_name]").val());
-        if (new_name == "") {
-            thedialog.find("form input[type=text][name=credential_name]").css("border-color", "red");
-            return;
-        }
-        confirm_callback(new_name, finalize);
-    };
-
-    thedialog.dialog({
-        autoOpen: false,
-        height: 220,
-        width: 400,
-        modal: true,
-        buttons: [
-            {text: "Rename the credential", click: function () {
-                confirm();
-            }},
-            {text: "Cancel", click: function () {
-                thedialog.dialog("close");
-            }},
-        ],
-        close: function () {
-            thedialog.find("form").trigger("reset");
-            thedialog.find("form").off("submit");
-            thedialog.find("form input[type=text][name=credential_name]").css("border-color", "");
-        }
-    });
-
-    thedialog.find("form").on("submit", function (event) {
-        event.preventDefault();
-        confirm();
-    });
-
-    thedialog.dialog("open");
-};
-
-fido2_table_customRowButtons.push({
-    uiButton: { icons: { primary: "ui-icon-pencil" }, text: false },
-    btnAttr: { title: "Rename the credential" },
-    atTheFront: true,
-    click: function (evt, uniqueIndex, rowData) {
-        var rowIndex = fido2_table.appendGrid("getRowIndex", uniqueIndex);
-        var credential_id = fido2_table.appendGrid("getCtrlValue", "credential_id", rowIndex);
-        var credential_name = fido2_table.appendGrid("getCtrlValue", "credential_name", rowIndex);
-        show_fido2_rename_dialog(credential_name, function (new_name, finalize_callback) {
-            fido2_rename(credential_id, new_name,
-                function () {
-                    fido2_table.appendGrid("setCtrlValue", "credential_name", rowIndex, new_name);
-                    finalize_callback();
-                },
-                function () {
-                    finalize_callback();
-                }
-            );
-        });
-    }
-});
-{% endif %}
 
 {% if perm_fido2_remove|default(False) %}
 fido2_table_customRowButtons.push({
