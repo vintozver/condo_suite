@@ -47,34 +47,29 @@ $(".fido2_remove").click(function () {
 <div class="keyset">
 <h3>Signing keys</h3>
 <table>
-<thead><tr><th>Key ID</th><th>Public key</th><th>Certificate</th>{% if perm_keyset_remove|default(False) %}<th></th>{% endif %}</tr></thead>
-<tbody>
-{% for key in keyset_list %}
-<tr><td>{{ key.id|e }}</td><td>{{ 'yes' if key.has_pub else 'no' }}</td><td>{{ 'yes' if key.has_crt else 'no' }}</td>
-{% if perm_keyset_remove|default(False) %}<td><button type="button" class="keyset_remove" data-key-id="{{ key.id|e }}">Remove</button></td>{% endif %}</tr>
-{% else %}<tr><td colspan="4">No signing keys</td></tr>{% endfor %}
-</tbody>
+<thead>
+<tr><th>Key ID</th><th>Public key</th><th>Certificate</th></tr>
+</thead>
+<tbody><tr><td></td><td></td><td></td></tr></tbody><!-- empty row is necessary to conform w3c -->
 </table>
-{% if perm_keyset_add|default(False) %}
-<p><label>Key ID <input type="text" id="keyset_id" maxlength="128"></label>
-<label>Public key (base64) <input type="text" id="keyset_pub"></label>
-<label>Certificate (base64) <input type="text" id="keyset_crt"></label>
-<button type="button" id="keyset_add">Add key</button></p>
-{% endif %}
+
+<div style="display: none;" id="keyset_add" title="Add a signing key">
+<p class="validateTips">Key ID and at least one of the public key or the certificate are required. Values are base64 encoded (PEM body).</p>
+<form action="">
+<table>
+<tr><td><label for="keyset_add__key_id">Key ID</label></td><td><input type="text" name="key_id" value="" size="32" maxlength="128" id="keyset_add__key_id" class="text ui-widget-content ui-corner-all" /></td></tr>
+<tr><td><label for="keyset_add__key_pub">Public key</label></td><td><textarea name="key_pub" rows="6" cols="48" id="keyset_add__key_pub" class="text ui-widget-content ui-corner-all"></textarea></td></tr>
+<tr><td><label for="keyset_add__key_crt">Certificate</label></td><td><textarea name="key_crt" rows="6" cols="48" id="keyset_add__key_crt" class="text ui-widget-content ui-corner-all"></textarea></td></tr>
+</table>
+<!-- Allow form submission with keyboard without duplicating the dialog button -->
+<div style="display: none;"><input type="submit" /></div>
+</form>
 </div>
-<script>
-$("#keyset_add").click(function () {
-    $.ajax({method: "POST", url: "/user/update/{{ user.id }}", contentType: "application/json",
-        data: JSON.stringify({op: "keyset/add", args: {
-            id: $("#keyset_id").val(), pub: $("#keyset_pub").val(), crt: $("#keyset_crt").val()
-        }}), success: function () { window.location.reload(); }});
-});
-$(".keyset_remove").click(function () {
-    $.ajax({method: "POST", url: "/user/update/{{ user.id }}", contentType: "application/json",
-        data: JSON.stringify({op: "keyset/remove", args: {id: $(this).data("key-id")}}),
-        success: function () { window.location.reload(); }});
-});
-</script>
+
+<div style="display: none;" id="keyset_remove_confirm" title="Remove the signing key?">
+<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>The signing key will be permanently removed and cannot be recovered. Are you sure?</p>
+</div>
+</div>
 
 <div class="agent">
     <h3>Assigned agents</h3>
@@ -187,6 +182,164 @@ wrap_text_edit("user_email", "email");
 
 
 // FIDO2 credentials are managed through the authentication ceremony.
+
+// Signing keyset
+var keyset_table = $("div.keyset table:first");
+var keyset_table_customFooterButtons = new Array();
+var keyset_table_customRowButtons = new Array();
+
+var keyset_manage = function (action, args, success_callback, failure_callback) {
+    $.ajax({
+        method: "POST",
+        url: sprintf("/user/update/%s", user_id),
+        contentType: "application/json",
+        data: JSON.stringify({op: sprintf("keyset/%s", action), args: args}),
+        dataType: "json",
+        success: function (data, textStatus, jqXHR) {
+            success_callback();
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            failure_callback();
+        },
+        timeout: 3000
+    });
+};
+var keyset_add = function (key_id, key_pub, key_crt, success_callback, failure_callback) {
+    return keyset_manage("add", {id: key_id, pub: key_pub, crt: key_crt}, success_callback, failure_callback);
+};
+var keyset_remove = function (key_id, success_callback, failure_callback) {
+    return keyset_manage("remove", {id: key_id}, success_callback, failure_callback);
+};
+
+{% if perm_keyset_add|default(False) %}
+// transform keyset_add html block to popup dialog
+var show_keyset_add_dialog = function (confirm_callback /* key_id, key_pub, key_crt, finalize_callback */) {
+    var thedialog = $("div#keyset_add");
+
+    var finalize = function () {
+        thedialog.dialog("close");
+    };
+
+    var confirm = function () {
+        var key_id = thedialog.find("form input[type=text][name=key_id]").val();
+        var key_pub = thedialog.find("form textarea[name=key_pub]").val();
+        var key_crt = thedialog.find("form textarea[name=key_crt]").val();
+        if (key_id == "") {
+            thedialog.find("form input[type=text][name=key_id]").css("border-color", "red");
+            return;
+        }
+        if (key_pub == "" && key_crt == "") {
+            thedialog.find("form textarea[name=key_pub]").css("border-color", "red");
+            thedialog.find("form textarea[name=key_crt]").css("border-color", "red");
+            return;
+        }
+        confirm_callback(key_id, key_pub, key_crt, finalize);
+    };
+
+    thedialog.dialog({
+        autoOpen: false,
+        height: 480,
+        width: 560,
+        modal: true,
+        buttons: [
+            {text: "Add the signing key", click: function () {
+                confirm();
+            }},
+            {text: "Cancel", click: function () {
+                thedialog.dialog("close");
+            }},
+        ],
+        close: function () {
+            thedialog.find("form").trigger("reset");
+            thedialog.find("form").off("submit");
+            thedialog.find("form input[type=text][name=key_id], form textarea").css("border-color", "");
+        }
+    });
+
+    thedialog.find("form").on("submit", function (event) {
+        event.preventDefault();
+        confirm();
+    });
+
+    thedialog.dialog("open");
+};
+
+keyset_table_customFooterButtons.push({
+    uiButton: { icons: { primary: "ui-icon-plus" }, text: false },
+    btnAttr: { title: "Add a signing key" },
+    atTheFront: true,
+    click: function (evt) {
+        show_keyset_add_dialog(function (key_id, key_pub, key_crt, finalize_callback) {
+            keyset_add(key_id, key_pub, key_crt,
+                function () {
+                    keyset_table.appendGrid("appendRow", [{
+                        key_id: key_id,
+                        key_pub: key_pub != "" ? "yes" : "no",
+                        key_crt: key_crt != "" ? "yes" : "no"
+                    }]);
+                    finalize_callback();
+                },
+                function () {
+                    finalize_callback();
+                }
+            );
+        });
+    }
+});
+{% endif %}
+
+{% if perm_keyset_remove|default(False) %}
+keyset_table_customRowButtons.push({
+    uiButton: { icons: { primary: "ui-icon-minus" }, text: false },
+    btnAttr: { title: "Remove the signing key" },
+    atTheFront: true,
+    click: function (evt, uniqueIndex, rowData) {
+        var key_id = keyset_table.appendGrid("getCtrlValue", "key_id", keyset_table.appendGrid("getRowIndex", uniqueIndex));
+        var keyset_remove_confirm_dialog = $("div#keyset_remove_confirm");
+        keyset_remove_confirm_dialog.dialog({autoOpen: false, resizable: false, width: 400, height: 200, modal: true,
+            buttons: {
+                "Proceed to remove": function () {
+                    keyset_remove(key_id,
+                        function () {
+                            keyset_table.appendGrid("removeRow", keyset_table.appendGrid("getRowIndex", uniqueIndex));
+                            keyset_remove_confirm_dialog.dialog("close");
+                        },
+                        function () {
+                            keyset_remove_confirm_dialog.dialog("close");
+                        }
+                    );
+                },
+                Cancel: function () {
+                    keyset_remove_confirm_dialog.dialog("close");
+                }
+            }
+        });
+        keyset_remove_confirm_dialog.dialog("open");
+    }
+});
+{% endif %}
+
+// init signing keyset table
+keyset_table.appendGrid({
+    columns: [
+        {name: "key_id", display: "Key ID", displayCss: {"min-width": "8em", "width": "18em"}, resizable: true, ctrlProp: {readonly: true, maxLength: 128}},
+        {name: "key_pub", display: "Public key", displayCss: {"min-width": "4em", "width": "6em"}, ctrlProp: {readonly: true}},
+        {name: "key_crt", display: "Certificate", displayCss: {"min-width": "4em", "width": "6em"}, ctrlProp: {readonly: true}},
+    ],
+    i18n: {
+        rowEmpty: "No signing keys"
+    },
+    initRows: 0,
+    hideRowNumColumn: true,
+    customRowButtons: keyset_table_customRowButtons,
+    customFooterButtons: keyset_table_customFooterButtons,
+    hideButtons: { moveUp: true, moveDown: true, insert: true, removeLast: true, append: true, remove: true }
+});
+
+// append signing keyset data to the table
+{{ keyset_list|default([])|json }}.forEach(function (key) {
+    keyset_table.appendGrid("appendRow", [{key_id: key.id, key_pub: key.has_pub ? "yes" : "no", key_crt: key.has_crt ? "yes" : "no"}]);
+});
 
 // Agent
 var user_agent_table = $("div.agent table:first");

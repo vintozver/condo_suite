@@ -60,6 +60,12 @@ class Handler(_Handler):
             if value:
                 if not isinstance(value, str):
                     raise HandlerError('Parameter error', field)
+                # the value may be supplied as a multiline PEM block or as a plain multiline base64 chunk
+                value = ''.join(
+                    ''.join(line.split()) for line in value.splitlines() if not line.strip().startswith('-----')
+                )
+                if not value:
+                    continue
                 try:
                     values[field] = base64.b64decode(value, validate=True)
                 except (ValueError, TypeError):

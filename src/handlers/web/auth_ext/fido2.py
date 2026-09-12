@@ -9,11 +9,15 @@ from fido2.server import Fido2Server
 from fido2.webauthn import (
     AttestedCredentialData,
     AttestationConveyancePreference,
+    AttestationObject,
+    AuthenticatorAttestationResponse,
     AuthenticatorData,
+    CollectedClientData,
     PublicKeyCredentialRpEntity,
     PublicKeyCredentialUserEntity,
     PublicKeyCredentialDescriptor,
     PublicKeyCredentialType,
+    RegistrationResponse,
     UserVerificationRequirement,
 )
 
@@ -92,11 +96,20 @@ class Handler(_Handler):
                 pending = session.pop('fido2_state')
             except (ValueError, KeyError, TypeError):
                 raise HandlerError('No FIDO2 ceremony is pending')
-            response = body.get('response', body)
             if pending['purpose'] == 'register':
                 if session_user is None:
                     raise HandlerError('Authentication is required to register a credential')
-                auth_data = _server(self.req).register_complete(pending['state'], response)
+                response = body['response']
+                auth_data = _server(self.req).register_complete(
+                    pending['state'],
+                    response=RegistrationResponse(
+                        raw_id=session_user.id.binary,
+                        response=AuthenticatorAttestationResponse(
+                            client_data=CollectedClientData(_unb64(response['clientDataJSON'])),
+                            attestation_object=AttestationObject(_unb64(response['attestationObject'])),
+                        )
+                    )
+                )
                 credential = auth_data.credential_data
                 if credential is None:
                     raise HandlerError('FIDO2 response did not contain credential data')
@@ -112,6 +125,7 @@ class Handler(_Handler):
                     )
                 response = {}
             else:
+                response = body
                 credential_id = _unb64(response['id'])
                 credentials = []
                 users = mod_mongo_user.UserDocument.objects(fido2_credentials__id=credential_id)

@@ -20,19 +20,33 @@
 <p><button type="button" id="fido2_register">Add this device</button></p>
 </div>
 <script>
+// raw script begin <![CDATA[
+function fido2_decode(value) {
+    const padded = value + "=".repeat((4 - value.length % 4) % 4);
+    const binary = atob(padded.replace(/-/g, "+").replace(/_/g, "/"));
+    return Uint8Array.from(binary, character => character.charCodeAt(0));
+}
+function fido2_encode(value) {
+    const bytes = new Uint8Array(value);
+    let binary = "";
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
 $("#fido2_register").click(function () {
     $.getJSON("/auth/ext/fido2?op=register", function (options) {
-        options.challenge = Uint8Array.from(atob(options.challenge.replace(/-/g, "+").replace(/_/g, "/") + "=="), function (c) { return c.charCodeAt(0); });
-        if (options.user) options.user.id = Uint8Array.from(atob(options.user.id.replace(/-/g, "+").replace(/_/g, "/") + "=="), function (c) { return c.charCodeAt(0); });
+        options.challenge = fido2_decode(options.challenge);
+        if (options.user) options.user.id = fido2_decode(options.user.id);
+        if (options.excludeCredentials) options.excludeCredentials.forEach(function (c) { c.id = fido2_decode(c.id); });
         navigator.credentials.create({publicKey: options}).then(function (credential) {
             var response = credential.response;
-            var encode = function (value) { return btoa(String.fromCharCode.apply(null, new Uint8Array(value))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); };
+            var encode = fido2_encode;
             $.ajax({method: "POST", url: "/auth/ext/fido2", contentType: "application/json",
                 data: JSON.stringify({response: {clientDataJSON: encode(response.clientDataJSON), attestationObject: encode(response.attestationObject)}}),
                 success: function () { window.location.reload(); }});
         });
     });
 });
+//]]> raw script end
 </script>
 
 <div class="ext_auth_google">
@@ -74,20 +88,33 @@ $("#fido2_register").click(function () {
 <h3>FIDO2</h3>
 <p><button type="button" id="fido2_auth">Authenticate with FIDO2</button></p>
 <script>
+// raw script begin <![CDATA[
+function fido2_decode(value) {
+    const padded = value + "=".repeat((4 - value.length % 4) % 4);
+    const binary = atob(padded.replace(/-/g, "+").replace(/_/g, "/"));
+    return Uint8Array.from(binary, character => character.charCodeAt(0));
+}
+function fido2_encode(value) {
+    const bytes = new Uint8Array(value);
+    let binary = "";
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
 $("#fido2_auth").click(function () {
     var options = {{ fido2_auth_options|tojson }};
-    options.challenge = Uint8Array.from(atob(options.challenge.replace(/-/g, "+").replace(/_/g, "/") + "=="), function (c) { return c.charCodeAt(0); });
+    options.challenge = fido2_decode(options.challenge);
     if (options.allowCredentials) options.allowCredentials.forEach(function (c) {
-        c.id = Uint8Array.from(atob(c.id.replace(/-/g, "+").replace(/_/g, "/") + "=="), function (x) { return x.charCodeAt(0); });
+        c.id = fido2_decode(c.id);
     });
     navigator.credentials.get({publicKey: options}).then(function (credential) {
         var response = credential.response;
-        var encode = function (value) { return btoa(String.fromCharCode.apply(null, new Uint8Array(value))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); };
+        var encode = fido2_encode;
         $.ajax({method: "POST", url: "/auth/ext/fido2", contentType: "application/json",
             data: JSON.stringify({id: credential.id, response: {clientDataJSON: encode(response.clientDataJSON), authenticatorData: encode(response.authenticatorData), signature: encode(response.signature), userHandle: response.userHandle ? encode(response.userHandle) : null}}),
             success: function () { window.location = "/auth/user"; }});
     });
 });
+//]]> raw script end
 </script>
 {% endif %}
 {%- endblock %}
