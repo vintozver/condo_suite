@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
+import base64
 import http.client
 import urllib.request, urllib.parse, urllib.error
 import json
@@ -26,6 +27,13 @@ class Handler(_Handler):
             tmpl_args['user'] = session_user
             user_rbac_role_set = {role.id for role in session_user.rbac.roles}
             tmpl_args['roles'] = [(role, (role['uuid'] in user_rbac_role_set)) for role in mod_rbac.roles]
+
+            tmpl_args['fido2_list'] = [
+                {'id': base64.urlsafe_b64encode(credential.id).rstrip(b'=').decode('ascii'),
+                 'aaguid': (credential.aaguid or b'').hex(),
+                 'name': credential.name or ''}
+                for credential in session_user.fido2_credentials
+            ]
 
             tmpl_args['google_email_list'] = session_user.ext.google.email
         else:

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
+import base64
 import http.client
 
 
@@ -48,7 +49,7 @@ class Handler(_Handler):
         tmpl_data = dict()
         tmpl_data['user'] = user
         tmpl_data['fido2_list'] = [
-            {'id': __import__('base64').urlsafe_b64encode(credential.id).rstrip(b'=').decode('ascii'),
+            {'id': base64.urlsafe_b64encode(credential.id).rstrip(b'=').decode('ascii'),
              'aaguid': (credential.aaguid or b'').hex(),
              'name': credential.name or ''}
             for credential in user.fido2_credentials
