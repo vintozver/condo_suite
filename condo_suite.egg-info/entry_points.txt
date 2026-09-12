@@ -1,2 +1,0 @@
-[console_scripts]
-condo-suite-rbac = condo_suite.util.deploy.rbac:deploy
