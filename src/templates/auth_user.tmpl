@@ -75,7 +75,7 @@ $("#fido2_register").click(function () {
 <p><button type="button" id="fido2_auth">Authenticate with FIDO2</button></p>
 <script>
 $("#fido2_auth").click(function () {
-    var options = {{ fido2_auth_options|safe }};
+    var options = {{ fido2_auth_options|tojson }};
     options.challenge = Uint8Array.from(atob(options.challenge.replace(/-/g, "+").replace(/_/g, "/") + "=="), function (c) { return c.charCodeAt(0); });
     if (options.allowCredentials) options.allowCredentials.forEach(function (c) {
         c.id = Uint8Array.from(atob(c.id.replace(/-/g, "+").replace(/_/g, "/") + "=="), function (x) { return x.charCodeAt(0); });
