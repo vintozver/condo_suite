@@ -27,7 +27,7 @@ dependencies = [
     "Cython",
     "qrcode",
     "fido2",
-    "cryptography>=48.0.1",
+    "cryptography",
 ]
 
 [project.scripts]
