@@ -7,6 +7,7 @@ import json
 from ...modules import rbac as mod_rbac
 from ...handlers.web import skeleton as mod_tmpl
 from ...handlers.web import decorator as deco
+from ...handlers.web.auth_ext import fido2 as mod_fido2
 
 
 class HandlerError(_HandlerError):
@@ -28,6 +29,9 @@ class Handler(_Handler):
 
             tmpl_args['google_email_list'] = session_user.ext.google.email
         else:
+            tmpl_args['fido2_auth_options'] = mod_fido2.authentication_begin(
+                self.req, self.req.context.session
+            )
             tmpl_args['authenticated'] = False
 
         try:

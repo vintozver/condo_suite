@@ -5,7 +5,6 @@ import http.client
 import json
 import urllib.parse
 
-import fido2.features
 from fido2.server import Fido2Server
 from fido2.webauthn import (
     AttestedCredentialData,
@@ -14,10 +13,9 @@ from fido2.webauthn import (
     PublicKeyCredentialRpEntity,
     PublicKeyCredentialUserEntity,
     PublicKeyCredentialDescriptor,
+    PublicKeyCredentialType,
     UserVerificationRequirement,
 )
-
-fido2.features.webauthn_json_mapping.enabled = True
 
 from .... import config
 from ....handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
@@ -41,17 +39,20 @@ def _unb64(value):
 def _server(req):
     host = req.getHeader('Host')
     rp_id = urllib.parse.urlsplit('//%s' % host).hostname
-    rp = PublicKeyCredentialRpEntity(config.business_name, rp_id)
+    rp = PublicKeyCredentialRpEntity(name=config.business_name, id=rp_id)
     scheme = 'https' if req.isSecure() else 'http'
     return Fido2Server(
-        rp,
+        rp=rp,
         attestation=AttestationConveyancePreference.ENTERPRISE,
         verify_origin=lambda origin: origin == '%s://%s' % (scheme, host)
     )
 
 
-def _json(value):
-    return json.dumps(dict(value))
+def authentication_begin(req, session):
+    options, state = _server(req).authenticate_begin()
+    session['fido2_state'] = {'purpose': 'authenticate', 'state': state}
+    session.save()
+    return dict(options.public_key)
 
 
 class Handler(_Handler):
@@ -73,16 +74,18 @@ class Handler(_Handler):
                     id=session_user.id.binary,
                     display_name=session_user.name,
                 )
-                credentials = [PublicKeyCredentialDescriptor(c.id) for c in session_user.fido2_credentials]
+                credentials = [
+                    PublicKeyCredentialDescriptor(type=PublicKeyCredentialType.PUBLIC_KEY, id=c.id)
+                    for c in session_user.fido2_credentials
+                ]
                 options, state = _server(self.req).register_begin(
-                    user, credentials, user_verification=UserVerificationRequirement.PREFERRED
+                    user=user, credentials=credentials, user_verification=UserVerificationRequirement.PREFERRED
                 )
                 session['fido2_state'] = {'purpose': 'register', 'state': state}
+                session.save()
+                response = dict(options.public_key)
             else:
-                options, state = _server(self.req).authenticate_begin()
-                session['fido2_state'] = {'purpose': 'authenticate', 'state': state}
-            session.save()
-            response = _json(options.public_key)
+                response = authentication_begin(self.req, session)
         else:
             try:
                 body = json.loads(self.req.request_body.decode('utf-8'))
@@ -117,9 +120,9 @@ class Handler(_Handler):
                 if not credentials:
                     raise HandlerError('Unknown FIDO2 credential')
                 credential = _server(self.req).authenticate_complete(
-                    pending['state'],
-                    [AttestedCredentialData(c.data) for c in credentials],
-                    response,
+                    state=pending['state'],
+                    credentials=[AttestedCredentialData(c.data) for c in credentials],
+                    response=response,
                 )
                 user = next(user for user in users if any(c.id == credential.credential_id for c in user.fido2_credentials))
                 session['id_user'] = user.id

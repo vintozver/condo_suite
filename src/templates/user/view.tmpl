@@ -26,7 +26,7 @@
 <div class="fido2">
 <h3>FIDO2 credentials</h3>
 <table>
-<thead><tr><th>Name</th><th>Credential ID</th><th>AAGUID</th></tr></thead>
+<thead><tr><th>Name</th><th>Credential ID</th><th>AAGUID</th>{% if perm_fido2_remove|default(False) %}<th></th>{% endif %}</tr></thead>
 <tbody>
 {% for credential in fido2_list %}
 <tr><td>{{ credential.name|default('Security key')|e }}</td><td>{{ credential.id|e }}</td><td>{{ credential.aaguid|e }}</td>
@@ -34,25 +34,12 @@
 {% else %}<tr><td colspan="3">No FIDO2 credentials</td></tr>{% endfor %}
 </tbody>
 </table>
-{% if myself %}<p><button type="button" id="fido2_register">Add this device</button></p>{% endif %}
 </div>
 <script>
-$("#fido2_register").click(function () {
-    $.getJSON("/auth/ext/fido2?op=register", function (options) {
-        options.challenge = Uint8Array.from(atob(options.challenge.replace(/-/g, "+").replace(/_/g, "/") + "=="), function (c) { return c.charCodeAt(0); });
-        if (options.user) options.user.id = Uint8Array.from(atob(options.user.id.replace(/-/g, "+").replace(/_/g, "/") + "=="), function (c) { return c.charCodeAt(0); });
-        navigator.credentials.create({publicKey: options}).then(function (credential) {
-            var response = credential.response;
-            var encode = function (value) { return btoa(String.fromCharCode.apply(null, new Uint8Array(value))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); };
-            $.ajax({method: "POST", url: "/auth/ext/fido2", contentType: "application/json",
-                data: JSON.stringify({response: {clientDataJSON: encode(response.clientDataJSON), attestationObject: encode(response.attestationObject)}}),
-                success: function () { window.location.reload(); }});
-        });
-    });
-});
 $(".fido2_remove").click(function () {
+    if (!window.confirm("Remove this FIDO2 credential? You may be unable to authenticate with FIDO2 afterwards.")) return;
     $.ajax({method: "POST", url: "/user/update/{{ user.id }}", contentType: "application/json",
-        data: JSON.stringify({op: "fido2/remove", args: {id: $(this).data("credential-id")}}),
+        data: JSON.stringify({op: "fido2/remove", args: {id: $(this).data("credential-id"), confirm: true}}),
         success: function () { window.location.reload(); }});
 });
 </script>
