@@ -3,6 +3,7 @@
 import base64
 import http.client
 import json
+import urllib.parse
 
 import fido2.features
 from fido2.server import Fido2Server
@@ -38,12 +39,14 @@ def _unb64(value):
 
 
 def _server(req):
-    rp = PublicKeyCredentialRpEntity(config.business_name, config.fido2_rp_id)
+    host = req.getHeader('Host')
+    rp_id = urllib.parse.urlsplit('//%s' % host).hostname
+    rp = PublicKeyCredentialRpEntity(config.business_name, rp_id)
     scheme = 'https' if req.isSecure() else 'http'
     return Fido2Server(
         rp,
         attestation=AttestationConveyancePreference.ENTERPRISE,
-        verify_origin=lambda origin: origin == '%s://%s' % (scheme, config.fido2_rp_id)
+        verify_origin=lambda origin: origin == '%s://%s' % (scheme, host)
     )
 
 

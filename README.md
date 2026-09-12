@@ -25,8 +25,6 @@ google:
   client_secret: ""
   redirect_uri: ""
   javascript_origin: ""
-fido2:
-  rp_id: localhost
 ```
 
 MongoDB connection details are supplied through `mongodb_uri`; separate host,
