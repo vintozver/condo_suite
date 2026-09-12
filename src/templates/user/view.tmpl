@@ -54,7 +54,7 @@ $(".fido2_remove").click(function () {
 </table>
 
 <div style="display: none;" id="keyset_add" title="Add a signing key">
-<p class="validateTips">Key ID and at least one of the public key or the certificate are required. Values are base64 encoded (PEM body).</p>
+<p class="validateTips">Key ID and exactly one of the public key or the certificate are required. Values are PEM encoded.</p>
 <form action="">
 <table>
 <tr><td><label for="keyset_add__key_id">Key ID</label></td><td><input type="text" name="key_id" value="" size="32" maxlength="128" id="keyset_add__key_id" class="text ui-widget-content ui-corner-all" /></td></tr>
@@ -221,14 +221,14 @@ var show_keyset_add_dialog = function (confirm_callback /* key_id, key_pub, key_
     };
 
     var confirm = function () {
-        var key_id = thedialog.find("form input[type=text][name=key_id]").val();
-        var key_pub = thedialog.find("form textarea[name=key_pub]").val();
-        var key_crt = thedialog.find("form textarea[name=key_crt]").val();
+        var key_id = $.trim(thedialog.find("form input[type=text][name=key_id]").val());
+        var key_pub = $.trim(thedialog.find("form textarea[name=key_pub]").val());
+        var key_crt = $.trim(thedialog.find("form textarea[name=key_crt]").val());
         if (key_id == "") {
             thedialog.find("form input[type=text][name=key_id]").css("border-color", "red");
             return;
         }
-        if (key_pub == "" && key_crt == "") {
+        if ((key_pub == "") == (key_crt == "")) {
             thedialog.find("form textarea[name=key_pub]").css("border-color", "red");
             thedialog.find("form textarea[name=key_crt]").css("border-color", "red");
             return;

@@ -6,6 +6,10 @@ import json
 import http.client
 import base64
 
+from cryptography import exceptions as cryptography_exceptions
+from cryptography import x509 as cryptography_x509
+from cryptography.hazmat.primitives import serialization as cryptography_serialization
+
 from ... import config as config
 
 from ...modules import mongo as mod_mongo
@@ -41,7 +45,7 @@ class Handler(_Handler):
         with mod_mongo.DbSessionController() as db_session:
             db_session[config.name]['users'].update_one(
                 {'_id': user.id},
-                {'$pull': {'fido2_credentials': {'id': __import__('base64').urlsafe_b64decode(
+                {'$pull': {'fido2_credentials': {'id': base64.urlsafe_b64decode(
                     credential_id + '=' * (-len(credential_id) % 4)
                 )}}},
             )
@@ -57,26 +61,35 @@ class Handler(_Handler):
         values = {}
         for field in ('pub', 'crt'):
             value = args.get(field)
-            if value:
-                if not isinstance(value, str):
-                    raise HandlerError('Parameter error', field)
-                # the value may be supplied as a multiline PEM block or as a plain multiline base64 chunk
-                value = ''.join(
-                    ''.join(line.split()) for line in value.splitlines() if not line.strip().startswith('-----')
-                )
-                if not value:
-                    raise HandlerError('Parameter error', field)
-                try:
-                    values[field] = base64.b64decode(value, validate=True)
-                except (ValueError, TypeError):
-                    raise HandlerError('Parameter error', field)
-        if not values:
-            raise HandlerError('A public key or certificate is required')
+            if value is None or (isinstance(value, str) and not value.strip()):
+                continue
+            if not isinstance(value, str):
+                raise HandlerError('Parameter error', field)
+            values[field] = value
+        if len(values) != 1:
+            raise HandlerError('Exactly one of the public key or the certificate is required')
+
+        item = {'id': key_id}
+        if 'pub' in values:
+            try:
+                public_key = cryptography_serialization.load_pem_public_key(values['pub'].encode('ascii'))
+            except (ValueError, TypeError, UnicodeEncodeError, cryptography_exceptions.UnsupportedAlgorithm):
+                raise HandlerError('Parameter error', 'pub')
+            item['pub'] = public_key.public_bytes(
+                encoding=cryptography_serialization.Encoding.DER,
+                format=cryptography_serialization.PublicFormat.SubjectPublicKeyInfo,
+            )
+        else:
+            try:
+                certificate = cryptography_x509.load_pem_x509_certificate(values['crt'].encode('ascii'))
+            except (ValueError, TypeError, UnicodeEncodeError, cryptography_exceptions.UnsupportedAlgorithm):
+                raise HandlerError('Parameter error', 'crt')
+            item['crt'] = certificate.public_bytes(encoding=cryptography_serialization.Encoding.DER)
 
         with mod_mongo.DbSessionController() as db_session:
             db_session[config.name]['users'].update_one(
                 {'_id': user.id},
-                {'$push': {'keyset': mod_mongo.bson.son.SON({'id': key_id, **values})}},
+                {'$push': {'keyset': mod_mongo.bson.son.SON(item)}},
             )
 
     @classmethod
