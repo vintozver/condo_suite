@@ -15,7 +15,7 @@ class Fido2CredentialDocument(mod_mongo.mongoengine.EmbeddedDocument):
     name = mod_mongo.mongoengine.StringField(max_length=128)
 
 
-class UserKeyItem(mod_mongo.mongoengine.EmbeddedDocument):
+class KeyItem(mod_mongo.mongoengine.EmbeddedDocument):
     """A signing key or certificate belonging to a user."""
 
     id = mod_mongo.mongoengine.StringField(required=True)
@@ -55,7 +55,7 @@ class UserDocument(mod_mongo.mongoengine.Document):
     # WebAuthn/FIDO2 credentials
     fido2_credentials = mod_mongo.mongoengine.EmbeddedDocumentListField(Fido2CredentialDocument, default=list)
     # Signing keys and certificates used by external integrations
-    keyset = mod_mongo.mongoengine.EmbeddedDocumentListField(UserKeyItem, default=list)
+    keyset = mod_mongo.mongoengine.EmbeddedDocumentListField(KeyItem, default=list)
     # External modules
     ext = mod_mongo.mongoengine.EmbeddedDocumentField(ExtDocument, default=ExtDocument)
     # linked agents
