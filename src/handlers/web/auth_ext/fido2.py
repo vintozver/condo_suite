@@ -99,14 +99,19 @@ class Handler(_Handler):
             if pending['purpose'] == 'register':
                 if session_user is None:
                     raise HandlerError('Authentication is required to register a credential')
-                response = body['response']
+                try:
+                    response = body['response']
+                    client_data = CollectedClientData(_unb64(response['clientDataJSON']))
+                    attestation_object = AttestationObject(_unb64(response['attestationObject']))
+                except (KeyError, TypeError, ValueError):
+                    raise HandlerError('FIDO2 registration response is malformed')
                 auth_data = _server(self.req).register_complete(
                     pending['state'],
                     response=RegistrationResponse(
                         raw_id=session_user.id.binary,
                         response=AuthenticatorAttestationResponse(
-                            client_data=CollectedClientData(_unb64(response['clientDataJSON'])),
-                            attestation_object=AttestationObject(_unb64(response['attestationObject'])),
+                            client_data=client_data,
+                            attestation_object=attestation_object,
                         )
                     )
                 )

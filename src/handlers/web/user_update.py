@@ -65,7 +65,7 @@ class Handler(_Handler):
                     ''.join(line.split()) for line in value.splitlines() if not line.strip().startswith('-----')
                 )
                 if not value:
-                    continue
+                    raise HandlerError('Parameter error', field)
                 try:
                     values[field] = base64.b64decode(value, validate=True)
                 except (ValueError, TypeError):
