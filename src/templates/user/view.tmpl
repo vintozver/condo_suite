@@ -57,6 +57,38 @@ $(".fido2_remove").click(function () {
 });
 </script>
 
+<div class="keyset">
+<h3>Signing keys</h3>
+<table>
+<thead><tr><th>Key ID</th><th>Public key</th><th>Certificate</th>{% if perm_keyset_remove|default(False) %}<th></th>{% endif %}</tr></thead>
+<tbody>
+{% for key in keyset_list %}
+<tr><td>{{ key.id|e }}</td><td>{{ 'yes' if key.has_pub else 'no' }}</td><td>{{ 'yes' if key.has_crt else 'no' }}</td>
+{% if perm_keyset_remove|default(False) %}<td><button type="button" class="keyset_remove" data-key-id="{{ key.id|e }}">Remove</button></td>{% endif %}</tr>
+{% else %}<tr><td colspan="4">No signing keys</td></tr>{% endfor %}
+</tbody>
+</table>
+{% if perm_keyset_add|default(False) %}
+<p><label>Key ID <input type="text" id="keyset_id" maxlength="128"></label>
+<label>Public key (base64) <input type="text" id="keyset_pub"></label>
+<label>Certificate (base64) <input type="text" id="keyset_crt"></label>
+<button type="button" id="keyset_add">Add key</button></p>
+{% endif %}
+</div>
+<script>
+$("#keyset_add").click(function () {
+    $.ajax({method: "POST", url: "/user/update/{{ user.id }}", contentType: "application/json",
+        data: JSON.stringify({op: "keyset/add", args: {
+            id: $("#keyset_id").val(), pub: $("#keyset_pub").val(), crt: $("#keyset_crt").val()
+        }}), success: function () { window.location.reload(); }});
+});
+$(".keyset_remove").click(function () {
+    $.ajax({method: "POST", url: "/user/update/{{ user.id }}", contentType: "application/json",
+        data: JSON.stringify({op: "keyset/remove", args: {id: $(this).data("key-id")}}),
+        success: function () { window.location.reload(); }});
+});
+</script>
+
 <div class="agent">
     <h3>Assigned agents</h3>
     <table>

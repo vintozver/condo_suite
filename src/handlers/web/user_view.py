@@ -53,6 +53,10 @@ class Handler(_Handler):
              'name': credential.name or ''}
             for credential in user.fido2_credentials
         ]
+        tmpl_data['keyset_list'] = [
+            {'id': key.id, 'has_pub': bool(key.pub), 'has_crt': bool(key.crt)}
+            for key in user.keyset
+        ]
 
         user_agent_list = [
             {
@@ -73,6 +77,8 @@ class Handler(_Handler):
         # admin role management cannot be performed for the user itself. They must be managed by someone else
         tmpl_data['myself'] = session_user.id == user.id
         tmpl_data['perm_fido2_remove'] = session_user.rbac_has_permission('user.fido2/remove') and not tmpl_data['myself']
+        tmpl_data['perm_keyset_add'] = session_user.rbac_has_permission('user.keyset/add')
+        tmpl_data['perm_keyset_remove'] = session_user.rbac_has_permission('user.keyset/remove')
         tmpl_data['perm_role_admin_add'] = session_user.rbac_has_permission('user.role(admin)/add')
         tmpl_data['perm_role_admin_remove'] = session_user.rbac_has_permission('user.role(admin)/remove')
 

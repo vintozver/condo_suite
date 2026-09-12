@@ -4,6 +4,7 @@ from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
 import uuid
 import json
 import http.client
+import base64
 
 from ... import config as config
 
@@ -43,6 +44,43 @@ class Handler(_Handler):
                 {'$pull': {'fido2_credentials': {'id': __import__('base64').urlsafe_b64decode(
                     credential_id + '=' * (-len(credential_id) % 4)
                 )}}},
+            )
+
+    @classmethod
+    def process_keyset_add(cls, user, args):
+        key_id = args.get('id')
+        if not isinstance(key_id, str) or not key_id or len(key_id) > 128:
+            raise HandlerError('Parameter error', 'id')
+        if any(item.id == key_id for item in user.keyset):
+            raise HandlerError('A signing key with this id already exists', key_id)
+
+        values = {}
+        for field in ('pub', 'crt'):
+            value = args.get(field)
+            if value:
+                if not isinstance(value, str):
+                    raise HandlerError('Parameter error', field)
+                try:
+                    values[field] = base64.b64decode(value, validate=True)
+                except (ValueError, TypeError):
+                    raise HandlerError('Parameter error', field)
+        if not values:
+            raise HandlerError('A public key or certificate is required')
+
+        with mod_mongo.DbSessionController() as db_session:
+            db_session[config.name]['users'].update_one(
+                {'_id': user.id},
+                {'$push': {'keyset': mod_mongo.bson.son.SON({'id': key_id, **values})}},
+            )
+
+    @classmethod
+    def process_keyset_remove(cls, user, args):
+        key_id = args.get('id')
+        if not isinstance(key_id, str) or not key_id:
+            raise HandlerError('Parameter error', 'id')
+        with mod_mongo.DbSessionController() as db_session:
+            db_session[config.name]['users'].update_one(
+                {'_id': user.id}, {'$pull': {'keyset': {'id': key_id}}}
             )
 
     @classmethod
@@ -145,6 +183,16 @@ class Handler(_Handler):
             if not session_user.rbac_has_permission(perm):
                 raise deco.auth.SecurityError('Permission required', perm)
             self.process_fido2_remove(user, args)
+        elif operation == 'keyset/add':
+            perm = 'user.keyset/add'
+            if not session_user.rbac_has_permission(perm):
+                raise deco.auth.SecurityError('Permission required', perm)
+            self.process_keyset_add(user, args)
+        elif operation == 'keyset/remove':
+            perm = 'user.keyset/remove'
+            if not session_user.rbac_has_permission(perm):
+                raise deco.auth.SecurityError('Permission required', perm)
+            self.process_keyset_remove(user, args)
         elif operation == 'agent/get':
             # if update action is allowed than we have to be able to get exists agent data from users collection
             perm = 'user.agent/update'

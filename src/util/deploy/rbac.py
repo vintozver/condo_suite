@@ -39,6 +39,12 @@ embedded_roles = [
         'permissions': ['user.fido2/remove']
     },
     {
+        'uuid': uuid.UUID('0bb8b9f7c6e24df3a17afbc7a51c53c1'),
+        'name': 'User signing keyset management',
+        'sort_order': 21,
+        'permissions': ['user.keyset/add', 'user.keyset/remove']
+    },
+    {
         'uuid': uuid.UUID('26a4af63f943477898eb9d6e9f4755ef'), 'name': 'User agent management', 'sort_order': 21,
         'permissions': ['user.agent/add', 'user.agent/remove', 'user.agent/update']
     },
