@@ -27,7 +27,6 @@ google:
 fido2:
   rp_id: localhost
   rp_name: Condo Suite
-  origin: http://localhost
 ```
 
 MongoDB connection details are supplied through `mongodb_uri`; separate host,

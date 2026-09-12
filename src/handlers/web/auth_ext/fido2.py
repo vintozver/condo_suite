@@ -36,9 +36,11 @@ def _unb64(value):
     return base64.urlsafe_b64decode(value + '=' * (-len(value) % 4))
 
 
-def _server():
+def _server(req):
     rp = PublicKeyCredentialRpEntity(config.fido2_rp_name, config.fido2_rp_id)
-    return Fido2Server(rp, verify_origin=lambda origin: origin == config.fido2_origin)
+    scheme = 'https' if req.isSecure() else 'http'
+    host = req.getHeader('Host')
+    return Fido2Server(rp, verify_origin=lambda origin: origin == '%s://%s' % (scheme, host))
 
 
 def _json(value):
@@ -65,12 +67,12 @@ class Handler(_Handler):
                     display_name=session_user.name,
                 )
                 credentials = [PublicKeyCredentialDescriptor(c.id) for c in session_user.fido2_credentials]
-                options, state = _server().register_begin(
+                options, state = _server(self.req).register_begin(
                     user, credentials, user_verification=UserVerificationRequirement.PREFERRED
                 )
                 session['fido2_state'] = {'purpose': 'register', 'state': state}
             else:
-                options, state = _server().authenticate_begin()
+                options, state = _server(self.req).authenticate_begin()
                 session['fido2_state'] = {'purpose': 'authenticate', 'state': state}
             session.save()
             response = _json(options.public_key)
@@ -84,7 +86,7 @@ class Handler(_Handler):
             if pending['purpose'] == 'register':
                 if session_user is None:
                     raise HandlerError('Authentication is required to register a credential')
-                auth_data = _server().register_complete(pending['state'], response)
+                auth_data = _server(self.req).register_complete(pending['state'], response)
                 credential = auth_data.credential_data
                 if credential is None:
                     raise HandlerError('FIDO2 response did not contain credential data')
@@ -106,7 +108,7 @@ class Handler(_Handler):
                     credentials.extend(user.fido2_credentials)
                 if not credentials:
                     raise HandlerError('Unknown FIDO2 credential')
-                credential = _server().authenticate_complete(
+                credential = _server(self.req).authenticate_complete(
                     pending['state'],
                     [AttestedCredentialData(c.data) for c in credentials],
                     response,
