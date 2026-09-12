@@ -5,6 +5,7 @@ import uuid
 import json
 import http.client
 import base64
+import binascii
 
 from cryptography import exceptions as cryptography_exceptions
 from cryptography import x509 as cryptography_x509
@@ -38,16 +39,37 @@ class Handler(_Handler):
                 db_session[config.name]['users'].update_one({'_id': user.id}, {'$set': query_set})
 
     @classmethod
-    def process_fido2_remove(cls, user, args):
+    def process_fido2_credential_id(cls, args):
         credential_id = args.get('id')
         if not credential_id or not isinstance(credential_id, str):
             raise HandlerError('Parameter error', 'id')
+        try:
+            return base64.urlsafe_b64decode(credential_id + '=' * (-len(credential_id) % 4))
+        except (ValueError, binascii.Error):
+            raise HandlerError('Parameter error', 'id')
+
+    @classmethod
+    def process_fido2_remove(cls, user, args):
+        credential_id = cls.process_fido2_credential_id(args)
         with mod_mongo.DbSessionController() as db_session:
             db_session[config.name]['users'].update_one(
                 {'_id': user.id},
-                {'$pull': {'fido2_credentials': {'id': base64.urlsafe_b64decode(
-                    credential_id + '=' * (-len(credential_id) % 4)
-                )}}},
+                {'$pull': {'fido2_credentials': {'id': credential_id}}},
+            )
+
+    @classmethod
+    def process_fido2_rename(cls, user, args):
+        credential_id = cls.process_fido2_credential_id(args)
+        name = args.get('name')
+        if not isinstance(name, str):
+            raise HandlerError('Parameter error', 'name')
+        name = name.strip()
+        if not name or len(name) > 128:
+            raise HandlerError('Parameter error', 'name')
+        with mod_mongo.DbSessionController() as db_session:
+            db_session[config.name]['users'].update_one(
+                {'_id': user.id, 'fido2_credentials.id': credential_id},
+                {'$set': {'fido2_credentials.$.name': name}},
             )
 
     @classmethod
@@ -202,6 +224,11 @@ class Handler(_Handler):
             if user.id == session_user.id and args.get('confirm') is not True:
                 raise HandlerError('Confirmation required to remove your own FIDO2 credential')
             self.process_fido2_remove(user, args)
+        elif operation == 'fido2/rename':
+            # FIDO2 credentials can be renamed by their owner only
+            if user.id != session_user.id:
+                raise deco.auth.SecurityError('FIDO2 credentials can be renamed by their owner only')
+            self.process_fido2_rename(user, args)
         elif operation == 'keyset/add':
             perm = 'user.keyset/add'
             if not session_user.rbac_has_permission(perm):

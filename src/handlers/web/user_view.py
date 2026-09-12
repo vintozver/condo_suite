@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
+import base64
 import http.client
 
 
@@ -48,7 +49,7 @@ class Handler(_Handler):
         tmpl_data = dict()
         tmpl_data['user'] = user
         tmpl_data['fido2_list'] = [
-            {'id': __import__('base64').urlsafe_b64encode(credential.id).rstrip(b'=').decode('ascii'),
+            {'id': base64.urlsafe_b64encode(credential.id).rstrip(b'=').decode('ascii'),
              'aaguid': (credential.aaguid or b'').hex(),
              'name': credential.name or ''}
             for credential in user.fido2_credentials
@@ -76,6 +77,8 @@ class Handler(_Handler):
         tmpl_data['perm_role_regular_remove'] = session_user.rbac_has_permission('user.role(regular)/remove')
         tmpl_data['myself'] = session_user.id == user.id
         tmpl_data['perm_fido2_remove'] = session_user.rbac_has_permission('user.fido2/remove')
+        # FIDO2 credentials can be renamed by their owner only
+        tmpl_data['perm_fido2_rename'] = session_user.id == user.id
         tmpl_data['perm_keyset_add'] = session_user.rbac_has_permission('user.keyset/add')
         tmpl_data['perm_keyset_remove'] = session_user.rbac_has_permission('user.keyset/remove')
         # admin role management cannot be performed for the user itself. They must be managed by someone else
