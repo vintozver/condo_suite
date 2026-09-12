@@ -33,33 +33,17 @@ class Handler(_Handler):
                 db_session[config.name]['users'].update_one({'_id': user.id}, {'$set': query_set})
 
     @classmethod
-    def process_ssl_crt_args(cls, args):
-        serial = args['serial']
-        if not serial or not isinstance(serial, str):
-            raise HandlerError('Parameter error', 'serial')
-        subject_dn = args['subject_dn']
-        if not subject_dn or not isinstance(subject_dn, str):
-            raise HandlerError('Parameter error', 'subject_dn')
-        issuer_dn = args['issuer_dn']
-        if not issuer_dn or not isinstance(issuer_dn, str):
-            raise HandlerError('Parameter error', 'issuer_dn')
-        return serial, subject_dn, issuer_dn
-
-    @classmethod
-    def process_ssl_crt_add(cls, user, args):
-        serial, subject_dn, issuer_dn = cls.process_ssl_crt_args(args)
+    def process_fido2_remove(cls, user, args):
+        credential_id = args.get('id')
+        if not credential_id or not isinstance(credential_id, str):
+            raise HandlerError('Parameter error', 'id')
         with mod_mongo.DbSessionController() as db_session:
-            db_session[config.name]['users'].update_one({'_id': user.id}, {'$push': {'ssl_crt': {
-                'serial': serial, 'subject_dn': subject_dn, 'issuer_dn': issuer_dn,
-            }}})
-
-    @classmethod
-    def process_ssl_crt_remove(cls, user, args):
-        serial, subject_dn, issuer_dn = cls.process_ssl_crt_args(args)
-        with mod_mongo.DbSessionController() as db_session:
-            db_session[config.name]['users'].update_one({'_id': user.id}, {'$pull': {'ssl_crt': {
-                'serial': serial, 'subject_dn': subject_dn, 'issuer_dn': issuer_dn,
-            }}})
+            db_session[config.name]['users'].update_one(
+                {'_id': user.id},
+                {'$pull': {'fido2_credentials': {'id': __import__('base64').urlsafe_b64decode(
+                    credential_id + '=' * (-len(credential_id) % 4)
+                )}}},
+            )
 
     @classmethod
     def process_agent_args(cls, args):
@@ -154,16 +138,13 @@ class Handler(_Handler):
             if not session_user.rbac_has_permission(perm):
                 raise deco.auth.SecurityError('Permission required', perm)
             self.process_info_set(user, args)
-        elif operation == 'ssl_crt/add':
-            perm = 'user.ssl_crt/add'
+        elif operation == 'fido2/remove':
+            if user.id == session_user.id:
+                raise deco.auth.SecurityError('FIDO2 credentials cannot be removed from the logged in user')
+            perm = 'user.fido2/remove'
             if not session_user.rbac_has_permission(perm):
                 raise deco.auth.SecurityError('Permission required', perm)
-            self.process_ssl_crt_add(user, args)
-        elif operation == 'ssl_crt/remove':
-            perm = 'user.ssl_crt/remove'
-            if not session_user.rbac_has_permission(perm):
-                raise deco.auth.SecurityError('Permission required', perm)
-            self.process_ssl_crt_remove(user, args)
+            self.process_fido2_remove(user, args)
         elif operation == 'agent/get':
             # if update action is allowed than we have to be able to get exists agent data from users collection
             perm = 'user.agent/update'

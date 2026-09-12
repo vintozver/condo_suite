@@ -18,6 +18,7 @@ Create `run/config.yaml`:
 
 ```yaml
 mongodb_uri: mongodb://localhost/parking-enforcement
+business_name: Condo Suite
 timezone: UTC
 google:
   client_id: ""

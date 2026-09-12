@@ -12,6 +12,7 @@ except FileNotFoundError:
 
 mongodb_uri = settings.get('mongodb_uri', 'mongodb://localhost/parking-enforcement')
 name = urllib.parse.urlparse(mongodb_uri).path.lstrip('/') or 'parking-enforcement'
+business_name = settings.get('business_name', 'Condo Suite')
 google = settings.get('google', {})
 google_client_id = google.get('client_id')
 google_client_secret = google.get('client_secret')

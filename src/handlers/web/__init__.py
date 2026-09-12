@@ -48,7 +48,7 @@ class Handler(_Handler):
             {'regex': re.compile(r'^/user/?$'), 'handler': 'handlers.web.auth_user'},
             {'regex': re.compile(r'^/agent/?$'), 'handler': 'handlers.web.auth_agent'},
             {'regex': re.compile(r'^/info/?$'), 'handler': 'handlers.web.auth_info'},  # JSON handler
-            {'regex': re.compile(r'^/ext/ssl/?$'), 'handler': 'handlers.web.auth_ext.ssl'},
+            {'regex': re.compile(r'^/ext/fido2/?$'), 'handler': 'handlers.web.auth_ext.fido2'},
             {'regex': re.compile(r'^/ext/google/?$'), 'handler': 'handlers.web.auth_ext.google'},
         ]},
         {'regex': re.compile(r'^/\buser\b'), 'map': [

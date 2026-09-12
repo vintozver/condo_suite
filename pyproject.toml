@@ -26,6 +26,7 @@ dependencies = [
     "Jinja2",
     "Cython",
     "qrcode",
+    "fido2",
 ]
 
 [project.scripts]

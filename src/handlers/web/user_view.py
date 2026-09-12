@@ -47,9 +47,11 @@ class Handler(_Handler):
 
         tmpl_data = dict()
         tmpl_data['user'] = user
-        tmpl_data['ssl_crt_list'] = [
-            {'serial': crt.serial, 'subject_dn': crt.subject_dn, 'issuer_dn': crt.issuer_dn}
-            for crt in user.ssl_crt
+        tmpl_data['fido2_list'] = [
+            {'id': __import__('base64').urlsafe_b64encode(credential.id).rstrip(b'=').decode('ascii'),
+             'aaguid': (credential.aaguid or b'').hex(),
+             'name': credential.name or ''}
+            for credential in user.fido2_credentials
         ]
 
         user_agent_list = [
@@ -63,8 +65,6 @@ class Handler(_Handler):
         tmpl_data['user_agent_list'] = user_agent_list
 
         tmpl_data['perm_edit'] = session_user.rbac_has_permission('user.info/edit')
-        tmpl_data['perm_ssl_crt_add'] = session_user.rbac_has_permission('user.ssl_crt/add')
-        tmpl_data['perm_ssl_crt_remove'] = session_user.rbac_has_permission('user.ssl_crt/remove')
         tmpl_data['perm_agent_add'] = session_user.rbac_has_permission('user.agent/add')
         tmpl_data['perm_agent_remove'] = session_user.rbac_has_permission('user.agent/remove')
         tmpl_data['perm_agent_update'] = session_user.rbac_has_permission('user.agent/update')
@@ -72,6 +72,7 @@ class Handler(_Handler):
         tmpl_data['perm_role_regular_remove'] = session_user.rbac_has_permission('user.role(regular)/remove')
         # admin role management cannot be performed for the user itself. They must be managed by someone else
         tmpl_data['myself'] = session_user.id == user.id
+        tmpl_data['perm_fido2_remove'] = session_user.rbac_has_permission('user.fido2/remove') and not tmpl_data['myself']
         tmpl_data['perm_role_admin_add'] = session_user.rbac_has_permission('user.role(admin)/add')
         tmpl_data['perm_role_admin_remove'] = session_user.rbac_has_permission('user.role(admin)/remove')
 
