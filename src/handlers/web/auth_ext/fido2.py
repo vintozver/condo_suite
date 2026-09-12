@@ -48,10 +48,6 @@ def _server(req):
     )
 
 
-def _json(value):
-    return json.dumps(dict(value))
-
-
 def authentication_begin(req, session):
     options, state = _server(req).authenticate_begin()
     session['fido2_state'] = {'purpose': 'authenticate', 'state': state}
@@ -87,9 +83,9 @@ class Handler(_Handler):
                 )
                 session['fido2_state'] = {'purpose': 'register', 'state': state}
                 session.save()
-                response = _json(options.public_key)
+                response = dict(options.public_key)
             else:
-                response = _json(authentication_begin(self.req, session))
+                response = authentication_begin(self.req, session)
         else:
             try:
                 body = json.loads(self.req.request_body.decode('utf-8'))
