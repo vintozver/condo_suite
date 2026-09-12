@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import base64
 import datetime
 import http.client
 import json
 import time
 
+import jwt
 from cryptography import x509
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ec, ed25519, ed448, padding
-from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
+from cryptography.hazmat.primitives import serialization
 
 from .... import config
 from ....modules import mongo as mod_mongo
@@ -31,48 +29,9 @@ class ApiError(Exception):
         self.message = message
 
 
-def _b64decode(value):
-    try:
-        return base64.urlsafe_b64decode(value + '=' * (-len(value) % 4))
-    except (TypeError, ValueError):
-        raise ApiError(http.client.UNAUTHORIZED, 'Invalid token')
-
-
-def _verify(public_key, algorithm, data, signature):
-    if algorithm == 'EdDSA':
-        if not isinstance(public_key, (ed25519.Ed25519PublicKey, ed448.Ed448PublicKey)):
-            raise ValueError()
-        public_key.verify(signature, data)
-        return
-
-    algorithms = {
-        'RS256': (padding.PKCS1v15(), hashes.SHA256()),
-        'RS384': (padding.PKCS1v15(), hashes.SHA384()),
-        'RS512': (padding.PKCS1v15(), hashes.SHA512()),
-        'PS256': (padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=32), hashes.SHA256()),
-        'PS384': (padding.PSS(mgf=padding.MGF1(hashes.SHA384()), salt_length=48), hashes.SHA384()),
-        'PS512': (padding.PSS(mgf=padding.MGF1(hashes.SHA512()), salt_length=64), hashes.SHA512()),
-    }
-    if algorithm in algorithms:
-        if not hasattr(public_key, 'verify'):
-            raise ValueError()
-        public_key.verify(signature, data, algorithms[algorithm][0], algorithms[algorithm][1])
-        return
-
-    if algorithm.startswith('ES') and len(signature) % 2 == 0:
-        curve_hash = {'ES256': (32, hashes.SHA256()), 'ES384': (48, hashes.SHA384()), 'ES512': (66, hashes.SHA512())}
-        if algorithm not in curve_hash or not isinstance(public_key, ec.EllipticCurvePublicKey):
-            raise ValueError()
-        size, digest = curve_hash[algorithm]
-        r = int.from_bytes(signature[:size], 'big')
-        s = int.from_bytes(signature[size:], 'big')
-        public_key.verify(encode_dss_signature(r, s), data, ec.ECDSA(digest))
-        return
-    raise ValueError()
-
-
 class Handler(_Handler):
     TOKEN_MAX_AGE = 300
+    JWT_ALGORITHMS = ('RS256', 'RS384', 'RS512', 'PS256', 'PS384', 'PS512', 'ES256', 'ES384', 'ES512', 'EdDSA')
 
     def _error(self, status, message):
         self.req.setResponseCode(status, http.client.responses[status])
@@ -89,16 +48,11 @@ class Handler(_Handler):
         token = self.req.request_headers.get('Authorization', '')
         if not token.startswith('Bearer '):
             raise ApiError(http.client.UNAUTHORIZED, 'Authorization required')
-        parts = token[7:].split('.')
-        if len(parts) != 3:
-            raise ApiError(http.client.UNAUTHORIZED, 'Invalid token')
-        encoded_header, encoded_payload, encoded_signature = parts
         try:
-            header = json.loads(_b64decode(encoded_header).decode('utf-8'))
-            payload = json.loads(_b64decode(encoded_payload).decode('utf-8'))
-        except (UnicodeDecodeError, ValueError, TypeError):
+            header = jwt.get_unverified_header(token[7:])
+        except jwt.InvalidTokenError:
             raise ApiError(http.client.UNAUTHORIZED, 'Invalid token')
-        if not isinstance(header, dict) or not isinstance(payload, dict):
+        if not isinstance(header, dict):
             raise ApiError(http.client.UNAUTHORIZED, 'Invalid token')
         uid, kid, dt, algorithm = (header.get(name) for name in ('uid', 'kid', 'dt', 'alg'))
         if not uid or not kid or not dt or not algorithm:
@@ -120,12 +74,12 @@ class Handler(_Handler):
         if user is None:
             raise ApiError(http.client.UNAUTHORIZED, 'Unknown user')
         key = next((item for item in user.keyset if item.id == kid), None)
-        if key is None or bool(key.pub) == bool(key.crt) or algorithm == 'none':
+        if key is None or bool(key.pub) == bool(key.crt) or algorithm not in self.JWT_ALGORITHMS:
             raise ApiError(http.client.UNAUTHORIZED, 'Unknown signing key')
         try:
             public_key = serialization.load_der_public_key(key.pub) if key.pub else x509.load_der_x509_certificate(key.crt).public_key()
-            _verify(public_key, algorithm, (encoded_header + '.' + encoded_payload).encode('ascii'), _b64decode(encoded_signature))
-        except Exception:
+            payload = jwt.decode(token[7:], public_key, algorithms=[algorithm], options={'verify_aud': False})
+        except (ValueError, TypeError, jwt.InvalidTokenError):
             raise ApiError(http.client.UNAUTHORIZED, 'Invalid signature')
         return user, payload
 
