@@ -76,7 +76,7 @@ class Handler(_Handler):
         tmpl_data['perm_role_regular_remove'] = session_user.rbac_has_permission('user.role(regular)/remove')
         # admin role management cannot be performed for the user itself. They must be managed by someone else
         tmpl_data['myself'] = session_user.id == user.id
-        tmpl_data['perm_fido2_remove'] = session_user.rbac_has_permission('user.fido2/remove') and not tmpl_data['myself']
+        tmpl_data['perm_fido2_remove'] = session_user.rbac_has_permission('user.fido2/remove')
         tmpl_data['perm_keyset_add'] = session_user.rbac_has_permission('user.keyset/add')
         tmpl_data['perm_keyset_remove'] = session_user.rbac_has_permission('user.keyset/remove')
         tmpl_data['perm_role_admin_add'] = session_user.rbac_has_permission('user.role(admin)/add')

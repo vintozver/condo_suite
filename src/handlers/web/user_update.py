@@ -177,8 +177,6 @@ class Handler(_Handler):
                 raise deco.auth.SecurityError('Permission required', perm)
             self.process_info_set(user, args)
         elif operation == 'fido2/remove':
-            if user.id == session_user.id:
-                raise deco.auth.SecurityError('FIDO2 credentials cannot be removed from the logged in user')
             perm = 'user.fido2/remove'
             if not session_user.rbac_has_permission(perm):
                 raise deco.auth.SecurityError('Permission required', perm)
