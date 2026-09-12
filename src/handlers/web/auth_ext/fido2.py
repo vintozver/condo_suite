@@ -86,12 +86,10 @@ class Handler(_Handler):
                     user=user, credentials=credentials, user_verification=UserVerificationRequirement.PREFERRED
                 )
                 session['fido2_state'] = {'purpose': 'register', 'state': state}
-            else:
-                response = authentication_begin(self.req, session)
-                options = None
-            if options is not None:
                 session.save()
                 response = _json(options.public_key)
+            else:
+                response = authentication_begin(self.req, session)
         else:
             try:
                 body = json.loads(self.req.request_body.decode('utf-8'))
