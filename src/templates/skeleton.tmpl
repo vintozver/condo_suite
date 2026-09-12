@@ -28,7 +28,7 @@
 		<script type="text/javascript"{{ {'src': {'netloc': '', 'path': '/static/superfish/js/hoverIntent.js'}|url}|xmlattr }}></script>
 		<script type="text/javascript"{{ {'src': {'netloc': '', 'path': '/static/superfish/js/superfish.js'}|url}|xmlattr }}></script>
 		{%- endblock %}
-		<title>{% block title %}Aspen Grove Condominiums sytem{% endblock %}</title>
+		<title>{% block title %}{{ business_name|default('Condo Suite')|e }}{% endblock %}</title>
 	</head>
 	<body>
 		<ul class="sf-menu" id="header_links">
@@ -68,6 +68,6 @@
 		<!-- base footer  -->
 		{%- endblock %}
 		{%- endblock whole_canvas %}
-		<div class="footer_links">Developed by Vitaly Greck for Aspen Grove Condominiums, Kent, WA. All rights reserved.</div>
+		<div class="footer_links">{{ business_name|default('Condo Suite')|e }}</div>
 	 </body>
 </html>

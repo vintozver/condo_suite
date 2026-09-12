@@ -12,6 +12,7 @@ except FileNotFoundError:
 
 mongodb_uri = settings.get('mongodb_uri', 'mongodb://localhost/parking-enforcement')
 name = urllib.parse.urlparse(mongodb_uri).path.lstrip('/') or 'parking-enforcement'
+business_name = settings.get('business_name', 'Condo Suite')
 google = settings.get('google', {})
 google_client_id = google.get('client_id')
 google_client_secret = google.get('client_secret')
@@ -19,7 +20,6 @@ google_redirect_uri = google.get('redirect_uri')
 google_javascript_origin = google.get('javascript_origin')
 fido2 = settings.get('fido2', {})
 fido2_rp_id = fido2.get('rp_id', 'localhost')
-fido2_rp_name = fido2.get('rp_name', 'Condo Suite')
 timezone = ZoneInfo(settings.get('timezone', 'UTC'))
 
 __all__ = ['settings', 'mongodb_uri', 'name', 'google', 'timezone']

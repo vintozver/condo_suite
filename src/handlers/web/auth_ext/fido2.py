@@ -37,10 +37,12 @@ def _unb64(value):
 
 
 def _server(req):
-    rp = PublicKeyCredentialRpEntity(config.fido2_rp_name, config.fido2_rp_id)
+    rp = PublicKeyCredentialRpEntity(config.business_name, config.fido2_rp_id)
     scheme = 'https' if req.isSecure() else 'http'
-    host = req.getHeader('Host')
-    return Fido2Server(rp, verify_origin=lambda origin: origin == '%s://%s' % (scheme, host))
+    return Fido2Server(
+        rp,
+        verify_origin=lambda origin: origin == '%s://%s' % (scheme, config.fido2_rp_id)
+    )
 
 
 def _json(value):

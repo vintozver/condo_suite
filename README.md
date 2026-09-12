@@ -18,6 +18,7 @@ Create `run/config.yaml`:
 
 ```yaml
 mongodb_uri: mongodb://localhost/parking-enforcement
+business_name: Condo Suite
 timezone: UTC
 google:
   client_id: ""
@@ -26,7 +27,6 @@ google:
   javascript_origin: ""
 fido2:
   rp_id: localhost
-  rp_name: Condo Suite
 ```
 
 MongoDB connection details are supplied through `mongodb_uri`; separate host,

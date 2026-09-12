@@ -4,6 +4,7 @@ from ...util.handler import Handler as _Handler, HandlerError as _HandlerError
 from ...util import handler
 from ...handlers.web import decorator as deco
 from ...modules.templates import filesystem as mod_tmpl_fs
+from ... import config
 
 
 class HandlerError(_HandlerError):
@@ -16,6 +17,7 @@ class Handler(_Handler):
     @deco.session.SessionAgent()
     def tmpl_params(self):
         tmpl_params = dict()
+        tmpl_params['business_name'] = config.business_name
         session_user = self.req.context.session_user
         if session_user is not None:
             tmpl_params['menu_render_parking'] = session_user.rbac_regex_permission('^parking(\\(((\\w+)=)?\\w+\\))*(\\.(\\w+)(\\(((\\w+)=)?(\\w+)\\))*)*/(\\w+)$')
