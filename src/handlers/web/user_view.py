@@ -49,6 +49,7 @@ class Handler(_Handler):
         tmpl_data['user'] = user
         tmpl_data['fido2_list'] = [
             {'id': __import__('base64').urlsafe_b64encode(credential.id).rstrip(b'=').decode('ascii'),
+             'aaguid': (credential.aaguid or b'').hex(),
              'name': credential.name or ''}
             for credential in user.fido2_credentials
         ]

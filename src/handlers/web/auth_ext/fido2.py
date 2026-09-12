@@ -8,6 +8,7 @@ import fido2.features
 from fido2.server import Fido2Server
 from fido2.webauthn import (
     AttestedCredentialData,
+    AttestationConveyancePreference,
     AuthenticatorData,
     PublicKeyCredentialRpEntity,
     PublicKeyCredentialUserEntity,
@@ -41,6 +42,7 @@ def _server(req):
     scheme = 'https' if req.isSecure() else 'http'
     return Fido2Server(
         rp,
+        attestation=AttestationConveyancePreference.ENTERPRISE,
         verify_origin=lambda origin: origin == '%s://%s' % (scheme, config.fido2_rp_id)
     )
 
@@ -98,6 +100,7 @@ class Handler(_Handler):
                         {'$push': {'fido2_credentials': {
                             'id': credential.credential_id,
                             'data': bytes(credential),
+                            'aaguid': credential.aaguid,
                             'sign_count': auth_data.counter,
                         }}},
                     )

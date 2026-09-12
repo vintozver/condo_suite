@@ -26,12 +26,12 @@
 <div class="fido2">
 <h3>FIDO2 credentials</h3>
 <table>
-<thead><tr><th>Name</th><th>Credential ID</th></tr></thead>
+<thead><tr><th>Name</th><th>Credential ID</th><th>AAGUID</th></tr></thead>
 <tbody>
 {% for credential in fido2_list %}
-<tr><td>{{ credential.name|default('Security key')|e }}</td><td>{{ credential.id|e }}</td>
+<tr><td>{{ credential.name|default('Security key')|e }}</td><td>{{ credential.id|e }}</td><td>{{ credential.aaguid|e }}</td>
 {% if perm_fido2_remove|default(False) %}<td><button type="button" class="fido2_remove" data-credential-id="{{ credential.id|e }}">Remove</button></td>{% endif %}</tr>
-{% else %}<tr><td colspan="2">No FIDO2 credentials</td></tr>{% endfor %}
+{% else %}<tr><td colspan="3">No FIDO2 credentials</td></tr>{% endfor %}
 </tbody>
 </table>
 {% if myself %}<p><button type="button" id="fido2_register">Add this device</button></p>{% endif %}

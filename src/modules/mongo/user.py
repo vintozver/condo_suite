@@ -10,6 +10,7 @@ from .. import rbac as mod_rbac
 class Fido2CredentialDocument(mod_mongo.mongoengine.EmbeddedDocument):
     id = mod_mongo.mongoengine.BinaryField(required=True)
     data = mod_mongo.mongoengine.BinaryField(required=True)
+    aaguid = mod_mongo.mongoengine.BinaryField(required=True)
     sign_count = mod_mongo.mongoengine.IntField(default=0)
     name = mod_mongo.mongoengine.StringField(max_length=128)
 
