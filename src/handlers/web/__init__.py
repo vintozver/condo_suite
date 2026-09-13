@@ -34,9 +34,9 @@ class Handler(_Handler):
             {'regex': re.compile(r'^/event/helper/autocomplete/tag/?$'), 'handler': 'handlers.web.parking_event_helpers', 'params': {'action': ('autocomplete', 'tag')}},
         ]},
         {'regex': re.compile(r'^/\bapi\b'), 'map': [
-            {'regex': re.compile(r'^/parking/event/?$'), 'handler': 'handlers.api.parking_event', 'params': {'action': 'search'}},
+            {'regex': re.compile(r'^/parking/event/?$'), 'handler': 'handlers.api.parking_event_search'},
             {'regex': re.compile(r'^/parking/event/([0123456789abcdefABCDEF]+)/file/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'handlers.api.parking_event', 'params': {'action': 'file', 'oid': lambda rex: rex.group(1), 'file_oid': lambda rex: rex.group(2)}},
-            {'regex': re.compile(r'^/parking/event/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'handlers.api.parking_event', 'params': {'action': 'event', 'oid': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/parking/event/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'handlers.api.parking_event', 'params': {'action': 'view', 'oid': lambda rex: rex.group(1)}},
         ]},
         {'regex': re.compile(r'^/\blink\b'), 'map': [
             {'regex': re.compile(r'^/?$'), 'handler': 'handlers.web.link'},
