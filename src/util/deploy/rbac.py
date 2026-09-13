@@ -122,6 +122,12 @@ embedded_roles = [
             'parking.event/view'
         ]
     },
+    {
+        'uuid': uuid.UUID('26be8fbe8c8547f9b4b9a9b5a9b7b9a1'),
+        'name': 'Case management',
+        'sort_order': 1004,
+        'permissions': ['case/create', 'case/view', 'case/status', 'case/comment', 'case/link']
+    },
 ]
 
 permission_regex = re.compile('^(\\w+)(\\(((\\w+)=)?\\w+\\))*(\\.(\\w+)(\\(((\\w+)=)?(\\w+)\\))*)*(/(\\w+))?$')
