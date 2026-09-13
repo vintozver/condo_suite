@@ -1,13 +1,14 @@
-from .common import ApiError, BaseHandler, ParkingEventDocument
+from .common import ApiError
+from .parking_common import ParkingHandler, ParkingEventDocument
 import http.client
 
-class Handler(BaseHandler):
+class Handler(ParkingHandler):
     def __call__(self):
         def operation():
             user, agent, payload = self._authenticate()
             if not user.rbac_has_permission('parking.event/view'):
                 raise ApiError(http.client.FORBIDDEN, 'Permission required')
-            body = self._body(payload)
+            body = payload
             query = ParkingEventDocument.objects()
             if body.get('VIN'): query = query.filter(vehicle__id=body['VIN'])
             if body.get('tag'): query = query.filter(vehicle__tag=body['tag'])

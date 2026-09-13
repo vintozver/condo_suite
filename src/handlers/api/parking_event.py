@@ -1,10 +1,11 @@
-from .common import ApiError, BaseHandler, mod_mongo, config
+from .common import ApiError, mod_mongo, config
+from .parking_common import ParkingHandler
 from ....modules.mongo.parking_event import HistoryItem
 from ....modules.mongo.security import Ref as SecurityRef
 from ....modules.mongo.user import UserRef
 import http.client
 
-class Handler(BaseHandler):
+class Handler(ParkingHandler):
     def __call__(self, action, oid, file_oid=None):
         if self.req.method == 'POST':
             from .parking_event_comment import Handler as CommentHandler

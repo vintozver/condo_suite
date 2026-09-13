@@ -11,7 +11,6 @@ from cryptography.hazmat.primitives import serialization
 
 from .... import config
 from ....modules import mongo as mod_mongo
-from ....modules.mongo.parking_event import Document as ParkingEventDocument
 from ....modules.mongo.user import UserDocument
 from ....handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
 
@@ -85,29 +84,6 @@ class BaseHandler(_Handler):
         if agent is None:
             raise ApiError(http.client.FORBIDDEN, 'Agent is not assigned to user')
         return user, agent, payload
-
-    @staticmethod
-    def _body(payload):
-        body = payload.get('body', payload)
-        return body if isinstance(body, dict) else {}
-
-    @staticmethod
-    def _event(doc):
-        return {'oid': str(doc.id), 'dt': doc.id.generation_time.isoformat(), 'reason': doc.reason,
-                'vehicle': {'VIN': doc.vehicle.id, 'tag': doc.vehicle.tag}, 'remarks': doc.remarks,
-                'history': [{'oid': str(item.id) if item.length else None, 'dt': item.id.generation_time.isoformat(),
-                             'description': item.description, 'content_type': item.content_type, 'length': item.length}
-                            for item in doc.history]}
-
-    @staticmethod
-    def _get_doc(oid):
-        try:
-            doc = ParkingEventDocument.objects(id=mod_mongo.bson.objectid.ObjectId(oid)).first()
-        except (TypeError, ValueError):
-            doc = None
-        if doc is None:
-            raise ApiError(http.client.NOT_FOUND, 'Event not found')
-        return doc
 
     def _run(self, operation):
         try:

@@ -44,6 +44,6 @@ POST /api/parking/event/{event-id}
 
 JWTs must be signed with a private key whose public key or certificate is in the
 user's signing keyset. Include `user_id`, `kid`, `dt`, `agent_id`, and
-`agent_position` in the JWT header. The request body is the JWT payload's
-`body` object. See `examples/openssl.sh` for key generation and
+`agent_position` in the JWT header. Request parameters are supplied directly in
+the JWT payload. See `examples/openssl.sh` for key generation and
 `examples/parking_api.py` for a complete client.

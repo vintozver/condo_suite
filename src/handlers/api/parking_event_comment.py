@@ -1,4 +1,5 @@
-from .common import ApiError, BaseHandler, config, mod_mongo
+from .common import ApiError, config, mod_mongo
+from .parking_common import ParkingHandler
 from ....modules.mongo.parking_event import HistoryItem
 from ....modules.mongo.security import Ref as SecurityRef
 from ....modules.mongo.user import UserRef
@@ -6,14 +7,14 @@ from ....modules.mongo.agent import AgentRef
 import http.client
 
 
-class Handler(BaseHandler):
+class Handler(ParkingHandler):
     def __call__(self, oid):
         def operation():
             user, agent, payload = self._authenticate()
             if not user.rbac_has_permission('parking.event/comment'):
                 raise ApiError(http.client.FORBIDDEN, 'Permission required')
             doc = self._get_doc(oid)
-            description = self._body(payload).get('description')
+            description = payload.get('description')
             if not isinstance(description, str) or not description:
                 raise ApiError(http.client.BAD_REQUEST, 'description must be set')
             item = HistoryItem(id=mod_mongo.bson.objectid.ObjectId(), description=description,

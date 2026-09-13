@@ -11,7 +11,7 @@ import jwt
 
 
 def request(args, method, path, body=None, output=None):
-    claims = {'body': body or {}}
+    claims = body or {}
     headers = {
         'alg': args.algorithm,
         'typ': 'JWT',
@@ -60,6 +60,11 @@ def main():
     search.add_argument('--reason')
     search.set_defaults(method='GET', path='/api/parking/event')
 
+    vehicle = subparsers.add_parser('vehicle')
+    vehicle.add_argument('--vin')
+    vehicle.add_argument('--tag')
+    vehicle.set_defaults(method='GET', path='/api/vehicle/')
+
     view = subparsers.add_parser('view')
     view.add_argument('event_id')
     view.set_defaults(method='GET')
@@ -79,6 +84,9 @@ def main():
     if args.command == 'search':
         body = {key: value for key, value in
                 (('VIN', args.vin), ('tag', args.tag), ('reason', args.reason)) if value}
+        path = args.path
+    elif args.command == 'vehicle':
+        body = {key: value for key, value in (('VIN', args.vin), ('tag', args.tag)) if value}
         path = args.path
     elif args.command == 'view':
         body, path = {}, '/api/parking/event/' + args.event_id
