@@ -1,0 +1,10 @@
+{% extends "skeleton" %}
+{% block body_content %}
+<h1>Cases</h1>
+<table>
+<tr><th>Created</th><th>Title</th><th>Status</th></tr>
+{% for item in results %}
+<tr><td><a {{ {'href': '/case/view/%s'|format(item['oid'])}|xmlattr }}>{{ item['dt']|datetime('%Y-%m-%d %H:%M') }}</a></td><td>{{ item['title']|e }}</td><td>{{ item['status']|e }}</td></tr>
+{% endfor %}
+</table>
+{% endblock %}

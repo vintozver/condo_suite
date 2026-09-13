@@ -13,6 +13,7 @@ class HistoryItem(mod_mongo.mongoengine.EmbeddedDocument):
     comment = mod_mongo.mongoengine.StringField(required=True)
     file_id = mod_mongo.mongoengine.ObjectIdField()
     linked_case_id = mod_mongo.mongoengine.ObjectIdField()
+    creator = mod_mongo.mongoengine.EmbeddedDocumentField(SecurityRef)
 
 
 class TxnRef(mod_mongo.mongoengine.EmbeddedDocument):
@@ -23,7 +24,7 @@ class TxnRef(mod_mongo.mongoengine.EmbeddedDocument):
     state = mod_mongo.mongoengine.StringField(default='pending', required=True)
 
 
-class Document(mod_mongo.mongoengine.Document):
+class Case(mod_mongo.mongoengine.Document):
     meta = {'db_alias': mod_mongo.mongoengine_alias, 'collection': 'case', 'strict': False}
 
     title = mod_mongo.mongoengine.StringField(required=True)
@@ -32,3 +33,6 @@ class Document(mod_mongo.mongoengine.Document):
     history = mod_mongo.mongoengine.EmbeddedDocumentListField(HistoryItem, default=list)
     transactions = mod_mongo.mongoengine.EmbeddedDocumentListField(TxnRef, default=list)
     creator = mod_mongo.mongoengine.EmbeddedDocumentField(SecurityRef)
+
+
+Document = Case

@@ -33,6 +33,12 @@ class Handler(_Handler):
             {'regex': re.compile(r'^/event/helper/autocomplete/VIN/?$'), 'handler': 'handlers.web.parking_event_helpers', 'params': {'action': ('autocomplete', 'VIN')}},
             {'regex': re.compile(r'^/event/helper/autocomplete/tag/?$'), 'handler': 'handlers.web.parking_event_helpers', 'params': {'action': ('autocomplete', 'tag')}},
         ]},
+        {'regex': re.compile(r'^/\bcase\b'), 'map': [
+            {'regex': re.compile(r'^/?$'), 'handler': 'handlers.web.case_search'},
+            {'regex': re.compile(r'^/new/?$'), 'handler': 'handlers.web.case_new'},
+            {'regex': re.compile(r'^/view/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'handlers.web.case_view', 'params': {'oid': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/amend/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'handlers.web.case_amend', 'params': {'oid': lambda rex: rex.group(1)}},
+        ]},
         {'regex': re.compile(r'^/\bapi\b'), 'map': [
             {'regex': re.compile(r'^/vehicle/([0-9A-HJ-NPR-Z]{17})/description/?$'), 'handler': 'handlers.api.vehicle', 'params': {'vin': lambda rex: rex.group(1)}},
             {'regex': re.compile(r'^/vehicle/?$'), 'handler': 'handlers.api.vehicle'},

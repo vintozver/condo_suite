@@ -21,6 +21,7 @@ class Handler(_Handler):
         session_user = self.req.context.session_user
         if session_user is not None:
             tmpl_params['menu_render_parking'] = session_user.rbac_regex_permission('^parking(\\(((\\w+)=)?\\w+\\))*(\\.(\\w+)(\\(((\\w+)=)?(\\w+)\\))*)*/(\\w+)$')
+            tmpl_params['menu_render_case'] = session_user.rbac_has_permission('case/view')
             tmpl_params['menu_render_admin'] = True
 
             session_user_name = session_user.name

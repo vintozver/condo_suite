@@ -87,7 +87,10 @@ class Handler(BaseHandler):
                 if not isinstance(comment, str) or not comment:
                     raise ApiError(http.client.BAD_REQUEST, 'comment must be set')
                 file_id = self._oid(body['file_id']) if body.get('file_id') else None
-                item = HistoryItem(dt=datetime.datetime.utcnow(), comment=comment, file_id=file_id)
+                item = HistoryItem(dt=datetime.datetime.utcnow(), comment=comment, file_id=file_id,
+                                   creator=SecurityRef(user=UserRef(id=user.id, name=user.name),
+                                                       agent=AgentRef(id=agent.id, name=agent.name,
+                                                                      position=agent.position)))
                 doc.update(push__history=item)
                 self._json({'case': str(doc.id)}, http.client.CREATED)
             elif self.req.method == 'POST' and action == 'link':
@@ -100,13 +103,15 @@ class Handler(BaseHandler):
                 if not isinstance(comment, str) or not comment:
                     raise ApiError(http.client.BAD_REQUEST, 'comment must be set')
                 txn = Transaction(type='case_link', options={
-                    'case': str(case_id), 'linked_case': str(other_id), 'comment': comment})
+                    'case': case_id, 'linked_case': other_id, 'comment': comment})
                 txn.save()
                 ref = TxnRef(id=txn.id, type='case_link')
                 with mod_mongo.DbSessionController() as db_session:
                     collection = db_session[config.name]['case']
                     collection.update_one({'_id': case_id}, {'$push': {'transactions': ref.to_mongo()}})
                     collection.update_one({'_id': other_id}, {'$push': {'transactions': ref.to_mongo()}})
+                from ...util.defer import the_app
+                the_app.send_task('handlers.defer.TransactionProcessor', kwargs={'id_txn': txn.id})
                 self._json({'transaction': str(txn.id)}, http.client.ACCEPTED)
             else:
                 raise ApiError(http.client.NOT_FOUND, 'Unknown case operation')
