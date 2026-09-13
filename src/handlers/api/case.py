@@ -51,6 +51,8 @@ class Handler(BaseHandler):
             user, agent, payload = self._authenticate()
             body = self._body()
             if self.req.method == 'POST' and oid is None:
+                if not user.rbac_has_permission('case/create'):
+                    raise ApiError(http.client.FORBIDDEN, 'Permission required')
                 title = body.get('title')
                 if not isinstance(title, str) or not title:
                     raise ApiError(http.client.BAD_REQUEST, 'title must be set')
@@ -67,14 +69,20 @@ class Handler(BaseHandler):
             if doc is None:
                 raise ApiError(http.client.NOT_FOUND, 'Case not found')
             if self.req.method == 'GET' and action is None:
+                if not user.rbac_has_permission('case/view'):
+                    raise ApiError(http.client.FORBIDDEN, 'Permission required')
                 self._json({'case': self._case(doc)})
             elif self.req.method == 'PATCH' and action == 'status':
+                if not user.rbac_has_permission('case/status'):
+                    raise ApiError(http.client.FORBIDDEN, 'Permission required')
                 status = body.get('status')
                 if status not in ('open', 'progress', 'resolved', 'closed'):
                     raise ApiError(http.client.BAD_REQUEST, 'Invalid status')
                 doc.update(set__status=status)
                 self._json({'case': str(doc.id), 'status': status})
             elif self.req.method == 'POST' and action == 'comment':
+                if not user.rbac_has_permission('case/comment'):
+                    raise ApiError(http.client.FORBIDDEN, 'Permission required')
                 comment = body.get('comment')
                 if not isinstance(comment, str) or not comment:
                     raise ApiError(http.client.BAD_REQUEST, 'comment must be set')
@@ -83,6 +91,8 @@ class Handler(BaseHandler):
                 doc.update(push__history=item)
                 self._json({'case': str(doc.id)}, http.client.CREATED)
             elif self.req.method == 'POST' and action == 'link':
+                if not user.rbac_has_permission('case/link'):
+                    raise ApiError(http.client.FORBIDDEN, 'Permission required')
                 other_id = self._oid(linked_oid)
                 if other_id == case_id or CaseDocument.objects(id=other_id).first() is None:
                     raise ApiError(http.client.NOT_FOUND, 'Linked case not found')

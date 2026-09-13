@@ -4,8 +4,6 @@ import datetime
 
 from ... import config
 from ...modules import mongo as mod_mongo
-from ...modules.mongo.case import Document as CaseDocument
-from ...util.defer import Task
 from . import Transaction
 
 
