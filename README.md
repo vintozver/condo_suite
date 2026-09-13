@@ -40,6 +40,8 @@ GET  /api/parking/event
 GET  /api/parking/event/{event-id}
 GET  /api/parking/event/{event-id}/file/{file-id}
 POST /api/parking/event/{event-id}
+GET  /api/vehicle/
+POST /api/vehicle/{VIN}/description
 ```
 
 JWTs must be signed with a private key whose public key or certificate is in the
@@ -47,3 +49,6 @@ user's signing keyset. Include `user_id`, `kid`, `dt`, `agent_id`, and
 `agent_position` in the JWT header. Request parameters are supplied directly in
 the JWT payload. See `examples/openssl.sh` for key generation and
 `examples/parking_api.py` for a complete client.
+
+Vehicle descriptions are posted as `text/plain`; the server appends the update
+attribution (`Updated by: user, agent`) to the supplied text.
