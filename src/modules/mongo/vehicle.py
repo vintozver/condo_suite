@@ -12,7 +12,7 @@ class Document(mod_mongo.mongoengine.Document):
     id = mod_mongo.mongoengine.StringField(regex=r'^[0-9A-HJ-NPR-Z]{17}$', db_field='_id', required=True)
     # tag, license plate, attached decal; for example C012345 WA
     tag = mod_mongo.mongoengine.StringField(max_length=20)
-    description = mod_mongo.mongoengine.StringField(max_length=128)
+    description = mod_mongo.mongoengine.StringField()
 
 
 # link to the vehicle in other collections

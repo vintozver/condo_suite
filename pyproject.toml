@@ -28,6 +28,7 @@ dependencies = [
     "qrcode",
     "fido2",
     "cryptography",
+    "PyJWT",
 ]
 
 [project.scripts]
