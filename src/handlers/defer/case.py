@@ -15,8 +15,8 @@ class CaseLink(Transaction):
     def commit(self, txn):
         options = txn.options or {}
         try:
-            case_ids = [mod_mongo.bson.ObjectId(value) for value in options['cases']]
-        except (KeyError, TypeError, ValueError):
+            case_ids = options['cases']
+        except (KeyError, TypeError):
             return False, 'Invalid case link options'
         if len(case_ids) < 2 or len(set(case_ids)) != len(case_ids):
             return False, 'At least two different cases are required'
@@ -49,8 +49,8 @@ class CaseLink(Transaction):
     def rollback(self, txn):
         options = txn.options or {}
         try:
-            case_ids = [mod_mongo.bson.ObjectId(value) for value in options['cases']]
-        except (KeyError, TypeError, ValueError):
+            case_ids = options['cases']
+        except (KeyError, TypeError):
             return
         comment = options.get('comment')
         with mod_mongo.DbSessionController() as db_session:
