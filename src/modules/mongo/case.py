@@ -16,14 +16,6 @@ class HistoryItem(mod_mongo.mongoengine.EmbeddedDocument):
     creator = mod_mongo.mongoengine.EmbeddedDocumentField(SecurityRef)
 
 
-class TxnRef(mod_mongo.mongoengine.EmbeddedDocument):
-    meta = {'strict': False}
-
-    id = mod_mongo.mongoengine.ObjectIdField(required=True)
-    type = mod_mongo.mongoengine.StringField(required=True)
-    state = mod_mongo.mongoengine.StringField(default='pending', required=True)
-
-
 class Case(mod_mongo.mongoengine.Document):
     meta = {'db_alias': mod_mongo.mongoengine_alias, 'collection': 'case', 'strict': False}
 
@@ -31,7 +23,8 @@ class Case(mod_mongo.mongoengine.Document):
     status = mod_mongo.mongoengine.StringField(
         required=True, default='open', choices=('open', 'progress', 'resolved', 'closed'))
     history = mod_mongo.mongoengine.EmbeddedDocumentListField(HistoryItem, default=list)
-    transactions = mod_mongo.mongoengine.EmbeddedDocumentListField(TxnRef, default=list)
+    pending_txns = mod_mongo.mongoengine.ListField(
+        mod_mongo.mongoengine.ObjectIdField(), default=list)
     creator = mod_mongo.mongoengine.EmbeddedDocumentField(SecurityRef)
 
 

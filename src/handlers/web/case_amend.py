@@ -7,7 +7,7 @@ from ...handlers.ext.paramed_cgi import Handler as _Handler
 from ...handlers.web import decorator as deco
 from ...modules import mongo as mod_mongo
 from ... import config
-from ...modules.mongo.case import Case, HistoryItem, TxnRef
+from ...modules.mongo.case import Case, HistoryItem
 from ...modules.mongo.transaction import Transaction
 from ...modules.mongo.security import Ref as SecurityRef
 from ...modules.mongo.user import UserRef
@@ -40,19 +40,17 @@ class Handler(_Handler):
         elif action == 'link':
             if not user.rbac_has_permission('case/link'):
                 raise deco.auth.SecurityError('Permission required', 'case/link')
-            other_id = mod_mongo.bson.ObjectId(self.cgi_params.param_post('linked_case'))
-            other = Case.objects(id=other_id).first()
-            if other is None or other.id == doc.id:
+            case_ids = [doc.id] + [
+                mod_mongo.bson.ObjectId(value)
+                for value in self.cgi_params.paramlist_post('linked_case')]
+            if len(case_ids) < 2 or len(set(case_ids)) != len(case_ids):
+                raise ValueError('At least two different cases are required')
+            if Case.objects(id__in=case_ids).count() != len(case_ids):
                 raise ValueError('Invalid linked case')
             comment = self.cgi_params.param_post('comment')
             txn = Transaction(type='case_link', options={
-                'case': doc.id, 'linked_case': other.id, 'comment': comment})
+                'cases': case_ids, 'comment': comment})
             txn.save()
-            ref = TxnRef(id=txn.id, type='case_link')
-            with mod_mongo.DbSessionController() as db_session:
-                collection = db_session[config.name]['case']
-                collection.update_one({'_id': doc.id}, {'$push': {'transactions': ref.to_mongo()}})
-                collection.update_one({'_id': other.id}, {'$push': {'transactions': ref.to_mongo()}})
             from ...util.defer import the_app
             the_app.send_task('handlers.defer.TransactionProcessor', kwargs={'id_txn': txn.id})
         else:

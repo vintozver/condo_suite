@@ -6,7 +6,7 @@ import json
 
 from .common import ApiError, BaseHandler, config, mod_mongo
 from ....modules.mongo.case import Document as CaseDocument
-from ....modules.mongo.case import HistoryItem, TxnRef
+from ....modules.mongo.case import HistoryItem
 from ....modules.mongo.security import Ref as SecurityRef
 from ....modules.mongo.user import UserRef
 from ....modules.mongo.agent import AgentRef
@@ -96,20 +96,27 @@ class Handler(BaseHandler):
             elif self.req.method == 'POST' and action == 'link':
                 if not user.rbac_has_permission('case/link'):
                     raise ApiError(http.client.FORBIDDEN, 'Permission required')
-                other_id = self._oid(linked_oid)
-                if other_id == case_id or CaseDocument.objects(id=other_id).first() is None:
+                raw_case_ids = body.get('case_ids')
+                if raw_case_ids is None:
+                    if linked_oid is None:
+                        raise ApiError(http.client.BAD_REQUEST, 'case_ids must be set')
+                    raw_case_ids = [case_id, self._oid(linked_oid)]
+                if not isinstance(raw_case_ids, list):
+                    raise ApiError(http.client.BAD_REQUEST, 'case_ids must be a list')
+                try:
+                    case_ids = [self._oid(value) for value in raw_case_ids]
+                except (TypeError, ValueError):
+                    raise ApiError(http.client.BAD_REQUEST, 'Invalid case id')
+                if case_id not in case_ids or len(case_ids) < 2 or len(set(case_ids)) != len(case_ids):
+                    raise ApiError(http.client.BAD_REQUEST, 'At least two different cases are required')
+                if CaseDocument.objects(id__in=case_ids).count() != len(case_ids):
                     raise ApiError(http.client.NOT_FOUND, 'Linked case not found')
                 comment = body.get('comment')
                 if not isinstance(comment, str) or not comment:
                     raise ApiError(http.client.BAD_REQUEST, 'comment must be set')
                 txn = Transaction(type='case_link', options={
-                    'case': case_id, 'linked_case': other_id, 'comment': comment})
+                    'cases': case_ids, 'comment': comment})
                 txn.save()
-                ref = TxnRef(id=txn.id, type='case_link')
-                with mod_mongo.DbSessionController() as db_session:
-                    collection = db_session[config.name]['case']
-                    collection.update_one({'_id': case_id}, {'$push': {'transactions': ref.to_mongo()}})
-                    collection.update_one({'_id': other_id}, {'$push': {'transactions': ref.to_mongo()}})
                 from ...util.defer import the_app
                 the_app.send_task('handlers.defer.TransactionProcessor', kwargs={'id_txn': txn.id})
                 self._json({'transaction': str(txn.id)}, http.client.ACCEPTED)
