@@ -87,7 +87,7 @@ class Handler(BaseHandler):
                 if not isinstance(comment, str) or not comment:
                     raise ApiError(http.client.BAD_REQUEST, 'comment must be set')
                 file_id = self._oid(body['file_id']) if body.get('file_id') else None
-                item = HistoryItem(dt=datetime.datetime.utcnow(), comment=comment, file_id=file_id,
+                item = HistoryItem(dt=datetime.datetime.now(datetime.timezone.utc), comment=comment, file_id=file_id,
                                    creator=SecurityRef(user=UserRef(id=user.id, name=user.name),
                                                        agent=AgentRef(id=agent.id, name=agent.name,
                                                                       position=agent.position)))

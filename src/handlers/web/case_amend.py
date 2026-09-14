@@ -72,7 +72,7 @@ class Handler(_Handler):
                         _id=file_id, content_type=attachment.headers.get('Content-Type', 'application/octet-stream'))
                     uploaded.write(attachment.file.read())
                     uploaded.close()
-            doc.update(push__history=HistoryItem(dt=datetime.datetime.utcnow(), comment=comment,
+            doc.update(push__history=HistoryItem(dt=datetime.datetime.now(datetime.timezone.utc), comment=comment,
                                                  file_id=file_id, creator=self._ref()))
         from ...handlers.ext import redirect
         return redirect.Handler(self.req)('/case/view/%s' % oid)

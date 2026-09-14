@@ -9,7 +9,8 @@ from .security import Ref as SecurityRef
 class HistoryItem(mod_mongo.mongoengine.EmbeddedDocument):
     meta = {'strict': False}
 
-    dt = mod_mongo.mongoengine.DateTimeField(default=datetime.datetime.utcnow, required=True)
+    dt = mod_mongo.mongoengine.DateTimeField(
+        default=lambda: datetime.datetime.now(datetime.timezone.utc), required=True)
     comment = mod_mongo.mongoengine.StringField(required=True)
     file_id = mod_mongo.mongoengine.ObjectIdField()
     linked_case_id = mod_mongo.mongoengine.ObjectIdField()
