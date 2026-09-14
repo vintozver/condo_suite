@@ -30,7 +30,7 @@ class CaseLink(Transaction):
                 return False, 'Case not found'
             for case_id in case_ids:
                 history = [{
-                    'dt': datetime.datetime.utcnow(),
+                    'dt': datetime.datetime.now(datetime.timezone.utc),
                     'comment': comment,
                     'linked_case_id': other_id,
                 } for other_id in case_ids if other_id != case_id]
