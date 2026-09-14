@@ -59,9 +59,10 @@ class CaseLink(Transaction):
                 other_ids = [other_id for other_id in case_ids if other_id != case_id]
                 collection.update_one(
                     {'_id': case_id, 'pending_txns': txn.id},
-                    {'$pull': {'history': {
-                        'comment': comment, 'linked_case_id': {'$in': other_ids}}},
-                     '$pullAll': {'pending_txns': [txn.id]}},
+                    {'$pull': {
+                        'history': {'comment': comment, 'linked_case_id': {'$in': other_ids}},
+                        'pending_txns': txn.id,
+                    }},
                 )
 
 
