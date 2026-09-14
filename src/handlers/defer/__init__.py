@@ -174,4 +174,7 @@ class TransactionProcessor(_Task):
         })
 
 
+from . import case
+
+
 __all__ = ['Transaction', 'TransactionError', 'TransactionProcessor']
