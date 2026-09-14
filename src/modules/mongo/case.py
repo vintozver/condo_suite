@@ -27,6 +27,3 @@ class Case(mod_mongo.mongoengine.Document):
     pending_txns = mod_mongo.mongoengine.ListField(
         mod_mongo.mongoengine.ObjectIdField(), default=list)
     creator = mod_mongo.mongoengine.EmbeddedDocumentField(SecurityRef)
-
-
-Document = Case

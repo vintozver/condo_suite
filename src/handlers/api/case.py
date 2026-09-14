@@ -5,7 +5,7 @@ import http.client
 import json
 
 from .common import ApiError, BaseHandler, config, mod_mongo
-from ....modules.mongo.case import Document as CaseDocument
+from ....modules.mongo.case import Case
 from ....modules.mongo.case import HistoryItem
 from ....modules.mongo.security import Ref as SecurityRef
 from ....modules.mongo.user import UserRef
@@ -56,7 +56,7 @@ class Handler(BaseHandler):
                 title = body.get('title')
                 if not isinstance(title, str) or not title:
                     raise ApiError(http.client.BAD_REQUEST, 'title must be set')
-                doc = CaseDocument(
+                doc = Case(
                     id=mod_mongo.bson.ObjectId(), title=title, status='open',
                     creator=SecurityRef(user=UserRef(id=user.id, name=user.name),
                                         agent=AgentRef(id=agent.id, name=agent.name, position=agent.position)))
@@ -65,7 +65,7 @@ class Handler(BaseHandler):
                 return
 
             case_id = self._oid(oid)
-            doc = CaseDocument.objects(id=case_id).first()
+            doc = Case.objects(id=case_id).first()
             if doc is None:
                 raise ApiError(http.client.NOT_FOUND, 'Case not found')
             if self.req.method == 'GET' and action is None:
@@ -109,7 +109,7 @@ class Handler(BaseHandler):
                     raise ApiError(http.client.BAD_REQUEST, 'Invalid case id')
                 if case_id not in case_ids or len(case_ids) < 2 or len(set(case_ids)) != len(case_ids):
                     raise ApiError(http.client.BAD_REQUEST, 'At least two different cases are required')
-                if CaseDocument.objects(id__in=case_ids).count() != len(case_ids):
+                if Case.objects(id__in=case_ids).count() != len(case_ids):
                     raise ApiError(http.client.NOT_FOUND, 'Linked case not found')
                 comment = body.get('comment')
                 if not isinstance(comment, str) or not comment:
