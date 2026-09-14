@@ -13,7 +13,7 @@ class HistoryItem(mod_mongo.mongoengine.EmbeddedDocument):
         default=lambda: datetime.datetime.now(datetime.timezone.utc), required=True)
     comment = mod_mongo.mongoengine.StringField(required=True)
     file_id = mod_mongo.mongoengine.ObjectIdField()
-    linked_case_id = mod_mongo.mongoengine.ObjectIdField()
+    link = mod_mongo.mongoengine.ObjectIdField()
     creator = mod_mongo.mongoengine.EmbeddedDocumentField(SecurityRef)
 
 

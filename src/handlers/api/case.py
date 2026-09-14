@@ -35,7 +35,7 @@ class Handler(BaseHandler):
                 'dt': item.dt.isoformat(),
                 'comment': item.comment,
                 'file_id': str(item.file_id) if item.file_id else None,
-                'linked_case_id': str(item.linked_case_id) if item.linked_case_id else None,
+                'link': str(item.link) if item.link else None,
             } for item in doc.history],
         }
 
