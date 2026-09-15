@@ -19,5 +19,6 @@ google_client_secret = google.get('client_secret')
 google_redirect_uri = google.get('redirect_uri')
 google_javascript_origin = google.get('javascript_origin')
 timezone = ZoneInfo(settings.get('timezone', 'UTC'))
+rabbit = settings.get('rabbit', {})
 
-__all__ = ['settings', 'mongodb_uri', 'name', 'google', 'timezone']
+__all__ = ['settings', 'mongodb_uri', 'name', 'google', 'timezone', 'rabbit']
