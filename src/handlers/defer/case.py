@@ -10,7 +10,7 @@ from ...util.defer import the_app
 from . import Transaction
 
 
-class CaseLink(Transaction):
+class Link(Transaction):
     @classmethod
     def type(cls):
         return 'case_link'
@@ -73,10 +73,10 @@ class CaseLink(Transaction):
                 )
 
 
-CaseLink.register()
+Link.register()
 
 
-def case_link(case_ids, comment, creator):
+def link(case_ids, comment, creator):
     """Create a `case_link` transaction and enqueue it for processing.
 
     `case_ids` must contain at least two distinct case ObjectIds; `comment` and `creator`
@@ -90,9 +90,9 @@ def case_link(case_ids, comment, creator):
     if not isinstance(creator, SecurityRef):
         raise ValueError('A creator is required')
 
-    txn = mod_mongo_transaction.Transaction(type=CaseLink.type(), options={
+    txn = mod_mongo_transaction.Transaction(type=Link.type(), options={
         'cases': case_ids, 'comment': comment, 'creator': creator.to_mongo().to_dict(),
     })
     txn.save()
-    the_app.send_task('handlers.defer.TransactionProcessor', kwargs={'id_txn': txn.id})
+    the_app.send_task('handlers.defer.case.Link', kwargs={'id_txn': txn.id})
     return txn.id
