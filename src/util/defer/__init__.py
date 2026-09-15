@@ -32,6 +32,7 @@ class Loader(celery.loaders.app.AppLoader):
                 'host': config.rabbit['host'],
                 'vhost': urllib.parse.quote(config.rabbit.get('vhost', '/'), safe=''),
             },
+            'broker_login_method': 'EXTERNAL',
             'broker_use_ssl': {
                 'cert_reqs': ssl.CERT_REQUIRED,
                 'ca_certs': config.rabbit['ssl_ca'],
