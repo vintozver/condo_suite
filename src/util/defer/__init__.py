@@ -9,16 +9,20 @@ import celery.loaders.app
 from ... import config
 from . import json_ex as _json_ex  # noqa: F401  (registers the 'json-ex' task serializer)
 
+_root_package = __name__.split('.', 1)[0]
+
 
 class Loader(celery.loaders.app.AppLoader):
     def read_configuration(self, fail_silently=True):
         self.configured = True
         return {
-            'imports': (
-                'condo_suite.util.defer',
-                'condo_suite.handlers.defer',
-                'condo_suite.handlers.defer.case',
-                'condo_suite.handlers.defer.mail',
+            'imports': tuple(
+                '%s.%s' % (_root_package, module) for module in (
+                    'util.defer',
+                    'handlers.defer',
+                    'handlers.defer.case',
+                    'handlers.defer.mail',
+                )
             ),
             'task_serializer': 'json-ex',
             'accept_content': ['json', 'yaml', 'json-ex'],
@@ -41,7 +45,7 @@ class App(celery.Celery):
     loader_cls = '%s.%s' % (Loader.__module__, Loader.__qualname__)
 
 
-the_app = App('condo_suite')
+the_app = App(_root_package)
 Task = the_app.Task
 
 __all__ = ['the_app', 'Task']

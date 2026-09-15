@@ -30,6 +30,30 @@ google:
 MongoDB connection details are supplied through `mongodb_uri`; separate host,
 port, username, password, and database settings are no longer supported.
 
+## Background tasks (Celery)
+
+Deferred/background work (`handlers.defer.*`) runs on Celery, backed by a
+RabbitMQ broker over AMQPS with mutual TLS (x509 client certificate)
+authentication instead of a login/password. Add a `rabbit` section to
+`run/config.yaml`:
+
+```yaml
+rabbit:
+  host: rabbit.internal
+  vhost: /condo_suite
+  ssl_cert: /etc/condo_suite/rabbit-client.crt
+  ssl_key: /etc/condo_suite/rabbit-client.key
+  ssl_ca: /etc/condo_suite/rabbit-ca.crt
+```
+
+`vhost` defaults to `/` when omitted; `ssl_cert`, `ssl_key`, and `ssl_ca` are
+required. The Celery application is exposed as `condo_suite.util.defer.the_app`
+and can be used to start a worker, e.g.:
+
+```sh
+celery -A condo_suite.util.defer worker
+```
+
 ## Parking events API
 
 The signed API provides parking event search, event/history view, file download,
