@@ -94,5 +94,5 @@ def link(case_ids, comment, creator):
         'cases': case_ids, 'comment': comment, 'creator': creator.to_mongo().to_dict(),
     })
     txn.save()
-    the_app.send_task('handlers.defer.case.Link', kwargs={'id_txn': txn.id})
+    the_app.send_task('%s.%s' % (Link.__module__, Link.__qualname__), kwargs={'id_txn': txn.id})
     return txn.id
