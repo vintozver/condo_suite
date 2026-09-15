@@ -1,5 +1,5 @@
 from .common import ApiError, BaseHandler, mod_mongo
-from ....modules.mongo.parking_event import Document as ParkingEventDocument
+from ...modules.mongo.parking_event import Document as ParkingEventDocument
 
 
 class ParkingHandler(BaseHandler):

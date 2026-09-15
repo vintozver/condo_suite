@@ -1,5 +1,5 @@
 from .common import ApiError, BaseHandler
-from ....modules.mongo.vehicle import Document as VehicleDocument
+from ...modules.mongo.vehicle import Document as VehicleDocument
 import http.client
 
 

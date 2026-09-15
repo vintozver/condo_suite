@@ -8,17 +8,18 @@ from ...handlers.web import decorator as deco
 from ...modules import mongo as mod_mongo
 from ... import config
 from ...modules.mongo.case import Case, HistoryItem
-from ...modules.mongo.transaction import Transaction
 from ...modules.mongo.security import Ref as SecurityRef
 from ...modules.mongo.user import UserRef
 from ...modules.mongo.agent import AgentRef
+from ...handlers.defer import case as defer_case
 
 
 class Handler(_Handler):
     def _ref(self):
         user, agent = self.req.context.session_user, self.req.context.session_agent
         return SecurityRef(user=UserRef(id=user.id, name=user.name),
-                           agent=AgentRef(id=agent.id, name=agent.name, position=agent.position))
+                           agent=AgentRef(id=agent.id, name=agent.name,
+                                          position=self.req.context.session.get('agent_position') or ''))
 
     @deco.session.Session()
     @deco.session.SessionUser()
@@ -48,11 +49,7 @@ class Handler(_Handler):
             if Case.objects(id__in=case_ids).count() != len(case_ids):
                 raise ValueError('Invalid linked case')
             comment = self.cgi_params.param_post('comment')
-            txn = Transaction(type='case_link', options={
-                'cases': case_ids, 'comment': comment})
-            txn.save()
-            from ...util.defer import the_app
-            the_app.send_task('handlers.defer.TransactionProcessor', kwargs={'id_txn': txn.id})
+            defer_case.link(case_ids, comment, self._ref())
         else:
             if not user.rbac_has_permission('case/comment'):
                 raise deco.auth.SecurityError('Permission required', 'case/comment')

@@ -6,7 +6,6 @@ import datetime
 from ...modules import mongo as mod_mongo
 from ...modules.mongo import transaction as mod_mongo_transaction
 from ... import config as config
-from ...util import defer
 
 
 transaction_class_registry = dict()  # type: typing.Mapping
@@ -28,6 +27,8 @@ class Transaction(_Task):
                 raise RuntimeError('Duplicate Transaction.type() detected', txn_type)
 
             transaction_class_registry[txn_type] = cls
+
+        the_app.register_task(cls())
 
     # @classmethod
     # def retry(self, txn):
@@ -172,9 +173,6 @@ class TransactionProcessor(_Task):
             'id_txn': oid_txn,
             'action': action,
         })
-
-
-from . import case
 
 
 __all__ = ['Transaction', 'TransactionError', 'TransactionProcessor']

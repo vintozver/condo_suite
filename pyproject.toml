@@ -12,6 +12,7 @@ dependencies = [
     "gunicorn",
     "pymongo",
     "mongoengine",
+    "celery",
     "python-dateutil",
     "httplib2",
     "urllib3",
