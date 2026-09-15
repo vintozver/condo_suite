@@ -5,6 +5,7 @@ import datetime
 from ... import config
 from ...modules import mongo as mod_mongo
 from ...modules.mongo import transaction as mod_mongo_transaction
+from ...modules.mongo.security import Ref as SecurityRef
 from ...util.defer import the_app
 from . import Transaction
 
@@ -25,6 +26,9 @@ class CaseLink(Transaction):
         comment = options.get('comment')
         if not isinstance(comment, str) or not comment:
             return False, 'A comment is required'
+        creator = options.get('creator')
+        if not isinstance(creator, dict) or not creator:
+            return False, 'A creator is required'
 
         with mod_mongo.DbSessionController() as db_session:
             collection = db_session[config.name]['case']
@@ -35,6 +39,7 @@ class CaseLink(Transaction):
                     'dt': datetime.datetime.now(datetime.timezone.utc),
                     'comment': comment,
                     'link': other_id,
+                    'creator': creator,
                 } for other_id in case_ids if other_id != case_id]
                 collection.update_one(
                     {'_id': case_id, 'pending_txns': {'$ne': txn.id}},
@@ -71,18 +76,23 @@ class CaseLink(Transaction):
 CaseLink.register()
 
 
-def case_link(case_ids, comment):
+def case_link(case_ids, comment, creator):
     """Create a `case_link` transaction and enqueue it for processing.
 
-    `case_ids` must contain at least two distinct case ObjectIds; `comment` is required.
+    `case_ids` must contain at least two distinct case ObjectIds; `comment` and `creator`
+    (a `modules.mongo.security.Ref` instance) are required.
     Returns the id of the created transaction.
     """
     if len(case_ids) < 2 or len(set(case_ids)) != len(case_ids):
         raise ValueError('At least two different cases are required')
     if not isinstance(comment, str) or not comment:
         raise ValueError('A comment is required')
+    if not isinstance(creator, SecurityRef):
+        raise ValueError('A creator is required')
 
-    txn = mod_mongo_transaction.Transaction(type=CaseLink.type(), options={'cases': case_ids, 'comment': comment})
+    txn = mod_mongo_transaction.Transaction(type=CaseLink.type(), options={
+        'cases': case_ids, 'comment': comment, 'creator': creator.to_mongo().to_dict(),
+    })
     txn.save()
     the_app.send_task('handlers.defer.TransactionProcessor', kwargs={'id_txn': txn.id})
     return txn.id

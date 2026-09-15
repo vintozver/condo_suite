@@ -114,7 +114,9 @@ class Handler(BaseHandler):
                 comment = body.get('comment')
                 if not isinstance(comment, str) or not comment:
                     raise ApiError(http.client.BAD_REQUEST, 'comment must be set')
-                id_txn = defer_case.case_link(case_ids, comment)
+                creator = SecurityRef(user=UserRef(id=user.id, name=user.name),
+                                      agent=AgentRef(id=agent.id, name=agent.name, position=agent.position))
+                id_txn = defer_case.case_link(case_ids, comment, creator)
                 self._json({'transaction': str(id_txn)}, http.client.ACCEPTED)
             else:
                 raise ApiError(http.client.NOT_FOUND, 'Unknown case operation')

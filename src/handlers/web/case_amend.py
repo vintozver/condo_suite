@@ -48,7 +48,7 @@ class Handler(_Handler):
             if Case.objects(id__in=case_ids).count() != len(case_ids):
                 raise ValueError('Invalid linked case')
             comment = self.cgi_params.param_post('comment')
-            defer_case.case_link(case_ids, comment)
+            defer_case.case_link(case_ids, comment, self._ref())
         else:
             if not user.rbac_has_permission('case/comment'):
                 raise deco.auth.SecurityError('Permission required', 'case/comment')
