@@ -18,7 +18,8 @@ class Handler(_Handler):
     def _ref(self):
         user, agent = self.req.context.session_user, self.req.context.session_agent
         return SecurityRef(user=UserRef(id=user.id, name=user.name),
-                           agent=AgentRef(id=agent.id, name=agent.name, position=agent.position))
+                           agent=AgentRef(id=agent.id, name=agent.name,
+                                          position=self.req.context.session.get('agent_position') or ''))
 
     @deco.session.Session()
     @deco.session.SessionUser()
