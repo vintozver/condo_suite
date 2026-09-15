@@ -72,6 +72,24 @@ div.parking_event div.history table td img {
 
 
 
+/* Case view */
+div.case div.history table {
+    border-collapse: separate;
+    border-spacing: 0px;
+}
+div.case div.history table th {
+	background-color: LightGray;
+}
+div.case div.history table th, div.case div.history table td {
+    padding: 2px 2px 2px 2px;
+}
+div.case div.history table tr:nth-child(2n+2) {
+}
+div.case div.history table tr:nth-child(2n+3) {
+	background-color: Lavender;
+}
+
+
 /* Parking Event search results */
 
 div.parking_event_search_results table {

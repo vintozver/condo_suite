@@ -9,10 +9,10 @@ import jwt
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 
-from .... import config
-from ....modules import mongo as mod_mongo
-from ....modules.mongo.user import UserDocument
-from ....handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
+from ... import config
+from ...modules import mongo as mod_mongo
+from ...modules.mongo.user import UserDocument
+from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
 
 
 class HandlerError(_HandlerError):

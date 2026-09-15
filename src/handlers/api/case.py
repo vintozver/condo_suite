@@ -5,12 +5,12 @@ import http.client
 import json
 
 from .common import ApiError, BaseHandler, config, mod_mongo
-from ....modules.mongo.case import Case
-from ....modules.mongo.case import HistoryItem
-from ....modules.mongo.security import Ref as SecurityRef
-from ....modules.mongo.user import UserRef
-from ....modules.mongo.agent import AgentRef
-from ....handlers.defer import case as defer_case
+from ...modules.mongo.case import Case
+from ...modules.mongo.case import HistoryItem
+from ...modules.mongo.security import Ref as SecurityRef
+from ...modules.mongo.user import UserRef
+from ...modules.mongo.agent import AgentRef
+from ...handlers.defer import case as defer_case
 
 
 class Handler(BaseHandler):
