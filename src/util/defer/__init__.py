@@ -45,7 +45,7 @@ class App(celery.Celery):
     loader_cls = '%s.%s' % (Loader.__module__, Loader.__qualname__)
 
 
-the_app = App(_root_package)
+the_app = App()
 Task = the_app.Task
 
 __all__ = ['the_app', 'Task']

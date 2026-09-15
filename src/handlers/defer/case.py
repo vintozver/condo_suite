@@ -4,6 +4,8 @@ import datetime
 
 from ... import config
 from ...modules import mongo as mod_mongo
+from ...modules.mongo import transaction as mod_mongo_transaction
+from ...util.defer import the_app
 from . import Transaction
 
 
@@ -67,3 +69,20 @@ class CaseLink(Transaction):
 
 
 CaseLink.register()
+
+
+def case_link(case_ids, comment):
+    """Create a `case_link` transaction and enqueue it for processing.
+
+    `case_ids` must contain at least two distinct case ObjectIds; `comment` is required.
+    Returns the id of the created transaction.
+    """
+    if len(case_ids) < 2 or len(set(case_ids)) != len(case_ids):
+        raise ValueError('At least two different cases are required')
+    if not isinstance(comment, str) or not comment:
+        raise ValueError('A comment is required')
+
+    txn = mod_mongo_transaction.Transaction(type=CaseLink.type(), options={'cases': case_ids, 'comment': comment})
+    txn.save()
+    the_app.send_task('handlers.defer.TransactionProcessor', kwargs={'id_txn': txn.id})
+    return txn.id

@@ -10,7 +10,7 @@ from ....modules.mongo.case import HistoryItem
 from ....modules.mongo.security import Ref as SecurityRef
 from ....modules.mongo.user import UserRef
 from ....modules.mongo.agent import AgentRef
-from ....modules.mongo.transaction import Transaction
+from ....handlers.defer import case as defer_case
 
 
 class Handler(BaseHandler):
@@ -114,12 +114,8 @@ class Handler(BaseHandler):
                 comment = body.get('comment')
                 if not isinstance(comment, str) or not comment:
                     raise ApiError(http.client.BAD_REQUEST, 'comment must be set')
-                txn = Transaction(type='case_link', options={
-                    'cases': case_ids, 'comment': comment})
-                txn.save()
-                from ...util.defer import the_app
-                the_app.send_task('handlers.defer.TransactionProcessor', kwargs={'id_txn': txn.id})
-                self._json({'transaction': str(txn.id)}, http.client.ACCEPTED)
+                id_txn = defer_case.case_link(case_ids, comment)
+                self._json({'transaction': str(id_txn)}, http.client.ACCEPTED)
             else:
                 raise ApiError(http.client.NOT_FOUND, 'Unknown case operation')
         return self._run(operation)
