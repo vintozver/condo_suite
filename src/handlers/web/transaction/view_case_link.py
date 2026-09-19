@@ -39,6 +39,13 @@ class ViewHandler(view.ViewHandler):
         txn = self.txn
         txn_options = txn.options
 
+        def render_ref(ref):
+            if not ref:
+                return None
+            return {key: str(value) if key == '_id' else value for key, value in ref.items()}
+
+        creator = txn_options['creator']
+
         return {
             'type': txn.type,
             'state': txn.state,
@@ -46,6 +53,10 @@ class ViewHandler(view.ViewHandler):
             'options': {
                 'cases': [str(case_id) for case_id in txn_options['cases']],
                 'comment': txn_options['comment'],
+                'creator': {
+                    'agent': render_ref(creator.get('agent')),
+                    'user': render_ref(creator.get('user')),
+                },
             }
         }
 
@@ -56,4 +67,5 @@ class ViewHandler(view.ViewHandler):
         tmpl_args['txn'] = txn
         tmpl_args['cases'] = txn_options['cases']
         tmpl_args['comment'] = txn_options['comment']
+        tmpl_args['creator'] = txn_options['creator']
         return mod_tmpl.TemplateFactory(req, 'transaction.case_link').render(tmpl_args)

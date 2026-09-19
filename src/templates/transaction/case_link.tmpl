@@ -5,6 +5,10 @@
 <p><strong>id/type:</strong> {{ txn.id|e }}/{{ txn.type|e }}</p>
 <p><strong>state:</strong> {{ txn.state|e }}</p>
 <p><strong>comment:</strong> {{ comment|e }}</p>
+<p><strong>creator:</strong>
+{% if creator.agent %}{{ creator.agent.name|e }}{% endif %}
+{% if creator.user %}({{ creator.user.name|e }}){% endif %}
+</p>
 <h2>Linked cases</h2>
 <div>
 <ul>
