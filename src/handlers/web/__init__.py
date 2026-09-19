@@ -37,6 +37,9 @@ class Handler(_Handler):
             {'regex': re.compile(r'^/?$'), 'handler': 'handlers.web.case_search'},
             {'regex': re.compile(r'^/new/?$'), 'handler': 'handlers.web.case_new'},
             {'regex': re.compile(r'^/view/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'handlers.web.case_view', 'params': {'oid': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/view/([0123456789abcdefABCDEF]+)/file/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'handlers.web.case_file', 'params': {
+                'doc_oid': lambda rex: rex.group(1), 'file_oid': lambda rex: rex.group(2)
+            }},
             {'regex': re.compile(r'^/amend/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'handlers.web.case_amend', 'params': {'oid': lambda rex: rex.group(1)}},
         ]},
         {'regex': re.compile(r'^/\bapi\b'), 'map': [

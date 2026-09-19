@@ -92,19 +92,19 @@ div.case div.history table tr:nth-child(2n+3) {
 
 /* Parking Event search results */
 
-div.parking_event_search_results table {
+div.parking_event_search_results table, div.case_search_results table {
     border-collapse: separate;
     border-spacing: 0px;
 }
-div.parking_event_search_results table th {
+div.parking_event_search_results table th, div.case_search_results table th {
 	background-color: LightGray;
 }
-div.parking_event_search_results table th, div.parking_event_search_results table td {
+div.parking_event_search_results table th, div.parking_event_search_results table td, div.case_search_results table th, div.case_search_results table td {
     padding: 2px 2px 2px 2px;
 }
-div.parking_event_search_results table tr:nth-child(2n+2) {
+div.parking_event_search_results table tr:nth-child(2n+2), div.case_search_results table tr:nth-child(2n+2) {
 }
-div.parking_event_search_results table tr:nth-child(2n+3) {
+div.parking_event_search_results table tr:nth-child(2n+3), div.case_search_results table tr:nth-child(2n+3) {
 	background-color: Lavender;
 }
 

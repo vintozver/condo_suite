@@ -4,6 +4,7 @@
 <div class="case">
 	<h1>Case</h1>
 	<table class="header">
+	<tr><th>Id</th><td>{{ oid|e }}</td></tr>
 	<tr><th>Title</th><td>{{ title|e }}</td></tr>
 	<tr><th>Status</th><td>{{ status|e }}</td></tr>
 	</table>
@@ -20,11 +21,20 @@
 	<tr>
 	<th>Date/Time</th>
 	<th>Comment</th>
+	<th>Extras</th>
+	<th>By</th>
 	</tr>
 	{% for item in history %}
 	<tr>
-	<td><pre>{{ item.dt|datetime('%Y-%m-%d %H:%M') }}</pre></td>
-	<td>{{ item.comment|e }}</td>
+	<td><pre>{{ item['dt']|datetime('%Y-%m-%d %H:%M') }}</pre></td>
+	<td>{{ item['comment']|e }}</td>
+	<td>
+	{% if item['link'] %}<a {{ {'href': '/case/view/%s'|format(item['link']['oid']), 'title': item['link']['title']}|xmlattr }}>linked case</a>{% endif %}
+	{% if item['link'] and item['file_id'] %}<br />{% endif %}
+	{% if item['file_id'] %}<a {{ {'href': '/case/view/%s/file/%s'|format(oid, item['file_id'])}|xmlattr }}>download file</a>{% endif %}
+	{% if not item['link'] and not item['file_id'] %}-{% endif %}
+	</td>
+	<td>{% if item['by'] %}{{ item['by']|e }}{% else %}-{% endif %}</td>
 	</tr>
 	{% endfor %}
 	</table>
