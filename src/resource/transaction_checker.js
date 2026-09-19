@@ -22,7 +22,7 @@ TransactionChecker.prototype.query = function (success_callback, error_callback)
         url: sprintf("/transaction/view/%s", _this.txn_id),
         contentType: "application/json",
         success: function (data, textStatus, jqXHR) {
-            if (jqXHR.status == 200 && jqXHR.statusText == "OK" && jqXHR.getResponseHeader("Content-Type") == "application/json") {
+            if (jqXHR.status == 200 && jqXHR.getResponseHeader("Content-Type") == "application/json") {
                 success_callback(data["type"], data["state"], data["last_mod"], data["options"]);
             } else {
                 error_callback("Unexpected response", sprintf("%s %s", jqXHR.status, jqXHR.statusText));

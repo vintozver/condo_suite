@@ -59,7 +59,7 @@ var transaction_view = function(id_txn) {
         url: sprintf("/transaction/view/%s", id_txn),
         contentType: "application/json",
         success: function (data, textStatus, jqXHR) {
-            if (jqXHR.status == 200 && jqXHR.statusText == "OK" && jqXHR.getResponseHeader("Content-Type") == "application/json") {
+            if (jqXHR.status == 200 && jqXHR.getResponseHeader("Content-Type") == "application/json") {
                 render_view(data["type"], data["state"], data["last_mod"], JSON.stringify(data["options"]));
             } else {
                 notify_error(jqXHR.status, jqXHR.statusText);
@@ -120,7 +120,7 @@ var transaction_commit = function(id_txn) {
         method: "POST",
         url: sprintf("/transaction/commit/%s", id_txn),
         success: function (data, textStatus, jqXHR) {
-            if (jqXHR.status == 200 && jqXHR.statusText == "OK" && jqXHR.getResponseHeader("Content-Type") == "application/json") {
+            if (jqXHR.status == 200 && jqXHR.getResponseHeader("Content-Type") == "application/json") {
                 notify_success();
                 // success_callback(data["type"], data["state"], data["last_mod"]);
             } else {
@@ -182,7 +182,7 @@ var transaction_cancel = function(id_txn) {
         method: "POST",
         url: sprintf("/transaction/cancel/%s", id_txn),
         success: function (data, textStatus, jqXHR) {
-            if (jqXHR.status == 200 && jqXHR.statusText == "OK" && jqXHR.getResponseHeader("Content-Type") == "application/json") {
+            if (jqXHR.status == 200 && jqXHR.getResponseHeader("Content-Type") == "application/json") {
                 notify_success();
                 // success_callback(data["type"], data["state"], data["last_mod"]);
             } else {
@@ -244,7 +244,7 @@ var transaction_recover = function(id_txn) {
         method: "POST",
         url: sprintf("/transaction/recover/%s", id_txn),
         success: function (data, textStatus, jqXHR) {
-            if (jqXHR.status == 200 && jqXHR.statusText == "OK" && jqXHR.getResponseHeader("Content-Type") == "application/json") {
+            if (jqXHR.status == 200 && jqXHR.getResponseHeader("Content-Type") == "application/json") {
                 notify_success();
                 // success_callback(data["type"], data["state"], data["last_mod"]);
             } else {
