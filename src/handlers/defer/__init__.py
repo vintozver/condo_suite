@@ -174,5 +174,7 @@ class TransactionProcessor(_Task):
             'action': action,
         })
 
+the_app.register_task(TransactionProcessor)
+
 
 __all__ = ['Transaction', 'TransactionError', 'TransactionProcessor']

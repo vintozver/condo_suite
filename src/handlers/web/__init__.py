@@ -14,80 +14,80 @@ from ...util.logger import Logger
 
 class Handler(_Handler):
     ROUTE_MAP = [
-        {'regex': re.compile(r'^/$'), 'handler': 'handlers.web.index'},
-        {'regex': re.compile(r'^/static(/.*)$'), 'handler': 'handlers.web.static', 'params': {'path': lambda rex: rex.group(1)}},
+        {'regex': re.compile(r'^/$'), 'handler': 'web.index'},
+        {'regex': re.compile(r'^/static(/.*)$'), 'handler': 'web.static', 'params': {'path': lambda rex: rex.group(1)}},
         {'regex': re.compile(r'^/\bvehicle\b'), 'map': [
-            {'regex': re.compile(r'^/?$'), 'handler': 'handlers.web.vehicle_menu'},
-            {'regex': re.compile(r'^/view/([0-9A-HJ-NPR-Z]{17})/?$'), 'handler': 'handlers.web.vehicle_view', 'params': {'vin': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/?$'), 'handler': 'web.vehicle_menu'},
+            {'regex': re.compile(r'^/view/([0-9A-HJ-NPR-Z]{17})/?$'), 'handler': 'web.vehicle_view', 'params': {'vin': lambda rex: rex.group(1)}},
         ]},
         {'regex': re.compile(r'^/\bparking\b'), 'map': [
-            {'regex': re.compile(r'^/?$'), 'handler': 'handlers.web.parking_menu'},
-            {'regex': re.compile(r'^/vehicle/visitor/?$'), 'handler': 'handlers.web.parking_vehicle_visitor'},
-            {'regex': re.compile(r'^/event/?$'), 'handler': 'handlers.web.parking_event_search'},
-            {'regex': re.compile(r'^/event/new/?$'), 'handler': 'handlers.web.parking_event_new'},
-            {'regex': re.compile(r'^/event/view/([0123456789abcdef]+)/?$'), 'handler': 'handlers.web.parking_event_view', 'params': {'oid': lambda rex: rex.group(1)}},
-            {'regex': re.compile(r'^/event/view/([0123456789abcdef]+)/file/([0123456789abcdef]+)/?$'), 'handler': 'handlers.web.parking_event_file', 'params': {
+            {'regex': re.compile(r'^/?$'), 'handler': 'web.parking_menu'},
+            {'regex': re.compile(r'^/vehicle/visitor/?$'), 'handler': 'web.parking_vehicle_visitor'},
+            {'regex': re.compile(r'^/event/?$'), 'handler': 'web.parking_event_search'},
+            {'regex': re.compile(r'^/event/new/?$'), 'handler': 'web.parking_event_new'},
+            {'regex': re.compile(r'^/event/view/([0123456789abcdef]+)/?$'), 'handler': 'web.parking_event_view', 'params': {'oid': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/event/view/([0123456789abcdef]+)/file/([0123456789abcdef]+)/?$'), 'handler': 'web.parking_event_file', 'params': {
                 'doc_oid': lambda rex: rex.group(1), 'file_oid': lambda rex: rex.group(2)
             }},
-            {'regex': re.compile(r'^/event/amend/([0123456789abcdef]+)/?$'), 'handler': 'handlers.web.parking_event_amend', 'params': {'oid': lambda rex: rex.group(1)}},
-            {'regex': re.compile(r'^/event/helper/autocomplete/VIN/?$'), 'handler': 'handlers.web.parking_event_helpers', 'params': {'action': ('autocomplete', 'VIN')}},
-            {'regex': re.compile(r'^/event/helper/autocomplete/tag/?$'), 'handler': 'handlers.web.parking_event_helpers', 'params': {'action': ('autocomplete', 'tag')}},
+            {'regex': re.compile(r'^/event/amend/([0123456789abcdef]+)/?$'), 'handler': 'web.parking_event_amend', 'params': {'oid': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/event/helper/autocomplete/VIN/?$'), 'handler': 'web.parking_event_helpers', 'params': {'action': ('autocomplete', 'VIN')}},
+            {'regex': re.compile(r'^/event/helper/autocomplete/tag/?$'), 'handler': 'web.parking_event_helpers', 'params': {'action': ('autocomplete', 'tag')}},
         ]},
         {'regex': re.compile(r'^/\bcase\b'), 'map': [
-            {'regex': re.compile(r'^/?$'), 'handler': 'handlers.web.case_search'},
-            {'regex': re.compile(r'^/new/?$'), 'handler': 'handlers.web.case_new'},
-            {'regex': re.compile(r'^/view/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'handlers.web.case_view', 'params': {'oid': lambda rex: rex.group(1)}},
-            {'regex': re.compile(r'^/view/([0123456789abcdefABCDEF]+)/file/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'handlers.web.case_file', 'params': {
+            {'regex': re.compile(r'^/?$'), 'handler': 'web.case_search'},
+            {'regex': re.compile(r'^/new/?$'), 'handler': 'web.case_new'},
+            {'regex': re.compile(r'^/view/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'web.case_view', 'params': {'oid': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/view/([0123456789abcdefABCDEF]+)/file/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'web.case_file', 'params': {
                 'doc_oid': lambda rex: rex.group(1), 'file_oid': lambda rex: rex.group(2)
             }},
-            {'regex': re.compile(r'^/amend/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'handlers.web.case_amend', 'params': {'oid': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/amend/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'web.case_amend', 'params': {'oid': lambda rex: rex.group(1)}},
         ]},
         {'regex': re.compile(r'^/\bapi\b'), 'map': [
-            {'regex': re.compile(r'^/vehicle/([0-9A-HJ-NPR-Z]{17})/description/?$'), 'handler': 'handlers.api.vehicle', 'params': {'vin': lambda rex: rex.group(1)}},
-            {'regex': re.compile(r'^/vehicle/?$'), 'handler': 'handlers.api.vehicle'},
-            {'regex': re.compile(r'^/parking/event/?$'), 'handler': 'handlers.api.parking_event_search'},
-            {'regex': re.compile(r'^/parking/event/([0123456789abcdefABCDEF]+)/file/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'handlers.api.parking_event', 'params': {'action': 'file', 'oid': lambda rex: rex.group(1), 'file_oid': lambda rex: rex.group(2)}},
-            {'regex': re.compile(r'^/parking/event/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'handlers.api.parking_event', 'params': {'action': 'view', 'oid': lambda rex: rex.group(1)}},
-            {'regex': re.compile(r'^/case/?$'), 'handler': 'handlers.api.case'},
-            {'regex': re.compile(r'^/case/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'handlers.api.case', 'params': {'oid': lambda rex: rex.group(1)}},
-            {'regex': re.compile(r'^/case/([0123456789abcdefABCDEF]+)/status/?$'), 'handler': 'handlers.api.case', 'params': {'action': 'status', 'oid': lambda rex: rex.group(1)}},
-            {'regex': re.compile(r'^/case/([0123456789abcdefABCDEF]+)/comment/?$'), 'handler': 'handlers.api.case', 'params': {'action': 'comment', 'oid': lambda rex: rex.group(1)}},
-            {'regex': re.compile(r'^/case/([0123456789abcdefABCDEF]+)/link/?$'), 'handler': 'handlers.api.case', 'params': {'action': 'link', 'oid': lambda rex: rex.group(1)}},
-            {'regex': re.compile(r'^/case/([0123456789abcdefABCDEF]+)/link/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'handlers.api.case', 'params': {'action': 'link', 'oid': lambda rex: rex.group(1), 'linked_oid': lambda rex: rex.group(2)}},
+            {'regex': re.compile(r'^/vehicle/([0-9A-HJ-NPR-Z]{17})/description/?$'), 'handler': 'api.vehicle', 'params': {'vin': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/vehicle/?$'), 'handler': 'api.vehicle'},
+            {'regex': re.compile(r'^/parking/event/?$'), 'handler': 'api.parking_event_search'},
+            {'regex': re.compile(r'^/parking/event/([0123456789abcdefABCDEF]+)/file/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'api.parking_event', 'params': {'action': 'file', 'oid': lambda rex: rex.group(1), 'file_oid': lambda rex: rex.group(2)}},
+            {'regex': re.compile(r'^/parking/event/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'api.parking_event', 'params': {'action': 'view', 'oid': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/case/?$'), 'handler': 'api.case'},
+            {'regex': re.compile(r'^/case/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'api.case', 'params': {'oid': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/case/([0123456789abcdefABCDEF]+)/status/?$'), 'handler': 'api.case', 'params': {'action': 'status', 'oid': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/case/([0123456789abcdefABCDEF]+)/comment/?$'), 'handler': 'api.case', 'params': {'action': 'comment', 'oid': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/case/([0123456789abcdefABCDEF]+)/link/?$'), 'handler': 'api.case', 'params': {'action': 'link', 'oid': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/case/([0123456789abcdefABCDEF]+)/link/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'api.case', 'params': {'action': 'link', 'oid': lambda rex: rex.group(1), 'linked_oid': lambda rex: rex.group(2)}},
         ]},
         {'regex': re.compile(r'^/\blink\b'), 'map': [
-            {'regex': re.compile(r'^/?$'), 'handler': 'handlers.web.link'},
+            {'regex': re.compile(r'^/?$'), 'handler': 'web.link'},
         ]},
         {'regex': re.compile(r'^/\btransaction\b'), 'map': [
-            {'regex': re.compile(r'^/?$'), 'handler': 'handlers.web.transaction.list'},
-            {'regex': re.compile(r'^/view/([0123456789abcdef]+)/?$'), 'handler': 'handlers.web.transaction.view', 'params': {'id_transaction': lambda rex: rex.group(1)}},
-            {'regex': re.compile(r'^/commit/([0123456789abcdef]+)/?$'), 'handler': 'handlers.web.transaction.action', 'params': {'id_txn': lambda rex: rex.group(1), 'action': 'commit'}},
-            {'regex': re.compile(r'^/cancel/([0123456789abcdef]+)/?$'), 'handler': 'handlers.web.transaction.action', 'params': {'id_txn': lambda rex: rex.group(1), 'action': 'cancel'}},
-            {'regex': re.compile(r'^/recover/([0123456789abcdef]+)/?$'), 'handler': 'handlers.web.transaction.action', 'params': {'id_txn': lambda rex: rex.group(1), 'action': 'recover'}},
+            {'regex': re.compile(r'^/?$'), 'handler': 'web.transaction.list'},
+            {'regex': re.compile(r'^/view/([0123456789abcdef]+)/?$'), 'handler': 'web.transaction.view', 'params': {'id_transaction': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/commit/([0123456789abcdef]+)/?$'), 'handler': 'web.transaction.action', 'params': {'id_txn': lambda rex: rex.group(1), 'action': 'commit'}},
+            {'regex': re.compile(r'^/cancel/([0123456789abcdef]+)/?$'), 'handler': 'web.transaction.action', 'params': {'id_txn': lambda rex: rex.group(1), 'action': 'cancel'}},
+            {'regex': re.compile(r'^/recover/([0123456789abcdef]+)/?$'), 'handler': 'web.transaction.action', 'params': {'id_txn': lambda rex: rex.group(1), 'action': 'recover'}},
         ]},
         {'regex': re.compile(r'^/\bauth\b'), 'map': [
-            {'regex': re.compile(r'^/?$'), 'handler': 'handlers.ext.redirect', 'params': {'address': '/auth/user'}},
-            {'regex': re.compile(r'^/user/?$'), 'handler': 'handlers.web.auth_user'},
-            {'regex': re.compile(r'^/agent/?$'), 'handler': 'handlers.web.auth_agent'},
-            {'regex': re.compile(r'^/info/?$'), 'handler': 'handlers.web.auth_info'},  # JSON handler
-            {'regex': re.compile(r'^/ext/fido2/?$'), 'handler': 'handlers.web.auth_ext.fido2'},
-            {'regex': re.compile(r'^/ext/google/?$'), 'handler': 'handlers.web.auth_ext.google'},
+            {'regex': re.compile(r'^/?$'), 'handler': 'ext.redirect', 'params': {'address': '/auth/user'}},
+            {'regex': re.compile(r'^/user/?$'), 'handler': 'web.auth_user'},
+            {'regex': re.compile(r'^/agent/?$'), 'handler': 'web.auth_agent'},
+            {'regex': re.compile(r'^/info/?$'), 'handler': 'web.auth_info'},  # JSON handler
+            {'regex': re.compile(r'^/ext/fido2/?$'), 'handler': 'web.auth_ext.fido2'},
+            {'regex': re.compile(r'^/ext/google/?$'), 'handler': 'web.auth_ext.google'},
         ]},
         {'regex': re.compile(r'^/\buser\b'), 'map': [
-            {'regex': re.compile(r'^/?$'), 'handler': 'handlers.web.user_view'},
-            {'regex': re.compile(r'^/new/?$'), 'handler': 'handlers.web.user_new'},
-            {'regex': re.compile(r'^/view/([0123456789abcdef]+)/?$'), 'handler': 'handlers.web.user_view', 'params': {'id_user': lambda rex: rex.group(1)}},
-            {'regex': re.compile(r'^/del/([0123456789abcdef]+)/?$'), 'handler': 'handlers.web.user_del', 'params': {'id_user': lambda rex: rex.group(1)}},
-            {'regex': re.compile(r'^/update/([0123456789abcdef]+)/?$'), 'handler': 'handlers.web.user_update', 'params': {'id_user': lambda rex: rex.group(1)}},  # JSON handler
-            {'regex': re.compile(r'^/helper/autocomplete/search/?$'), 'handler': 'handlers.web.user_helpers', 'params': {'action': ('autocomplete', 'search')}},  # JSON handler
-            {'regex': re.compile(r'^/helper/autocomplete/search/agent/?$'), 'handler': 'handlers.web.user_helpers', 'params': {'action': ('autocomplete', 'search', 'agent')}},  # JSON handler
+            {'regex': re.compile(r'^/?$'), 'handler': 'web.user_view'},
+            {'regex': re.compile(r'^/new/?$'), 'handler': 'web.user_new'},
+            {'regex': re.compile(r'^/view/([0123456789abcdef]+)/?$'), 'handler': 'web.user_view', 'params': {'id_user': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/del/([0123456789abcdef]+)/?$'), 'handler': 'web.user_del', 'params': {'id_user': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/update/([0123456789abcdef]+)/?$'), 'handler': 'web.user_update', 'params': {'id_user': lambda rex: rex.group(1)}},  # JSON handler
+            {'regex': re.compile(r'^/helper/autocomplete/search/?$'), 'handler': 'web.user_helpers', 'params': {'action': ('autocomplete', 'search')}},  # JSON handler
+            {'regex': re.compile(r'^/helper/autocomplete/search/agent/?$'), 'handler': 'web.user_helpers', 'params': {'action': ('autocomplete', 'search', 'agent')}},  # JSON handler
         ]},
         {'regex': re.compile(r'^/\bagent\b'), 'map': [
-            {'regex': re.compile(r'^/?$'), 'handler': 'handlers.ext.redirect', 'params': {'address': '/agent/edit'}},
-            {'regex': re.compile(r'^/edit/?$'), 'handler': 'handlers.web.agent_edit'},
-            {'regex': re.compile(r'^/switch/([0123456789abcdef]+)/?$'), 'handler': 'handlers.web.agent_switch', 'params': {'id_agent': lambda rex: rex.group(1)}},
-            {'regex': re.compile(r'^/switch/([0123456789abcdef]+)/([\w ]+)/?$'), 'handler': 'handlers.web.agent_switch', 'params': {'id_agent': lambda rex: rex.group(1), 'position': lambda rex: rex.group(2)}},
-            {'regex': re.compile(r'^/discard/?$'), 'handler': 'handlers.web.agent_switch', 'params': {'id_agent': None}},
+            {'regex': re.compile(r'^/?$'), 'handler': 'ext.redirect', 'params': {'address': '/agent/edit'}},
+            {'regex': re.compile(r'^/edit/?$'), 'handler': 'web.agent_edit'},
+            {'regex': re.compile(r'^/switch/([0123456789abcdef]+)/?$'), 'handler': 'web.agent_switch', 'params': {'id_agent': lambda rex: rex.group(1)}},
+            {'regex': re.compile(r'^/switch/([0123456789abcdef]+)/([\w ]+)/?$'), 'handler': 'web.agent_switch', 'params': {'id_agent': lambda rex: rex.group(1), 'position': lambda rex: rex.group(2)}},
+            {'regex': re.compile(r'^/discard/?$'), 'handler': 'web.agent_switch', 'params': {'id_agent': None}},
         ]},
     ]
 
@@ -111,7 +111,7 @@ class Handler(_Handler):
                     return route_item['handler'], params
 
     def view_notfound(self, err):
-        from ...handlers.web import skeleton as mod_tmpl
+        from . import skeleton as mod_tmpl
         try:
             content = mod_tmpl.TemplateFactory(self.req, 'error_notfound').render({'description': err})
         except mod_tmpl.TemplateError:
@@ -125,7 +125,7 @@ class Handler(_Handler):
             lambda line_up, line_down: line_up + '\n' + line_down,
             ['%s: %s' % (item[0], item[1]) for item in traceback.extract_tb(err_tb)]
         )
-        from ...handlers.web import skeleton as mod_tmpl
+        from . import skeleton as mod_tmpl
         try:
             content = mod_tmpl.TemplateFactory(self.req, 'error_internal').render({'err_type': err_type, 'err_value': err_value, 'err_tb': tb})
             self.req.setHeader('Content-Type', 'text/html; charset=utf-8')
@@ -143,7 +143,7 @@ class Handler(_Handler):
     def __call__(self):
         try:
             if self.req.method == 'MAIL':
-                from ...handlers import mail as _mail
+                from .. import mail as _mail
                 try:
                     return _mail.Handler(self.req)()
                 except _mail.HandlerError as err:
@@ -154,7 +154,7 @@ class Handler(_Handler):
                 return self.view_notfound('No handler found')
             module_name, module_params = module
 
-            module = importlib.import_module('...' + module_name, package=__package__)
+            module = importlib.import_module('..' + module_name, package=__package__)
             module_handler = module.Handler(self.req)
             return module_handler(**module_params)
         except:

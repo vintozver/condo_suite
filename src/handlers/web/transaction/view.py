@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from ....handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
+import importlib
 import typing
-import sys
 import json
 import http
+from ....handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
+from ....handlers.web import decorator as deco
 from ....modules import mongo as mod_mongo
 from ....modules.mongo import transaction as mod_mongo_transaction
 from ....modules.mongo import agent as mod_mongo_agent
 from ....modules.mongo import user as mod_mongo_user
-from ....handlers.web import decorator as deco
 
 
 class HandlerError(_HandlerError):
@@ -64,12 +64,10 @@ class Handler(_Handler):
         # Import module based on transaction type
         if not txn.type:
             raise HandlerError('Transaction type is not set', id_transaction)
-        mod_view_type = 'handlers.web.transaction.view_%s' % txn.type
         try:
-            __import__(mod_view_type)
+            mod_view_type = importlib.import_module('.view_%s' % txn.type, package=__package__)
         except ImportError:
             raise HandlerError('Transaction type is unknown', txn.type)
-        mod_view_type = sys.modules[mod_view_type]
         mod_view_obj = mod_view_type.ViewHandler(txn)
 
         # Process based on transaction type.
