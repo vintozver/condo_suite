@@ -7,6 +7,7 @@ from ....handlers.web import decorator as deco
 from ....modules import mongo as mod_mongo
 from ....modules.mongo import transaction as mod_mongo_transaction
 from ....util import defer as util_defer
+from ....handlers import defer as mod_defer
 
 
 class HandlerError(_HandlerError):
@@ -44,7 +45,10 @@ class Handler(_Handler):
             return self.render_forbidden()
 
         if action in ('commit', 'cancel', 'recover'):
-            util_defer.the_app.send_task('handlers.defer.TransactionProcessor', kwargs={
+            util_defer.the_app.send_task('%s.%s' % (
+                mod_defer.TransactionProcessor.__module__,
+                mod_defer.TransactionProcessor.__qualname__,
+            ), kwargs={
                 'id_txn': oid_txn,
                 'action': action,
             })
