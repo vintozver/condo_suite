@@ -100,9 +100,9 @@ class Handler(BaseHandler):
                         {
                             '_id': vin,
                             '$or': [
-                                {'description_upd.event_version': {'$exists': False}},
-                                {'description_upd.event_version': {
-                                    '$ne': event_state['version']}},
+                                {'description_upd.dt': {'$exists': False}},
+                                {'description_upd.dt': {
+                                    '$lt': event_state['updated']}},
                             ],
                         },
                         {'$set': {
