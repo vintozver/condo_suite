@@ -43,6 +43,7 @@ class Handler(_Handler):
             {'regex': re.compile(r'^/amend/([0123456789abcdefABCDEF]+)/?$'), 'handler': 'web.case_amend', 'params': {'oid': lambda rex: rex.group(1)}},
         ]},
         {'regex': re.compile(r'^/\bapi\b'), 'map': [
+            {'regex': re.compile(r'^/vehicle/description/candidate/?$'), 'handler': 'api.vehicle', 'params': {'action': 'candidate'}},
             {'regex': re.compile(r'^/vehicle/([0-9A-HJ-NPR-Z]{17})/description/?$'), 'handler': 'api.vehicle', 'params': {'vin': lambda rex: rex.group(1)}},
             {'regex': re.compile(r'^/vehicle/?$'), 'handler': 'api.vehicle'},
             {'regex': re.compile(r'^/parking/event/?$'), 'handler': 'api.parking_event_search'},

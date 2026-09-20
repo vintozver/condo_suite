@@ -65,6 +65,7 @@ GET  /api/parking/event/{event-id}
 GET  /api/parking/event/{event-id}/file/{file-id}
 POST /api/parking/event/{event-id}
 GET  /api/vehicle/
+GET  /api/vehicle/description/candidate
 POST /api/vehicle/{VIN}/description
 ```
 
@@ -74,5 +75,11 @@ user's signing keyset. Include `user_id`, `kid`, `dt`, `agent_id`, and
 the JWT payload. See `examples/openssl.sh` for key generation and
 `examples/parking_api.py` for a complete client.
 
-Vehicle descriptions are posted as `text/plain`; the server appends the update
-attribution (`Updated by: user, agent`) to the supplied text.
+The candidate endpoint selects a random vehicle whose parking event or event
+history is newer than its last description update. Its response includes an
+exact `history_version` and returns the same value as an `ETag`.
+
+Vehicle descriptions are posted as `text/plain` with the candidate ETag in an
+`If-Match` header. The update records its UTC timestamp and authenticated
+user/agent in `description_upd`. It fails with `412 Precondition Failed` if the
+parking history changed or another worker already updated the candidate.
