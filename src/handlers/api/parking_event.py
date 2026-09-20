@@ -40,7 +40,9 @@ class Handler(ParkingHandler):
                     updated = doc.description_upd.dt if doc.description_upd else None
                     if updated and updated.tzinfo is None:
                         updated = updated.replace(tzinfo=datetime.timezone.utc)
-                    if updated is None or updated < last_history.id.generation_time:
+                    if (updated is None or
+                            updated < last_history.id.generation_time or
+                            doc.description_upd.history_version != last_history.id):
                         candidates.append((doc, last_history.id))
                 if not candidates:
                     raise ApiError(http.client.NOT_FOUND, 'No update candidate')
@@ -84,6 +86,8 @@ class Handler(ParkingHandler):
                                     {'description_upd.dt': {'$exists': False}},
                                     {'description_upd.dt': {
                                         '$lt': history_version.generation_time}},
+                                    {'description_upd.history_version': {
+                                        '$ne': history_version}},
                                 ],
                             },
                             {'$set': {
