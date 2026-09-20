@@ -65,7 +65,9 @@ class Handler(BaseHandler):
                 expected_version = self._if_match(
                     self.req.request_headers.get('If-Match'))
                 with mod_mongo.DbSessionController() as db:
-                    vehicle_state = db[config.name]['vehicle'].find_one(
+                    vehicle_collection = db[config.name][
+                        VehicleDocument._meta['collection']]
+                    vehicle_state = vehicle_collection.find_one(
                         {'_id': vin},
                         {'_id': True, 'description_source_upd': True})
                     if vehicle_state is None:
@@ -83,7 +85,7 @@ class Handler(BaseHandler):
                             agent=AgentRef(
                                 id=agent.id, name=agent.name, position=agent.position)),
                         event_version=expected_version)
-                    vehicle_data = db[config.name]['vehicle'].find_one_and_update(
+                    vehicle_data = vehicle_collection.find_one_and_update(
                         {
                             '_id': vin,
                             'description_source_upd': source_updated,

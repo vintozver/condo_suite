@@ -72,7 +72,7 @@ def main():
 
     event_candidate = subparsers.add_parser('event-candidate')
     event_candidate.set_defaults(
-        method='GET', path='/api/parking/event/description/candidate')
+        method='GET', path='/api/search/parking_event_description_candidate')
 
     event_describe = subparsers.add_parser('event-describe')
     event_describe.add_argument('event_id')
@@ -82,7 +82,7 @@ def main():
 
     vehicle_candidate = subparsers.add_parser('vehicle-candidate')
     vehicle_candidate.set_defaults(
-        method='GET', path='/api/vehicle/description/candidate')
+        method='GET', path='/api/search/vehicle_description_candidate')
 
     vehicle_describe = subparsers.add_parser('vehicle-describe')
     vehicle_describe.add_argument('vin')

@@ -63,14 +63,14 @@ and comments:
 
 ```text
 GET  /api/parking/event
-GET  /api/parking/event/description/candidate
 GET  /api/parking/event/{event-id}
 GET  /api/parking/event/{event-id}/file/{file-id}
 POST /api/parking/event/{event-id}
 POST /api/parking/event/{event-id}/description
 GET  /api/vehicle/
-GET  /api/vehicle/description/candidate
 POST /api/vehicle/{VIN}/description
+GET  /api/search/parking_event_description_candidate
+GET  /api/search/vehicle_description_candidate
 ```
 
 JWTs must be signed with a private key whose public key or certificate is in the

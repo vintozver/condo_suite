@@ -1,9 +1,11 @@
 from .common import ApiError, mod_mongo, config
 from .parking_common import ParkingHandler
 from ...modules.mongo.agent import AgentRef
+from ...modules.mongo.parking_event import Document as ParkingEventDocument
 from ...modules.mongo.parking_event import DescriptionUpdate
 from ...modules.mongo.security import Ref as SecurityRef
 from ...modules.mongo.user import UserRef
+from ...modules.mongo.vehicle import Document as VehicleDocument
 import datetime
 import http.client
 import secrets
@@ -76,7 +78,8 @@ class Handler(ParkingHandler):
                                     id=agent.id, name=agent.name,
                                     position=agent.position)),
                             history_version=history_version)
-                        event_data = db[config.name]['parking_event'].find_one_and_update(
+                        event_data = db[config.name][
+                            ParkingEventDocument._meta['collection']].find_one_and_update(
                             {
                                 '_id': doc.id,
                                 'history': {'$size': len(doc.history)},
@@ -100,7 +103,8 @@ class Handler(ParkingHandler):
                             raise ApiError(
                                 http.client.PRECONDITION_FAILED,
                                 'Parking event history was modified or description was already updated')
-                        db[config.name]['vehicle'].update_one(
+                        db[config.name][
+                            VehicleDocument._meta['collection']].update_one(
                             {'_id': doc.vehicle.id},
                             {'$max': {
                                 'description_source_upd': description_upd.dt}},
@@ -128,7 +132,6 @@ class Handler(ParkingHandler):
         return self._run(operation)
 
     def _get_candidates(self):
-        from ...modules.mongo.parking_event import Document
-        return Document.objects(history__0__exists=True).only(
+        return ParkingEventDocument.objects(history__0__exists=True).only(
             'vehicle', 'reason', 'remarks', 'history', 'description',
             'description_upd')
