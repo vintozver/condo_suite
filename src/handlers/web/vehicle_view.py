@@ -15,6 +15,20 @@ class HandlerError(_HandlerError):
 
 
 class Handler(_Handler):
+    @staticmethod
+    def _description_upd(value):
+        if not value:
+            return None
+        parts = []
+        if value.by and value.by.user and value.by.user.name:
+            parts.append(value.by.user.name)
+        if value.by and value.by.agent and value.by.agent.name:
+            agent = value.by.agent.name
+            if value.by.agent.position:
+                agent = '%s (%s)' % (agent, value.by.agent.position)
+            parts.append(agent)
+        return {'dt': value.dt, 'by': ' / '.join(parts)}
+
     @deco.session.Session()
     @deco.session.SessionUser()
     @deco.session.SessionAgent()
@@ -55,6 +69,7 @@ class Handler(_Handler):
         tmpl_data['VIN'] = vin
         tmpl_data['tag'] = doc.tag
         tmpl_data['description'] = doc.description
+        tmpl_data['description_upd'] = self._description_upd(doc.description_upd)
         tmpl_data['parking_event_list'] = parking_event_list
 
         content = mod_tmpl.TemplateFactory(self.req, 'vehicle_view').render(tmpl_data)

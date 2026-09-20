@@ -74,5 +74,7 @@ user's signing keyset. Include `user_id`, `kid`, `dt`, `agent_id`, and
 the JWT payload. See `examples/openssl.sh` for key generation and
 `examples/parking_api.py` for a complete client.
 
-Vehicle descriptions are posted as `text/plain`; the server appends the update
-attribution (`Updated by: user, agent`) to the supplied text.
+Vehicle descriptions are posted as `text/plain`; each update records its UTC
+timestamp and the authenticated user/agent in `description_upd`. Updates may
+include an `If-Unmodified-Since` header and fail with `412 Precondition Failed`
+if the description has changed since that time.
