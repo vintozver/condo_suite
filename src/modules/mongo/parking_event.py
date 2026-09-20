@@ -16,6 +16,12 @@ class HistoryItem(mod_mongo.mongoengine.EmbeddedDocument):
     creator = mod_mongo.mongoengine.EmbeddedDocumentField(SecurityRef)
 
 
+class DescriptionUpdate(mod_mongo.mongoengine.EmbeddedDocument):
+    dt = mod_mongo.mongoengine.DateTimeField(required=True)
+    by = mod_mongo.mongoengine.EmbeddedDocumentField(SecurityRef, required=True)
+    history_version = mod_mongo.mongoengine.ObjectIdField(required=True)
+
+
 # document stored in the database
 class Document(mod_mongo.mongoengine.Document):
     meta = {'db_alias': mod_mongo.mongoengine_alias, 'collection': 'parking_event', 'strict': False}
@@ -24,4 +30,6 @@ class Document(mod_mongo.mongoengine.Document):
     reason = mod_mongo.mongoengine.StringField(max_length=32, default='other', choices=('other', 'visitor', 'disabled_illegal', 'fire', 'obstruction'))
     remarks = mod_mongo.mongoengine.StringField()
     history = mod_mongo.mongoengine.EmbeddedDocumentListField(HistoryItem, default=list)
+    description = mod_mongo.mongoengine.StringField()
+    description_upd = mod_mongo.mongoengine.EmbeddedDocumentField(DescriptionUpdate)
     creator = mod_mongo.mongoengine.EmbeddedDocumentField(SecurityRef)

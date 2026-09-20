@@ -9,6 +9,8 @@
 	<tr><th>VIN</th><td>{% if VIN is defined %}<a {{ {'href': '/vehicle/view/%s'|format(VIN)}|xmlattr }}>{{ VIN|escape }}</a>{% else %}-{% endif %}</td></tr>
 	<tr><th>tag</th><td>{% if tag is defined %}{{ tag|escape }}{% else %}-{% endif %}</td></tr>
 	<tr><th>remarks</th><td>{% if remarks is defined %}{{ remarks|escape }}{% else %}-{% endif %}</td></tr>
+	<tr><th>Description</th><td>{% if description %}{{ description|escape }}{% else %}-{% endif %}</td></tr>
+	<tr><th>Description updated</th><td>{% if description_upd %}{{ description_upd['dt']|datetime('%Y-%m-%d %H:%M') }}{% if description_upd['by'] %} by {{ description_upd['by']|escape }}{% endif %}{% else %}-{% endif %}</td></tr>
 	</table>
 
 	<h3>History</h3>
@@ -40,4 +42,3 @@
 	</div>
 </div>
 {%- endblock %}
-

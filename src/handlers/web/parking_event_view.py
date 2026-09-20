@@ -43,6 +43,23 @@ class Handler(_Handler):
         tmpl_data['VIN'] = doc.vehicle.id
         tmpl_data['tag'] = doc.vehicle.tag
         tmpl_data['remarks'] = doc.remarks
+        tmpl_data['description'] = doc.description
+        if doc.description_upd:
+            by = doc.description_upd.by
+            parts = []
+            if by and by.user and by.user.name:
+                parts.append(by.user.name)
+            if by and by.agent and by.agent.name:
+                agent = by.agent.name
+                if by.agent.position:
+                    agent = '%s (%s)' % (agent, by.agent.position)
+                parts.append(agent)
+            tmpl_data['description_upd'] = {
+                'dt': doc.description_upd.dt.astimezone(config.timezone),
+                'by': ' / '.join(parts),
+            }
+        else:
+            tmpl_data['description_upd'] = None
         tmpl_data['history'] = list({
             'oid': str(history_item.id) if history_item.length else None,
             'dt': history_item.id.generation_time.astimezone(config.timezone),
