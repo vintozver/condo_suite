@@ -71,27 +71,38 @@ class Handler(ParkingHandler):
                         agent=AgentRef(
                             id=agent.id, name=agent.name, position=agent.position)),
                     history_version=history_version)
-                with mod_mongo.DbSessionController() as db:
-                    event_data = db[config.name]['parking_event'].find_one_and_update(
-                        {
-                            '_id': doc.id,
-                            'history': {'$size': len(doc.history)},
-                            'history.%d._id' % (len(doc.history) - 1): history_version,
-                            '$or': [
-                                {'description_upd.dt': {'$exists': False}},
-                                {'description_upd.dt': {
-                                    '$lt': history_version.generation_time}},
-                            ],
-                        },
-                        {'$set': {
-                            'description': self.req.request_body.decode('utf-8'),
-                            'description_upd': description_upd.to_mongo(),
-                        }},
-                        return_document=mod_mongo.pymongo.ReturnDocument.AFTER)
-                if event_data is None:
-                    raise ApiError(
-                        http.client.PRECONDITION_FAILED,
-                        'Parking event history was modified or description was already updated')
+                with mod_mongo.DbSessionController() as db, db.start_session() as session:
+                    def update_description(active_session):
+                        event_data = db[config.name]['parking_event'].find_one_and_update(
+                            {
+                                '_id': doc.id,
+                                'history': {'$size': len(doc.history)},
+                                'history.%d._id' % (
+                                    len(doc.history) - 1): history_version,
+                                '$or': [
+                                    {'description_upd.dt': {'$exists': False}},
+                                    {'description_upd.dt': {
+                                        '$lt': history_version.generation_time}},
+                                ],
+                            },
+                            {'$set': {
+                                'description': self.req.request_body.decode('utf-8'),
+                                'description_upd': description_upd.to_mongo(),
+                            }},
+                            return_document=mod_mongo.pymongo.ReturnDocument.AFTER,
+                            session=active_session)
+                        if event_data is None:
+                            raise ApiError(
+                                http.client.PRECONDITION_FAILED,
+                                'Parking event history was modified or description was already updated')
+                        db[config.name]['vehicle'].update_one(
+                            {'_id': doc.vehicle.id},
+                            {'$max': {
+                                'description_source_upd': description_upd.dt}},
+                            upsert=True,
+                            session=active_session)
+                        return event_data
+                    event_data = session.with_transaction(update_description)
                 self.req.setHeader('ETag', self._etag(history_version))
                 self._json(self._event(type(doc)._from_son(event_data)))
                 return

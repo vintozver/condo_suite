@@ -36,26 +36,8 @@ class Handler(BaseHandler):
         }
 
     @staticmethod
-    def _event_descriptions(db, vin=None):
-        query = {'vehicle._id': vin} if vin else {'vehicle._id': {'$exists': True}}
-        query['description_upd.dt'] = {'$exists': True}
-        projection = {'vehicle._id': True, 'description_upd.dt': True}
-        updates = {}
-        for event in db[config.name]['parking_event'].find(query, projection):
-            event_vin = event.get('vehicle', {}).get('_id')
-            updated = event.get('description_upd', {}).get('dt')
-            if not event_vin or updated is None:
-                continue
-            updates.setdefault(event_vin, []).append((event['_id'], updated))
-        return {
-            event_vin: {
-                'version': hashlib.sha256('\n'.join(sorted(
-                    '%s:%s' % (event_id, updated.isoformat())
-                    for event_id, updated in values)).encode('ascii')).hexdigest(),
-                'updated': max(updated for event_id, updated in values),
-            }
-            for event_vin, values in updates.items()
-        }
+    def _event_version(updated):
+        return hashlib.sha256(updated.isoformat().encode('ascii')).hexdigest()
 
     @staticmethod
     def _etag(value):
@@ -81,11 +63,14 @@ class Handler(BaseHandler):
                 expected_version = self._if_match(
                     self.req.request_headers.get('If-Match'))
                 with mod_mongo.DbSessionController() as db:
-                    if db[config.name]['vehicle'].find_one(
-                            {'_id': vin}, {'_id': True}) is None:
+                    vehicle_state = db[config.name]['vehicle'].find_one(
+                        {'_id': vin},
+                        {'_id': True, 'description_source_upd': True})
+                    if vehicle_state is None:
                         raise ApiError(http.client.NOT_FOUND, 'Vehicle not found')
-                    event_state = self._event_descriptions(db, vin).get(vin)
-                    if event_state is None or event_state['version'] != expected_version:
+                    source_updated = vehicle_state.get('description_source_upd')
+                    if (source_updated is None or
+                            self._event_version(source_updated) != expected_version):
                         raise ApiError(
                             http.client.PRECONDITION_FAILED,
                             'Parking event descriptions were modified')
@@ -99,10 +84,10 @@ class Handler(BaseHandler):
                     vehicle_data = db[config.name]['vehicle'].find_one_and_update(
                         {
                             '_id': vin,
+                            'description_source_upd': source_updated,
                             '$or': [
                                 {'description_upd.dt': {'$exists': False}},
-                                {'description_upd.dt': {
-                                    '$lt': event_state['updated']}},
+                                {'description_upd.dt': {'$lt': source_updated}},
                             ],
                         },
                         {'$set': {
@@ -119,19 +104,22 @@ class Handler(BaseHandler):
                 self._json(self._vehicle(vehicle))
                 return
             if action == 'candidate':
-                with mod_mongo.DbSessionController() as db:
-                    event_descriptions = self._event_descriptions(db)
                 candidates = []
                 for vehicle in VehicleDocument.objects(
-                        id__in=list(event_descriptions)).only(
-                            'id', 'tag', 'description', 'description_upd'):
-                    event_state = event_descriptions[vehicle.id]
+                        description_source_upd__exists=True).only(
+                            'id', 'tag', 'description', 'description_upd',
+                            'description_source_upd'):
                     update = vehicle.description_upd
                     updated = update.dt if update else None
                     if updated and updated.tzinfo is None:
                         updated = updated.replace(tzinfo=datetime.timezone.utc)
-                    if updated is None or updated < event_state['updated']:
-                        candidates.append((vehicle, event_state['version']))
+                    source_updated = vehicle.description_source_upd
+                    if source_updated.tzinfo is None:
+                        source_updated = source_updated.replace(
+                            tzinfo=datetime.timezone.utc)
+                    if updated is None or updated < source_updated:
+                        candidates.append((
+                            vehicle, self._event_version(source_updated)))
                 if not candidates:
                     raise ApiError(http.client.NOT_FOUND, 'No update candidate')
                 vehicle, event_version = secrets.choice(candidates)
