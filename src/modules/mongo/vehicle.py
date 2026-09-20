@@ -10,7 +10,6 @@ class DescriptionUpdate(mod_mongo.mongoengine.EmbeddedDocument):
 
     dt = mod_mongo.mongoengine.DateTimeField(required=True)
     by = mod_mongo.mongoengine.EmbeddedDocumentField(SecurityRef, required=True)
-    event_version = mod_mongo.mongoengine.StringField(required=True)
 
 
 # document stored in the database
@@ -23,7 +22,9 @@ class Document(mod_mongo.mongoengine.Document):
     tag = mod_mongo.mongoengine.StringField(max_length=20)
     description = mod_mongo.mongoengine.StringField()
     description_upd = mod_mongo.mongoengine.EmbeddedDocumentField(DescriptionUpdate)
-    description_source_upd = mod_mongo.mongoengine.DateTimeField()
+    last_parking_event_id = mod_mongo.mongoengine.ObjectIdField()
+    last_parking_event_history_id = mod_mongo.mongoengine.ObjectIdField()
+    last_parking_event_description_upd = mod_mongo.mongoengine.DateTimeField()
 
 
 # link to the vehicle in other collections

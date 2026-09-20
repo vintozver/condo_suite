@@ -3,6 +3,7 @@ from .parking_common import ParkingHandler
 from ...modules.mongo.agent import AgentRef
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
 from ...modules.mongo.parking_event import DescriptionUpdate
+from ...modules.mongo.parking_event import update_vehicle_markers
 from ...modules.mongo.security import Ref as SecurityRef
 from ...modules.mongo.user import UserRef
 from ...modules.mongo.vehicle import Document as VehicleDocument
@@ -42,16 +43,14 @@ class Handler(ParkingHandler):
                     updated = doc.description_upd.dt if doc.description_upd else None
                     if updated and updated.tzinfo is None:
                         updated = updated.replace(tzinfo=datetime.timezone.utc)
-                    if (updated is None or
-                            updated < last_history.id.generation_time or
-                            doc.description_upd.history_version != last_history.id):
+                    if updated is None or updated < last_history.id.generation_time:
                         candidates.append((doc, last_history.id))
                 if not candidates:
                     raise ApiError(http.client.NOT_FOUND, 'No update candidate')
-                doc, history_version = secrets.choice(candidates)
-                self.req.setHeader('ETag', self._etag(history_version))
+                doc, last_history_id = secrets.choice(candidates)
+                self.req.setHeader('ETag', self._etag(last_history_id))
                 result = self._event(doc)
-                result['history_version'] = str(history_version)
+                result['last_history_id'] = str(last_history_id)
                 self._json(result)
                 return
             if action == 'description':
@@ -61,10 +60,10 @@ class Handler(ParkingHandler):
                     raise ApiError(http.client.FORBIDDEN, 'Permission required')
                 if self.req.request_headers.get('Content-Type', '').split(';', 1)[0].strip().lower() != 'text/plain':
                     raise ApiError(http.client.BAD_REQUEST, 'Content-Type must be text/plain')
-                history_version = self._if_match(
+                last_history_id = self._if_match(
                     self.req.request_headers.get('If-Match'))
                 doc = self._get_doc(oid)
-                if not doc.history or doc.history[-1].id != history_version:
+                if not doc.history or doc.history[-1].id != last_history_id:
                     raise ApiError(
                         http.client.PRECONDITION_FAILED,
                         'Parking event history was modified')
@@ -76,21 +75,18 @@ class Handler(ParkingHandler):
                                 user=UserRef(id=user.id, name=user.name),
                                 agent=AgentRef(
                                     id=agent.id, name=agent.name,
-                                    position=agent.position)),
-                            history_version=history_version)
+                                    position=agent.position)))
                         event_data = db[config.name][
                             ParkingEventDocument._meta['collection']].find_one_and_update(
                             {
                                 '_id': doc.id,
                                 'history': {'$size': len(doc.history)},
                                 'history.%d._id' % (
-                                    len(doc.history) - 1): history_version,
+                                    len(doc.history) - 1): last_history_id,
                                 '$or': [
                                     {'description_upd.dt': {'$exists': False}},
                                     {'description_upd.dt': {
-                                        '$lt': history_version.generation_time}},
-                                    {'description_upd.history_version': {
-                                        '$ne': history_version}},
+                                        '$lt': last_history_id.generation_time}},
                                 ],
                             },
                             {'$set': {
@@ -103,16 +99,20 @@ class Handler(ParkingHandler):
                             raise ApiError(
                                 http.client.PRECONDITION_FAILED,
                                 'Parking event history was modified or description was already updated')
+                        update_vehicle_markers(
+                            db[config.name], doc.vehicle.id,
+                            event_id=doc.id, history_id=last_history_id,
+                            session=active_session)
                         db[config.name][
                             VehicleDocument._meta['collection']].update_one(
-                            {'_id': doc.vehicle.id},
-                            {'$max': {
-                                'description_source_upd': description_upd.dt}},
-                            upsert=True,
-                            session=active_session)
+                                {'_id': doc.vehicle.id},
+                                {'$max': {
+                                    'last_parking_event_description_upd':
+                                        description_upd.dt}},
+                                session=active_session)
                         return event_data
                     event_data = session.with_transaction(update_description)
-                self.req.setHeader('ETag', self._etag(history_version))
+                self.req.setHeader('ETag', self._etag(last_history_id))
                 self._json(self._event(type(doc)._from_son(event_data)))
                 return
             doc = self._get_doc(oid)
@@ -124,7 +124,10 @@ class Handler(ParkingHandler):
                 file_id = mod_mongo.bson.objectid.ObjectId(file_oid)
                 if not any(item.id == file_id and item.length for item in doc.history): raise ApiError(http.client.NOT_FOUND, 'File not found')
                 with mod_mongo.DbSessionController() as db_session:
-                    attachment = mod_mongo.gridfs.GridFS(db_session[config.name], 'parking_event.history').get(file_id)
+                    attachment = mod_mongo.gridfs.GridFS(
+                        db_session[config.name],
+                        ParkingEventDocument._meta['collection'] + '.history'
+                    ).get(file_id)
                     self.req.setResponseCode(http.client.OK, http.client.responses[http.client.OK])
                     self.req.setHeader('Content-Type', attachment.content_type)
                     self.req.write(attachment.read())

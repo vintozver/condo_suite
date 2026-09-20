@@ -88,6 +88,7 @@ another worker already updated the description.
 The vehicle candidate endpoint selects a random vehicle with a parking event
 description newer than the vehicle description. Vehicle descriptions use the
 same `text/plain` and `If-Match` workflow, failing if the source event
-descriptions changed or another worker completed the candidate. Both update
-APIs record their UTC timestamp and authenticated user/agent in
-`description_upd`.
+or history identifiers changed or another worker completed the candidate.
+Vehicles keep their latest parking event and history identifiers updated in
+the same transaction as those records. Both update APIs record their UTC
+timestamp and authenticated user/agent in `description_upd`.

@@ -17,9 +17,10 @@ class HistoryItem(mod_mongo.mongoengine.EmbeddedDocument):
 
 
 class DescriptionUpdate(mod_mongo.mongoengine.EmbeddedDocument):
+    meta = {'strict': False}
+
     dt = mod_mongo.mongoengine.DateTimeField(required=True)
     by = mod_mongo.mongoengine.EmbeddedDocumentField(SecurityRef, required=True)
-    history_version = mod_mongo.mongoengine.ObjectIdField(required=True)
 
 
 # document stored in the database
@@ -33,3 +34,19 @@ class Document(mod_mongo.mongoengine.Document):
     description = mod_mongo.mongoengine.StringField()
     description_upd = mod_mongo.mongoengine.EmbeddedDocumentField(DescriptionUpdate)
     creator = mod_mongo.mongoengine.EmbeddedDocumentField(SecurityRef)
+
+
+def update_vehicle_markers(database, vin, event_id=None, history_id=None,
+                           tag=None, session=None):
+    from .vehicle import Document as VehicleDocument
+
+    update = {}
+    if event_id is not None:
+        update.setdefault('$max', {})['last_parking_event_id'] = event_id
+    if history_id is not None:
+        update.setdefault('$max', {})[
+            'last_parking_event_history_id'] = history_id
+    if tag is not None:
+        update.setdefault('$set', {})['tag'] = tag
+    return database[VehicleDocument._meta['collection']].update_one(
+        {'_id': vin}, update, upsert=True, session=session)

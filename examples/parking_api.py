@@ -76,7 +76,7 @@ def main():
 
     event_describe = subparsers.add_parser('event-describe')
     event_describe.add_argument('event_id')
-    event_describe.add_argument('history_version')
+    event_describe.add_argument('last_history_id')
     event_describe.add_argument('description')
     event_describe.set_defaults(method='POST')
 
@@ -86,7 +86,7 @@ def main():
 
     vehicle_describe = subparsers.add_parser('vehicle-describe')
     vehicle_describe.add_argument('vin')
-    vehicle_describe.add_argument('event_version')
+    vehicle_describe.add_argument('source_version')
     vehicle_describe.add_argument('description')
     vehicle_describe.set_defaults(method='POST')
 
@@ -130,8 +130,8 @@ def main():
     headers = None
     if args.command in ('event-describe', 'vehicle-describe'):
         version = (
-            args.history_version if args.command == 'event-describe'
-            else args.event_version)
+            args.last_history_id if args.command == 'event-describe'
+            else args.source_version)
         headers = {
             'Content-Type': 'text/plain',
             'If-Match': '"%s"' % version,

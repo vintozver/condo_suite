@@ -7,6 +7,7 @@ from ... import config as config
 from ...modules import mongo as mod_mongo
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
 from ...modules.mongo.parking_event import HistoryItem as ParkingEventHistoryItem
+from ...modules.mongo.parking_event import update_vehicle_markers
 from ...handlers.web import decorator as deco
 
 
@@ -15,12 +16,17 @@ class HandlerError(_HandlerError):
 
 
 class Handler(_Handler):
-    def execute(self, oid: mod_mongo.bson.objectid.ObjectId, description: str, stream: io.BytesIO, content_type: str):
+    def execute(self, oid: mod_mongo.bson.objectid.ObjectId, vin: str,
+                description: str, stream: io.BytesIO, content_type: str):
         with mod_mongo.DbSessionController() as db_session:
             attachment_oid = mod_mongo.bson.objectid.ObjectId()
 
             if stream is not None and content_type is not None:
-                history_file = mod_mongo.gridfs.GridFS(db_session[config.name], 'parking_event.history').new_file(_id=attachment_oid, content_type=content_type)
+                history_file = mod_mongo.gridfs.GridFS(
+                    db_session[config.name],
+                    ParkingEventDocument._meta['collection'] + '.history'
+                ).new_file(
+                    _id=attachment_oid, content_type=content_type)
                 history_file.write(stream.read())
                 history_file.close()
             else:
@@ -33,7 +39,20 @@ class Handler(_Handler):
                 history_item.length = history_file.length
             history_item.description = description
             
-            db_session[config.name]['parking_event'].update_one({'_id': oid}, {'$push': {'history': history_item.to_mongo()}})
+            with db_session.start_session() as session:
+                def append_history(active_session):
+                    database = db_session[config.name]
+                    result = database[
+                        ParkingEventDocument._meta['collection']].update_one(
+                            {'_id': oid},
+                            {'$push': {'history': history_item.to_mongo()}},
+                            session=active_session)
+                    if not result.matched_count:
+                        raise HandlerError('Doc not found', oid)
+                    update_vehicle_markers(
+                        database, vin, history_id=history_item.id,
+                        session=active_session)
+                session.with_transaction(append_history)
 
         return attachment_oid
 
@@ -88,7 +107,9 @@ class Handler(_Handler):
                 attachment_stream = None
                 content_type = None
 
-            self.execute(doc.id, description, attachment_stream, content_type)
+            self.execute(
+                doc.id, doc.vehicle.id, description, attachment_stream,
+                content_type)
 
             from ...handlers.ext import redirect
             try:
