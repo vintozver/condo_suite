@@ -76,7 +76,7 @@ class Handler(ParkingHandler):
                         {
                             '_id': doc.id,
                             'history': {'$size': len(doc.history)},
-                            'history._id': history_version,
+                            'history.%d._id' % (len(doc.history) - 1): history_version,
                             '$or': [
                                 {'description_upd.history_version': {'$exists': False}},
                                 {'description_upd.history_version': {'$ne': history_version}},

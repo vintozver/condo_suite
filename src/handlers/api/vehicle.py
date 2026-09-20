@@ -36,21 +36,25 @@ class Handler(BaseHandler):
         }
 
     @staticmethod
-    def _history_versions(db, vin=None):
+    def _event_descriptions(db, vin=None):
         query = {'vehicle._id': vin} if vin else {'vehicle._id': {'$exists': True}}
-        projection = {'vehicle._id': True, 'history._id': True}
-        versions = {}
+        query['description_upd.dt'] = {'$exists': True}
+        projection = {'vehicle._id': True, 'description_upd.dt': True}
+        updates = {}
         for event in db[config.name]['parking_event'].find(query, projection):
             event_vin = event.get('vehicle', {}).get('_id')
-            if not event_vin:
+            updated = event.get('description_upd', {}).get('dt')
+            if not event_vin or updated is None:
                 continue
-            ids = [event['_id']]
-            ids.extend(item['_id'] for item in event.get('history', []) if item.get('_id'))
-            versions.setdefault(event_vin, []).extend(str(value) for value in ids)
+            updates.setdefault(event_vin, []).append((event['_id'], updated))
         return {
-            value_vin: hashlib.sha256(
-                '\n'.join(sorted(values)).encode('ascii')).hexdigest()
-            for value_vin, values in versions.items()
+            event_vin: {
+                'version': hashlib.sha256('\n'.join(sorted(
+                    '%s:%s' % (event_id, updated.isoformat())
+                    for event_id, updated in values)).encode('ascii')).hexdigest(),
+                'updated': max(updated for event_id, updated in values),
+            }
+            for event_vin, values in updates.items()
         }
 
     @staticmethod
@@ -80,24 +84,25 @@ class Handler(BaseHandler):
                     if db[config.name]['vehicle'].find_one(
                             {'_id': vin}, {'_id': True}) is None:
                         raise ApiError(http.client.NOT_FOUND, 'Vehicle not found')
-                    history_version = self._history_versions(db, vin).get(vin)
-                    if history_version != expected_version:
+                    event_state = self._event_descriptions(db, vin).get(vin)
+                    if event_state is None or event_state['version'] != expected_version:
                         raise ApiError(
                             http.client.PRECONDITION_FAILED,
-                            'Parking event history was modified')
+                            'Parking event descriptions were modified')
                     description_upd = DescriptionUpdate(
                         dt=datetime.datetime.now(datetime.timezone.utc),
                         by=SecurityRef(
                             user=UserRef(id=user.id, name=user.name),
                             agent=AgentRef(
                                 id=agent.id, name=agent.name, position=agent.position)),
-                        history_version=expected_version)
+                        event_version=expected_version)
                     vehicle_data = db[config.name]['vehicle'].find_one_and_update(
                         {
                             '_id': vin,
                             '$or': [
-                                {'description_upd.history_version': {'$exists': False}},
-                                {'description_upd.history_version': {'$ne': history_version}},
+                                {'description_upd.event_version': {'$exists': False}},
+                                {'description_upd.event_version': {
+                                    '$ne': event_state['version']}},
                             ],
                         },
                         {'$set': {
@@ -115,21 +120,24 @@ class Handler(BaseHandler):
                 return
             if action == 'candidate':
                 with mod_mongo.DbSessionController() as db:
-                    histories = self._history_versions(db)
+                    event_descriptions = self._event_descriptions(db)
                 candidates = []
                 for vehicle in VehicleDocument.objects(
-                        id__in=list(histories)).only(
+                        id__in=list(event_descriptions)).only(
                             'id', 'tag', 'description', 'description_upd'):
-                    history = histories[vehicle.id]
+                    event_state = event_descriptions[vehicle.id]
                     update = vehicle.description_upd
-                    if not update or update.history_version != history:
-                        candidates.append((vehicle, history))
+                    updated = update.dt if update else None
+                    if updated and updated.tzinfo is None:
+                        updated = updated.replace(tzinfo=datetime.timezone.utc)
+                    if updated is None or updated < event_state['updated']:
+                        candidates.append((vehicle, event_state['version']))
                 if not candidates:
                     raise ApiError(http.client.NOT_FOUND, 'No update candidate')
-                vehicle, history_version = secrets.choice(candidates)
-                self.req.setHeader('ETag', self._etag(history_version))
+                vehicle, event_version = secrets.choice(candidates)
+                self.req.setHeader('ETag', self._etag(event_version))
                 result = self._vehicle(vehicle)
-                result['history_version'] = history_version
+                result['event_version'] = event_version
                 self._json(result)
                 return
             query = VehicleDocument.objects()

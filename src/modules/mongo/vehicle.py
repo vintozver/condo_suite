@@ -6,9 +6,11 @@ from .security import Ref as SecurityRef
 
 
 class DescriptionUpdate(mod_mongo.mongoengine.EmbeddedDocument):
+    meta = {'strict': False}
+
     dt = mod_mongo.mongoengine.DateTimeField(required=True)
     by = mod_mongo.mongoengine.EmbeddedDocumentField(SecurityRef, required=True)
-    history_version = mod_mongo.mongoengine.StringField(required=True)
+    event_version = mod_mongo.mongoengine.StringField(required=True)
 
 
 # document stored in the database

@@ -70,14 +70,25 @@ def main():
     vehicle.add_argument('--tag')
     vehicle.set_defaults(method='GET', path='/api/vehicle/')
 
-    candidate = subparsers.add_parser('candidate')
-    candidate.set_defaults(method='GET', path='/api/vehicle/description/candidate')
+    event_candidate = subparsers.add_parser('event-candidate')
+    event_candidate.set_defaults(
+        method='GET', path='/api/parking/event/description/candidate')
 
-    describe = subparsers.add_parser('describe')
-    describe.add_argument('vin')
-    describe.add_argument('history_version')
-    describe.add_argument('description')
-    describe.set_defaults(method='POST')
+    event_describe = subparsers.add_parser('event-describe')
+    event_describe.add_argument('event_id')
+    event_describe.add_argument('history_version')
+    event_describe.add_argument('description')
+    event_describe.set_defaults(method='POST')
+
+    vehicle_candidate = subparsers.add_parser('vehicle-candidate')
+    vehicle_candidate.set_defaults(
+        method='GET', path='/api/vehicle/description/candidate')
+
+    vehicle_describe = subparsers.add_parser('vehicle-describe')
+    vehicle_describe.add_argument('vin')
+    vehicle_describe.add_argument('event_version')
+    vehicle_describe.add_argument('description')
+    vehicle_describe.set_defaults(method='POST')
 
     view = subparsers.add_parser('view')
     view.add_argument('event_id')
@@ -102,9 +113,12 @@ def main():
     elif args.command == 'vehicle':
         body = {key: value for key, value in (('VIN', args.vin), ('tag', args.tag)) if value}
         path = args.path
-    elif args.command == 'candidate':
+    elif args.command in ('event-candidate', 'vehicle-candidate'):
         body, path = {}, args.path
-    elif args.command == 'describe':
+    elif args.command == 'event-describe':
+        body = args.description
+        path = '/api/parking/event/%s/description' % args.event_id
+    elif args.command == 'vehicle-describe':
         body = args.description
         path = '/api/vehicle/%s/description' % args.vin
     elif args.command == 'view':
@@ -114,12 +128,15 @@ def main():
     else:
         body, path = {'description': args.description}, '/api/parking/event/' + args.event_id
     headers = None
-    if args.command == 'describe':
+    if args.command in ('event-describe', 'vehicle-describe'):
+        version = (
+            args.history_version if args.command == 'event-describe'
+            else args.event_version)
         headers = {
             'Content-Type': 'text/plain',
-            'If-Match': '"%s"' % args.history_version,
+            'If-Match': '"%s"' % version,
         }
-    claims = {} if args.command == 'describe' else None
+    claims = {} if args.command in ('event-describe', 'vehicle-describe') else None
     request(
         args, args.method, path, body, getattr(args, 'output', None), headers,
         claims)
