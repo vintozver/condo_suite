@@ -40,7 +40,6 @@ class Handler(BaseHandler):
         query = {'vehicle._id': vin} if vin else {'vehicle._id': {'$exists': True}}
         projection = {'vehicle._id': True, 'history._id': True}
         versions = {}
-        updated = {}
         for event in db[config.name]['parking_event'].find(query, projection):
             event_vin = event.get('vehicle', {}).get('_id')
             if not event_vin:
@@ -48,14 +47,9 @@ class Handler(BaseHandler):
             ids = [event['_id']]
             ids.extend(item['_id'] for item in event.get('history', []) if item.get('_id'))
             versions.setdefault(event_vin, []).extend(str(value) for value in ids)
-            newest = max(value.generation_time for value in ids)
-            updated[event_vin] = max(updated.get(event_vin, newest), newest)
         return {
-            value_vin: {
-                'version': hashlib.sha256(
-                    '\n'.join(sorted(values)).encode('ascii')).hexdigest(),
-                'updated': updated[value_vin],
-            }
+            value_vin: hashlib.sha256(
+                '\n'.join(sorted(values)).encode('ascii')).hexdigest()
             for value_vin, values in versions.items()
         }
 
@@ -86,8 +80,8 @@ class Handler(BaseHandler):
                     if db[config.name]['vehicle'].find_one(
                             {'_id': vin}, {'_id': True}) is None:
                         raise ApiError(http.client.NOT_FOUND, 'Vehicle not found')
-                    history = self._history_versions(db, vin).get(vin)
-                    if history is None or history['version'] != expected_version:
+                    history_version = self._history_versions(db, vin).get(vin)
+                    if history_version != expected_version:
                         raise ApiError(
                             http.client.PRECONDITION_FAILED,
                             'Parking event history was modified')
@@ -103,7 +97,7 @@ class Handler(BaseHandler):
                             '_id': vin,
                             '$or': [
                                 {'description_upd.history_version': {'$exists': False}},
-                                {'description_upd.history_version': {'$ne': expected_version}},
+                                {'description_upd.history_version': {'$ne': history_version}},
                             ],
                         },
                         {'$set': {
@@ -112,16 +106,9 @@ class Handler(BaseHandler):
                         }},
                         return_document=mod_mongo.pymongo.ReturnDocument.AFTER)
                     if vehicle_data is None:
-                        if db[config.name]['vehicle'].find_one({'_id': vin}, {'_id': True}) is None:
-                            raise ApiError(http.client.NOT_FOUND, 'Vehicle not found')
                         raise ApiError(
                             http.client.PRECONDITION_FAILED,
                             'Vehicle description was already updated')
-                    current_history = self._history_versions(db, vin).get(vin)
-                if current_history is None or current_history['version'] != expected_version:
-                    raise ApiError(
-                        http.client.PRECONDITION_FAILED,
-                        'Parking event history was modified')
                 vehicle = VehicleDocument._from_son(vehicle_data)
                 self.req.setHeader('ETag', self._etag(expected_version))
                 self._json(self._vehicle(vehicle))
@@ -135,13 +122,8 @@ class Handler(BaseHandler):
                             'id', 'tag', 'description', 'description_upd'):
                     history = histories[vehicle.id]
                     update = vehicle.description_upd
-                    update_dt = update.dt if update else None
-                    if update_dt and update_dt.tzinfo is None:
-                        update_dt = update_dt.replace(tzinfo=datetime.timezone.utc)
-                    if (not update or
-                            update.history_version != history['version'] or
-                            update_dt < history['updated']):
-                        candidates.append((vehicle, history['version']))
+                    if not update or update.history_version != history:
+                        candidates.append((vehicle, history))
                 if not candidates:
                     raise ApiError(http.client.NOT_FOUND, 'No update candidate')
                 vehicle, history_version = secrets.choice(candidates)
