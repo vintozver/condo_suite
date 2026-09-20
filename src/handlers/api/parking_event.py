@@ -64,15 +64,16 @@ class Handler(ParkingHandler):
                     raise ApiError(
                         http.client.PRECONDITION_FAILED,
                         'Parking event history was modified')
-                description_upd = DescriptionUpdate(
-                    dt=datetime.datetime.now(datetime.timezone.utc),
-                    by=SecurityRef(
-                        user=UserRef(id=user.id, name=user.name),
-                        agent=AgentRef(
-                            id=agent.id, name=agent.name, position=agent.position)),
-                    history_version=history_version)
                 with mod_mongo.DbSessionController() as db, db.start_session() as session:
                     def update_description(active_session):
+                        description_upd = DescriptionUpdate(
+                            dt=datetime.datetime.now(datetime.timezone.utc),
+                            by=SecurityRef(
+                                user=UserRef(id=user.id, name=user.name),
+                                agent=AgentRef(
+                                    id=agent.id, name=agent.name,
+                                    position=agent.position)),
+                            history_version=history_version)
                         event_data = db[config.name]['parking_event'].find_one_and_update(
                             {
                                 '_id': doc.id,

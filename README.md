@@ -29,6 +29,8 @@ google:
 
 MongoDB connection details are supplied through `mongodb_uri`; separate host,
 port, username, password, and database settings are no longer supported.
+Description worker updates use MongoDB transactions, so `mongodb_uri` must
+connect to a replica set or sharded cluster.
 
 ## Background tasks (Celery)
 

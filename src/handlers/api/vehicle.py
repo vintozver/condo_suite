@@ -57,6 +57,8 @@ class Handler(BaseHandler):
     def __call__(self, vin=None, action=None):
         def operation():
             user, agent, payload = self._authenticate()
+            if not user.rbac_has_permission('vehicle/view'):
+                raise ApiError(http.client.FORBIDDEN, 'Permission required')
             if self.req.method == 'POST':
                 if self.req.request_headers.get('Content-Type', '').split(';', 1)[0].strip().lower() != 'text/plain':
                     raise ApiError(http.client.BAD_REQUEST, 'Content-Type must be text/plain')
