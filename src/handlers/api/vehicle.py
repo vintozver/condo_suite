@@ -35,8 +35,8 @@ class Handler(BaseHandler):
         }
 
     @staticmethod
-    def _source_version(event_id, history_id, updated):
-        return '%s:%s:%s' % (event_id, history_id or '', updated.isoformat())
+    def _source_version(updated):
+        return updated.isoformat()
 
     @staticmethod
     def _etag(value):
@@ -49,16 +49,11 @@ class Handler(BaseHandler):
         value = value.strip()
         if value.startswith('"') and value.endswith('"'):
             value = value[1:-1]
-        parts = value.split(':', 2)
         try:
-            event_id = mod_mongo.bson.objectid.ObjectId(parts[0])
-            history_id = (
-                mod_mongo.bson.objectid.ObjectId(parts[1])
-                if parts[1] else None)
-            updated = datetime.datetime.fromisoformat(parts[2])
-        except (IndexError, TypeError, ValueError):
+            updated = datetime.datetime.fromisoformat(value)
+        except (TypeError, ValueError):
             raise ApiError(http.client.BAD_REQUEST, 'Invalid If-Match header')
-        return event_id, history_id, updated
+        return updated
 
     def __call__(self, vin=None, action=None):
         def operation():
@@ -68,7 +63,7 @@ class Handler(BaseHandler):
             if self.req.method == 'POST':
                 if self.req.request_headers.get('Content-Type', '').split(';', 1)[0].strip().lower() != 'text/plain':
                     raise ApiError(http.client.BAD_REQUEST, 'Content-Type must be text/plain')
-                event_id, history_id, expected_source_updated = self._if_match(
+                expected_source_updated = self._if_match(
                     self.req.request_headers.get('If-Match'))
                 with mod_mongo.DbSessionController() as db:
                     vehicle_collection = db[config.name][
@@ -77,18 +72,10 @@ class Handler(BaseHandler):
                         {'_id': vin},
                         {
                             '_id': True,
-                            'last_parking_event_id': True,
-                            'last_parking_event_history_id': True,
                             'last_parking_event_description_upd': True,
                         })
                     if vehicle_state is None:
                         raise ApiError(http.client.NOT_FOUND, 'Vehicle not found')
-                    if (vehicle_state.get('last_parking_event_id') != event_id or
-                            vehicle_state.get(
-                                'last_parking_event_history_id') != history_id):
-                        raise ApiError(
-                            http.client.PRECONDITION_FAILED,
-                            'Parking events were modified')
                     source_updated = vehicle_state.get(
                         'last_parking_event_description_upd')
                     if source_updated != expected_source_updated:
@@ -105,8 +92,6 @@ class Handler(BaseHandler):
                     vehicle_data = vehicle_collection.find_one_and_update(
                         {
                             '_id': vin,
-                            'last_parking_event_id': event_id,
-                            'last_parking_event_history_id': history_id,
                             'last_parking_event_description_upd': source_updated,
                             '$or': [
                                 {'description_upd.dt': {'$exists': False}},
@@ -123,19 +108,15 @@ class Handler(BaseHandler):
                             http.client.PRECONDITION_FAILED,
                             'Vehicle description was already updated')
                 vehicle = VehicleDocument._from_son(vehicle_data)
-                source_version = self._source_version(
-                    event_id, history_id, source_updated)
+                source_version = self._source_version(source_updated)
                 self.req.setHeader('ETag', self._etag(source_version))
                 self._json(self._vehicle(vehicle))
                 return
             if action == 'candidate':
                 candidates = []
                 for vehicle in VehicleDocument.objects(
-                        last_parking_event_description_upd__exists=True,
-                        last_parking_event_id__exists=True).only(
+                        last_parking_event_description_upd__exists=True).only(
                             'id', 'tag', 'description', 'description_upd',
-                            'last_parking_event_id',
-                            'last_parking_event_history_id',
                             'last_parking_event_description_upd'):
                     update = vehicle.description_upd
                     updated = update.dt if update else None
@@ -147,20 +128,12 @@ class Handler(BaseHandler):
                             tzinfo=datetime.timezone.utc)
                     if updated is None or updated < source_updated:
                         candidates.append((
-                            vehicle, self._source_version(
-                                vehicle.last_parking_event_id,
-                                vehicle.last_parking_event_history_id,
-                                source_updated)))
+                            vehicle, self._source_version(source_updated)))
                 if not candidates:
                     raise ApiError(http.client.NOT_FOUND, 'No update candidate')
                 vehicle, source_version = secrets.choice(candidates)
                 self.req.setHeader('ETag', self._etag(source_version))
                 result = self._vehicle(vehicle)
-                result['last_parking_event_id'] = str(
-                    vehicle.last_parking_event_id)
-                result['last_parking_event_history_id'] = (
-                    str(vehicle.last_parking_event_history_id)
-                    if vehicle.last_parking_event_history_id else None)
                 self._json(result)
                 return
             query = VehicleDocument.objects()

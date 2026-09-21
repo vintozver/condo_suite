@@ -2,7 +2,6 @@ from .common import ApiError, config, mod_mongo
 from .parking_common import ParkingHandler
 from ...modules.mongo.parking_event import HistoryItem
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
-from ...modules.mongo.parking_event import update_vehicle_markers
 from ...modules.mongo.security import Ref as SecurityRef
 from ...modules.mongo.user import UserRef
 from ...modules.mongo.agent import AgentRef
@@ -22,19 +21,11 @@ class Handler(ParkingHandler):
             item = HistoryItem(id=mod_mongo.bson.objectid.ObjectId(), description=description,
                 creator=SecurityRef(user=UserRef(id=user.id, name=user.name),
                                     agent=AgentRef(id=agent.id, name=agent.name, position=agent.position)))
-            with mod_mongo.DbSessionController() as db_session, db_session.start_session() as session:
-                def append_history(active_session):
-                    database = db_session[config.name]
-                    result = database[
-                        ParkingEventDocument._meta['collection']].update_one(
-                            {'_id': doc.id},
-                            {'$push': {'history': item.to_mongo()}},
-                            session=active_session)
-                    if not result.matched_count:
-                        raise ApiError(http.client.NOT_FOUND, 'Event not found')
-                    update_vehicle_markers(
-                        database, doc.vehicle.id, history_id=item.id,
-                        session=active_session)
-                session.with_transaction(append_history)
+            with mod_mongo.DbSessionController() as db_session:
+                result = db_session[config.name][
+                    ParkingEventDocument._meta['collection']].update_one(
+                        {'_id': doc.id}, {'$push': {'history': item.to_mongo()}})
+                if not result.matched_count:
+                    raise ApiError(http.client.NOT_FOUND, 'Event not found')
             self._json({'event': str(doc.id), 'history': str(item.id)}, http.client.CREATED)
         return self._run(operation)

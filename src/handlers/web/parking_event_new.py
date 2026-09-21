@@ -11,7 +11,6 @@ from ...modules.mongo.security import Ref as SecurityRef
 from ...modules.mongo.vehicle import Document as VehicleDocument
 from ...modules.mongo.vehicle import Ref as VehicleRef
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
-from ...modules.mongo.parking_event import update_vehicle_markers
 from ...handlers.web import decorator as deco
 
 _vehicle_doc_class = VehicleDocument
@@ -83,9 +82,9 @@ class Handler(_Handler):
                     database[
                         ParkingEventDocument._meta['collection']].insert_one(
                             doc.to_mongo(), session=active_session)
-                    update_vehicle_markers(
-                        database, param_vin, event_id=doc.id, tag=param_tag,
-                        session=active_session)
+                    database[VehicleDocument._meta['collection']].update_one(
+                        {'_id': param_vin}, {'$set': {'tag': param_tag}},
+                        upsert=True, session=active_session)
                 session.with_transaction(create_event)
 
         return doc.id

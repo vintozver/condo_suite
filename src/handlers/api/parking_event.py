@@ -3,7 +3,6 @@ from .parking_common import ParkingHandler
 from ...modules.mongo.agent import AgentRef
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
 from ...modules.mongo.parking_event import DescriptionUpdate
-from ...modules.mongo.parking_event import update_vehicle_markers
 from ...modules.mongo.security import Ref as SecurityRef
 from ...modules.mongo.user import UserRef
 from ...modules.mongo.vehicle import Document as VehicleDocument
@@ -99,10 +98,6 @@ class Handler(ParkingHandler):
                             raise ApiError(
                                 http.client.PRECONDITION_FAILED,
                                 'Parking event history was modified or description was already updated')
-                        update_vehicle_markers(
-                            db[config.name], doc.vehicle.id,
-                            event_id=doc.id, history_id=last_history_id,
-                            session=active_session)
                         db[config.name][
                             VehicleDocument._meta['collection']].update_one(
                                 {'_id': doc.vehicle.id},

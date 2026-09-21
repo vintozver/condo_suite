@@ -22,8 +22,6 @@ class Document(mod_mongo.mongoengine.Document):
     tag = mod_mongo.mongoengine.StringField(max_length=20)
     description = mod_mongo.mongoengine.StringField()
     description_upd = mod_mongo.mongoengine.EmbeddedDocumentField(DescriptionUpdate)
-    last_parking_event_id = mod_mongo.mongoengine.ObjectIdField()
-    last_parking_event_history_id = mod_mongo.mongoengine.ObjectIdField()
     last_parking_event_description_upd = mod_mongo.mongoengine.DateTimeField()
 
 

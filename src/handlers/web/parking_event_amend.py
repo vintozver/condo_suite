@@ -7,7 +7,6 @@ from ... import config as config
 from ...modules import mongo as mod_mongo
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
 from ...modules.mongo.parking_event import HistoryItem as ParkingEventHistoryItem
-from ...modules.mongo.parking_event import update_vehicle_markers
 from ...handlers.web import decorator as deco
 
 
@@ -16,7 +15,7 @@ class HandlerError(_HandlerError):
 
 
 class Handler(_Handler):
-    def execute(self, oid: mod_mongo.bson.objectid.ObjectId, vin: str,
+    def execute(self, oid: mod_mongo.bson.objectid.ObjectId,
                 description: str, stream: io.BytesIO, content_type: str):
         with mod_mongo.DbSessionController() as db_session:
             attachment_oid = mod_mongo.bson.objectid.ObjectId()
@@ -39,20 +38,12 @@ class Handler(_Handler):
                 history_item.length = history_file.length
             history_item.description = description
             
-            with db_session.start_session() as session:
-                def append_history(active_session):
-                    database = db_session[config.name]
-                    result = database[
-                        ParkingEventDocument._meta['collection']].update_one(
-                            {'_id': oid},
-                            {'$push': {'history': history_item.to_mongo()}},
-                            session=active_session)
-                    if not result.matched_count:
-                        raise HandlerError('Doc not found', oid)
-                    update_vehicle_markers(
-                        database, vin, history_id=history_item.id,
-                        session=active_session)
-                session.with_transaction(append_history)
+            result = db_session[config.name][
+                ParkingEventDocument._meta['collection']].update_one(
+                    {'_id': oid},
+                    {'$push': {'history': history_item.to_mongo()}})
+            if not result.matched_count:
+                raise HandlerError('Doc not found', oid)
 
         return attachment_oid
 
@@ -107,9 +98,7 @@ class Handler(_Handler):
                 attachment_stream = None
                 content_type = None
 
-            self.execute(
-                doc.id, doc.vehicle.id, description, attachment_stream,
-                content_type)
+            self.execute(doc.id, description, attachment_stream, content_type)
 
             from ...handlers.ext import redirect
             try:
