@@ -23,17 +23,22 @@ class Handler(ParkingHandler):
                 candidates = []
                 for doc in self._get_candidates():
                     last_history = doc.history[-1]
+                    history_updated = (
+                        doc.history_upd or last_history.id.generation_time)
+                    if history_updated.tzinfo is None:
+                        history_updated = history_updated.replace(
+                            tzinfo=datetime.timezone.utc)
                     updated = doc.description_upd.dt if doc.description_upd else None
                     if updated and updated.tzinfo is None:
                         updated = updated.replace(tzinfo=datetime.timezone.utc)
-                    if updated is None or updated < last_history.id.generation_time:
-                        candidates.append((doc, last_history.id))
+                    if updated is None or updated < history_updated:
+                        candidates.append((doc, history_updated))
                 if not candidates:
                     raise ApiError(http.client.NOT_FOUND, 'No update candidate')
-                doc, last_history_id = secrets.choice(candidates)
+                doc, history_updated = secrets.choice(candidates)
                 self.req.setHeader(
                     'Last-Modified',
-                    self._http_datetime(last_history_id.generation_time))
+                    self._http_datetime(history_updated))
                 result = self._event(doc)
                 self._json(result)
                 return
@@ -46,8 +51,16 @@ class Handler(ParkingHandler):
                     raise ApiError(http.client.BAD_REQUEST, 'Content-Type must be text/plain')
                 expected_modified = self._if_unmodified_since()
                 doc = self._get_doc(oid)
-                if (not doc.history or
-                        doc.history[-1].id.generation_time > expected_modified):
+                if not doc.history:
+                    raise ApiError(
+                        http.client.PRECONDITION_FAILED,
+                        'Parking event history was modified')
+                history_updated = (
+                    doc.history_upd or doc.history[-1].id.generation_time)
+                if history_updated.tzinfo is None:
+                    history_updated = history_updated.replace(
+                        tzinfo=datetime.timezone.utc)
+                if history_updated > expected_modified:
                     raise ApiError(
                         http.client.PRECONDITION_FAILED,
                         'Parking event history was modified')
@@ -78,6 +91,9 @@ class Handler(ParkingHandler):
                             ParkingEventDocument._meta['collection']].find_one_and_update(
                             {
                                 '_id': doc.id,
+                                'history_upd': (
+                                    history_updated if doc.history_upd
+                                    else {'$exists': False}),
                                 'history': {'$size': len(doc.history)},
                                 'history.%d._id' % (
                                     len(doc.history) - 1): last_history_id,
@@ -132,5 +148,5 @@ class Handler(ParkingHandler):
 
     def _get_candidates(self):
         return ParkingEventDocument.objects(history__0__exists=True).only(
-            'vehicle', 'reason', 'remarks', 'history', 'description',
+            'vehicle', 'reason', 'remarks', 'history', 'history_upd', 'description',
             'description_upd')
