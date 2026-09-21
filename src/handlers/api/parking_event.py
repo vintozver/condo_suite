@@ -68,8 +68,23 @@ class Handler(ParkingHandler):
                         'Parking event history was modified')
                 with mod_mongo.DbSessionController() as db, db.start_session() as session:
                     def update_description(active_session):
+                        vehicle_collection = db[config.name][
+                            VehicleDocument._meta['collection']]
+                        vehicle_state = vehicle_collection.find_one(
+                            {'_id': doc.vehicle.id},
+                            {'last_parking_event_description_upd': True},
+                            session=active_session) or {}
+                        previous_updated = vehicle_state.get(
+                            'last_parking_event_description_upd')
+                        updated = datetime.datetime.now(
+                            datetime.timezone.utc)
+                        updated = updated.replace(
+                            microsecond=updated.microsecond // 1000 * 1000)
+                        if previous_updated and updated <= previous_updated:
+                            updated = previous_updated + datetime.timedelta(
+                                milliseconds=1)
                         description_upd = DescriptionUpdate(
-                            dt=datetime.datetime.now(datetime.timezone.utc),
+                            dt=updated,
                             by=SecurityRef(
                                 user=UserRef(id=user.id, name=user.name),
                                 agent=AgentRef(
@@ -98,8 +113,7 @@ class Handler(ParkingHandler):
                             raise ApiError(
                                 http.client.PRECONDITION_FAILED,
                                 'Parking event history was modified or description was already updated')
-                        db[config.name][
-                            VehicleDocument._meta['collection']].update_one(
+                        vehicle_collection.update_one(
                                 {'_id': doc.vehicle.id},
                                 {'$max': {
                                     'last_parking_event_description_upd':
