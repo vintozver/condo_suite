@@ -66,9 +66,12 @@ class Handler(BaseHandler):
                         raise ApiError(
                             http.client.PRECONDITION_FAILED,
                             'Parking event descriptions were modified')
+                    updated = datetime.datetime.now(
+                        datetime.timezone.utc).replace(microsecond=0)
+                    if updated < source_updated:
+                        updated = source_updated
                     description_upd = DescriptionUpdate(
-                        dt=datetime.datetime.now(
-                            datetime.timezone.utc).replace(microsecond=0),
+                        dt=updated,
                         by=SecurityRef(
                             user=UserRef(id=user.id, name=user.name),
                             agent=AgentRef(

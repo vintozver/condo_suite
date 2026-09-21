@@ -77,6 +77,8 @@ class Handler(ParkingHandler):
                             'last_parking_event_description_upd')
                         updated = datetime.datetime.now(
                             datetime.timezone.utc).replace(microsecond=0)
+                        if updated < history_updated:
+                            updated = history_updated
                         if previous_updated and updated <= previous_updated:
                             updated = previous_updated + datetime.timedelta(
                                 seconds=1)
@@ -100,7 +102,7 @@ class Handler(ParkingHandler):
                                 '$or': [
                                     {'description_upd.dt': {'$exists': False}},
                                     {'description_upd.dt': {
-                                        '$lt': last_history_id.generation_time}},
+                                        '$lt': history_updated}},
                                 ],
                             },
                             {'$set': {
