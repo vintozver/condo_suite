@@ -32,8 +32,9 @@ class Handler(_Handler):
                 history_file = None
 
             history_item = ParkingEventHistoryItem()
-            history_item.id = attachment_oid
+            history_item.id = mod_mongo.bson.objectid.ObjectId()
             if history_file is not None:
+                history_item.file_id = attachment_oid
                 history_item.content_type = history_file.content_type
                 history_item.length = history_file.length
             history_item.description = description

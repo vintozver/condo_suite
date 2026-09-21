@@ -24,7 +24,7 @@ class ParkingHandler(BaseHandler):
                 'vehicle': {'VIN': doc.vehicle.id, 'tag': doc.vehicle.tag}, 'remarks': doc.remarks,
                 'description': doc.description,
                 'description_upd': ParkingHandler._description_upd(doc.description_upd),
-                'history': [{'oid': str(item.id) if item.length else None, 'dt': item.id.generation_time.isoformat(),
+                'history': [{'oid': str(item.file_id or item.id) if item.length else None, 'dt': item.id.generation_time.isoformat(),
                              'description': item.description, 'content_type': item.content_type, 'length': item.length}
                             for item in doc.history]}
 

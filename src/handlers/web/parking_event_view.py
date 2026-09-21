@@ -61,7 +61,7 @@ class Handler(_Handler):
         else:
             tmpl_data['description_upd'] = None
         tmpl_data['history'] = list({
-            'oid': str(history_item.id) if history_item.length else None,
+            'oid': str(history_item.file_id or history_item.id) if history_item.length else None,
             'dt': history_item.id.generation_time.astimezone(config.timezone),
             'description': history_item.description
         } for history_item in doc.history)

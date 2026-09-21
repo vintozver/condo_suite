@@ -131,7 +131,7 @@ class Handler(ParkingHandler):
             elif action == 'file':
                 if not user.rbac_has_permission('parking.event/view'): raise ApiError(http.client.FORBIDDEN, 'Permission required')
                 file_id = mod_mongo.bson.objectid.ObjectId(file_oid)
-                if not any(item.id == file_id and item.length for item in doc.history): raise ApiError(http.client.NOT_FOUND, 'File not found')
+                if not any((item.file_id or item.id) == file_id and item.length for item in doc.history): raise ApiError(http.client.NOT_FOUND, 'File not found')
                 with mod_mongo.DbSessionController() as db_session:
                     attachment = mod_mongo.gridfs.GridFS(
                         db_session[config.name],

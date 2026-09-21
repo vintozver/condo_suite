@@ -10,6 +10,7 @@ class HistoryItem(mod_mongo.mongoengine.EmbeddedDocument):
     meta = {'strict': False}
 
     id = mod_mongo.mongoengine.ObjectIdField(db_field='_id', required=True)
+    file_id = mod_mongo.mongoengine.ObjectIdField()
     content_type = mod_mongo.mongoengine.StringField(default='application/octet-stream')
     length = mod_mongo.mongoengine.LongField(default=0)
     description = mod_mongo.mongoengine.StringField()
