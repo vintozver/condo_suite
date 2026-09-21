@@ -23,8 +23,7 @@ class Handler(ParkingHandler):
                 candidates = []
                 for doc in self._get_candidates():
                     last_history = doc.history[-1]
-                    history_updated = (
-                        doc.history_upd or last_history.id.generation_time)
+                    history_updated = last_history.id.generation_time
                     if history_updated.tzinfo is None:
                         history_updated = history_updated.replace(
                             tzinfo=datetime.timezone.utc)
@@ -55,8 +54,7 @@ class Handler(ParkingHandler):
                     raise ApiError(
                         http.client.PRECONDITION_FAILED,
                         'Parking event history was modified')
-                history_updated = (
-                    doc.history_upd or doc.history[-1].id.generation_time)
+                history_updated = doc.history[-1].id.generation_time
                 if history_updated.tzinfo is None:
                     history_updated = history_updated.replace(
                         tzinfo=datetime.timezone.utc)
@@ -93,9 +91,6 @@ class Handler(ParkingHandler):
                             ParkingEventDocument._meta['collection']].find_one_and_update(
                             {
                                 '_id': doc.id,
-                                'history_upd': (
-                                    history_updated if doc.history_upd
-                                    else {'$exists': False}),
                                 'history': {'$size': len(doc.history)},
                                 'history.%d._id' % (
                                     len(doc.history) - 1): last_history_id,
@@ -150,5 +145,5 @@ class Handler(ParkingHandler):
 
     def _get_candidates(self):
         return ParkingEventDocument.objects(history__0__exists=True).only(
-            'vehicle', 'reason', 'remarks', 'history', 'history_upd', 'description',
+            'vehicle', 'reason', 'remarks', 'history', 'description',
             'description_upd')

@@ -7,7 +7,6 @@ from ... import config as config
 from ...modules import mongo as mod_mongo
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
 from ...modules.mongo.parking_event import HistoryItem as ParkingEventHistoryItem
-from ...modules.mongo.parking_event import next_history_update
 from ...handlers.web import decorator as deco
 
 
@@ -39,31 +38,12 @@ class Handler(_Handler):
                 history_item.length = history_file.length
             history_item.description = description
             
-            with db_session.start_session() as session:
-                def append_history(active_session):
-                    collection = db_session[config.name][
-                        ParkingEventDocument._meta['collection']]
-                    current = collection.find_one(
-                        {'_id': oid},
-                        {'history_upd': True, 'history._id': True},
-                        session=active_session)
-                    if current is None:
-                        raise HandlerError('Doc not found', oid)
-                    previous_updated = current.get('history_upd')
-                    if previous_updated is None and current.get('history'):
-                        previous_updated = current['history'][-1][
-                            '_id'].generation_time
-                    result = collection.update_one(
-                        {'_id': oid},
-                        {
-                            '$push': {'history': history_item.to_mongo()},
-                            '$set': {'history_upd': next_history_update(
-                                previous_updated)},
-                        },
-                        session=active_session)
-                    if not result.matched_count:
-                        raise HandlerError('Doc not found', oid)
-                session.with_transaction(append_history)
+            result = db_session[config.name][
+                ParkingEventDocument._meta['collection']].update_one(
+                    {'_id': oid},
+                    {'$push': {'history': history_item.to_mongo()}})
+            if not result.matched_count:
+                raise HandlerError('Doc not found', oid)
 
         return attachment_oid
 
