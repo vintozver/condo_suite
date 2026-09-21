@@ -81,14 +81,13 @@ the JWT payload. See `examples/openssl.sh` for key generation and
 
 The parking event candidate endpoint selects a random event whose description
 has not been updated since its latest history item. Post the generated
-description as `text/plain` with the candidate ETag in an `If-Match` header.
-The update fails with `412 Precondition Failed` if event history changed or
-another worker already updated the description.
+description as `text/plain` with the candidate `Last-Modified` value in an
+`If-Unmodified-Since` header. The update fails with `412 Precondition Failed`
+if event history changed or another worker already updated the description.
 
 The vehicle candidate endpoint selects a random vehicle with a parking event
 description newer than the vehicle description. Vehicle descriptions use the
-same `text/plain` and `If-Match` workflow, failing if the source event
-or history identifiers changed or another worker completed the candidate.
-Vehicles keep their latest parking event and history identifiers updated in
-the same transaction as those records. Both update APIs record their UTC
-timestamp and authenticated user/agent in `description_upd`.
+same `text/plain` and `If-Unmodified-Since` workflow, failing if a source
+parking event description changed or another worker completed the candidate.
+Both update APIs record their UTC timestamp and authenticated user/agent in
+`description_upd`.

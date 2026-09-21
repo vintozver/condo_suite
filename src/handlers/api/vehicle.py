@@ -34,27 +34,6 @@ class Handler(BaseHandler):
             'description_upd': cls._description_upd(vehicle.description_upd),
         }
 
-    @staticmethod
-    def _source_version(updated):
-        return updated.isoformat()
-
-    @staticmethod
-    def _etag(value):
-        return '"%s"' % value
-
-    @staticmethod
-    def _if_match(value):
-        if not value:
-            raise ApiError(http.client.PRECONDITION_REQUIRED, 'If-Match header is required')
-        value = value.strip()
-        if value.startswith('"') and value.endswith('"'):
-            value = value[1:-1]
-        try:
-            updated = datetime.datetime.fromisoformat(value)
-        except (TypeError, ValueError):
-            raise ApiError(http.client.BAD_REQUEST, 'Invalid If-Match header')
-        return updated
-
     def __call__(self, vin=None, action=None):
         def operation():
             user, agent, payload = self._authenticate()
@@ -63,8 +42,7 @@ class Handler(BaseHandler):
             if self.req.method == 'POST':
                 if self.req.request_headers.get('Content-Type', '').split(';', 1)[0].strip().lower() != 'text/plain':
                     raise ApiError(http.client.BAD_REQUEST, 'Content-Type must be text/plain')
-                expected_source_updated = self._if_match(
-                    self.req.request_headers.get('If-Match'))
+                expected_source_updated = self._if_unmodified_since()
                 with mod_mongo.DbSessionController() as db:
                     vehicle_collection = db[config.name][
                         VehicleDocument._meta['collection']]
@@ -78,12 +56,19 @@ class Handler(BaseHandler):
                         raise ApiError(http.client.NOT_FOUND, 'Vehicle not found')
                     source_updated = vehicle_state.get(
                         'last_parking_event_description_upd')
-                    if source_updated != expected_source_updated:
+                    comparable_source_updated = source_updated
+                    if comparable_source_updated and comparable_source_updated.tzinfo is None:
+                        comparable_source_updated = comparable_source_updated.replace(
+                            tzinfo=datetime.timezone.utc)
+                    if (comparable_source_updated is None or
+                            comparable_source_updated.replace(microsecond=0) >
+                            expected_source_updated):
                         raise ApiError(
                             http.client.PRECONDITION_FAILED,
                             'Parking event descriptions were modified')
                     description_upd = DescriptionUpdate(
-                        dt=datetime.datetime.now(datetime.timezone.utc),
+                        dt=datetime.datetime.now(
+                            datetime.timezone.utc).replace(microsecond=0),
                         by=SecurityRef(
                             user=UserRef(id=user.id, name=user.name),
                             agent=AgentRef(
@@ -108,8 +93,9 @@ class Handler(BaseHandler):
                             http.client.PRECONDITION_FAILED,
                             'Vehicle description was already updated')
                 vehicle = VehicleDocument._from_son(vehicle_data)
-                source_version = self._source_version(source_updated)
-                self.req.setHeader('ETag', self._etag(source_version))
+                self.req.setHeader(
+                    'Last-Modified',
+                    self._http_datetime(vehicle.description_upd.dt))
                 self._json(self._vehicle(vehicle))
                 return
             if action == 'candidate':
@@ -127,12 +113,12 @@ class Handler(BaseHandler):
                         source_updated = source_updated.replace(
                             tzinfo=datetime.timezone.utc)
                     if updated is None or updated < source_updated:
-                        candidates.append((
-                            vehicle, self._source_version(source_updated)))
+                        candidates.append((vehicle, source_updated))
                 if not candidates:
                     raise ApiError(http.client.NOT_FOUND, 'No update candidate')
-                vehicle, source_version = secrets.choice(candidates)
-                self.req.setHeader('ETag', self._etag(source_version))
+                vehicle, source_updated = secrets.choice(candidates)
+                self.req.setHeader(
+                    'Last-Modified', self._http_datetime(source_updated))
                 result = self._vehicle(vehicle)
                 self._json(result)
                 return

@@ -11,22 +11,6 @@ import http.client
 import secrets
 
 class Handler(ParkingHandler):
-    @staticmethod
-    def _etag(value):
-        return '"%s"' % value
-
-    @staticmethod
-    def _if_match(value):
-        if not value:
-            raise ApiError(http.client.PRECONDITION_REQUIRED, 'If-Match header is required')
-        value = value.strip()
-        if len(value) == 26 and value.startswith('"') and value.endswith('"'):
-            value = value[1:-1]
-        try:
-            return mod_mongo.bson.objectid.ObjectId(value)
-        except (TypeError, ValueError):
-            raise ApiError(http.client.BAD_REQUEST, 'Invalid If-Match header')
-
     def __call__(self, action, oid=None, file_oid=None):
         if self.req.method == 'POST' and action == 'view':
             from .parking_event_comment import Handler as CommentHandler
@@ -47,9 +31,10 @@ class Handler(ParkingHandler):
                 if not candidates:
                     raise ApiError(http.client.NOT_FOUND, 'No update candidate')
                 doc, last_history_id = secrets.choice(candidates)
-                self.req.setHeader('ETag', self._etag(last_history_id))
+                self.req.setHeader(
+                    'Last-Modified',
+                    self._http_datetime(last_history_id.generation_time))
                 result = self._event(doc)
-                result['last_history_id'] = str(last_history_id)
                 self._json(result)
                 return
             if action == 'description':
@@ -59,13 +44,14 @@ class Handler(ParkingHandler):
                     raise ApiError(http.client.FORBIDDEN, 'Permission required')
                 if self.req.request_headers.get('Content-Type', '').split(';', 1)[0].strip().lower() != 'text/plain':
                     raise ApiError(http.client.BAD_REQUEST, 'Content-Type must be text/plain')
-                last_history_id = self._if_match(
-                    self.req.request_headers.get('If-Match'))
+                expected_modified = self._if_unmodified_since()
                 doc = self._get_doc(oid)
-                if not doc.history or doc.history[-1].id != last_history_id:
+                if (not doc.history or
+                        doc.history[-1].id.generation_time > expected_modified):
                     raise ApiError(
                         http.client.PRECONDITION_FAILED,
                         'Parking event history was modified')
+                last_history_id = doc.history[-1].id
                 with mod_mongo.DbSessionController() as db, db.start_session() as session:
                     def update_description(active_session):
                         vehicle_collection = db[config.name][
@@ -77,12 +63,10 @@ class Handler(ParkingHandler):
                         previous_updated = vehicle_state.get(
                             'last_parking_event_description_upd')
                         updated = datetime.datetime.now(
-                            datetime.timezone.utc)
-                        updated = updated.replace(
-                            microsecond=updated.microsecond // 1000 * 1000)
+                            datetime.timezone.utc).replace(microsecond=0)
                         if previous_updated and updated <= previous_updated:
                             updated = previous_updated + datetime.timedelta(
-                                milliseconds=1)
+                                seconds=1)
                         description_upd = DescriptionUpdate(
                             dt=updated,
                             by=SecurityRef(
@@ -121,7 +105,10 @@ class Handler(ParkingHandler):
                                 session=active_session)
                         return event_data
                     event_data = session.with_transaction(update_description)
-                self.req.setHeader('ETag', self._etag(last_history_id))
+                self.req.setHeader(
+                    'Last-Modified',
+                    self._http_datetime(
+                        event_data['description_upd']['dt']))
                 self._json(self._event(type(doc)._from_son(event_data)))
                 return
             doc = self._get_doc(oid)

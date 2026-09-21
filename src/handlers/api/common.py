@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import email.utils
 import http.client
 import json
 import time
@@ -40,6 +41,32 @@ class BaseHandler(_Handler):
         self.req.setHeader('Cache-Control', 'no-store')
         self.req.setHeader('Content-Type', 'application/json; charset=utf-8')
         self.req.write(json.dumps(value, default=str))
+
+    @staticmethod
+    def _http_datetime(value):
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=datetime.timezone.utc)
+        return email.utils.format_datetime(
+            value.astimezone(datetime.timezone.utc).replace(microsecond=0),
+            usegmt=True)
+
+    def _if_unmodified_since(self):
+        value = self.req.request_headers.get('If-Unmodified-Since')
+        if not value:
+            raise ApiError(
+                http.client.PRECONDITION_REQUIRED,
+                'If-Unmodified-Since header is required')
+        try:
+            value = email.utils.parsedate_to_datetime(value)
+        except (TypeError, ValueError, OverflowError):
+            value = None
+        if value is None:
+            raise ApiError(
+                http.client.BAD_REQUEST,
+                'Invalid If-Unmodified-Since header')
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=datetime.timezone.utc)
+        return value.astimezone(datetime.timezone.utc).replace(microsecond=0)
 
     def _authenticate(self):
         token = self.req.request_headers.get('Authorization', '')
