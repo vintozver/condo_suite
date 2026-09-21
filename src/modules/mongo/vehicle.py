@@ -2,6 +2,14 @@
 
 
 from .. import mongo as mod_mongo
+from .security import Ref as SecurityRef
+
+
+class DescriptionUpdate(mod_mongo.mongoengine.EmbeddedDocument):
+    meta = {'strict': False}
+
+    dt = mod_mongo.mongoengine.DateTimeField(required=True)
+    by = mod_mongo.mongoengine.EmbeddedDocumentField(SecurityRef, required=True)
 
 
 # document stored in the database
@@ -13,6 +21,8 @@ class Document(mod_mongo.mongoengine.Document):
     # tag, license plate, attached decal; for example C012345 WA
     tag = mod_mongo.mongoengine.StringField(max_length=20)
     description = mod_mongo.mongoengine.StringField()
+    description_upd = mod_mongo.mongoengine.EmbeddedDocumentField(DescriptionUpdate)
+    last_parking_event_description_upd = mod_mongo.mongoengine.DateTimeField()
 
 
 # link to the vehicle in other collections

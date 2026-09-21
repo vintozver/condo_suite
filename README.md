@@ -29,6 +29,8 @@ google:
 
 MongoDB connection details are supplied through `mongodb_uri`; separate host,
 port, username, password, and database settings are no longer supported.
+Description worker updates use MongoDB transactions, so `mongodb_uri` must
+connect to a replica set or sharded cluster.
 
 ## Background tasks (Celery)
 
@@ -64,8 +66,11 @@ GET  /api/parking/event
 GET  /api/parking/event/{event-id}
 GET  /api/parking/event/{event-id}/file/{file-id}
 POST /api/parking/event/{event-id}
+POST /api/parking/event/{event-id}/description
 GET  /api/vehicle/
 POST /api/vehicle/{VIN}/description
+GET  /api/search/parking_event_description_candidate
+GET  /api/search/vehicle_description_candidate
 ```
 
 JWTs must be signed with a private key whose public key or certificate is in the
@@ -74,5 +79,15 @@ user's signing keyset. Include `user_id`, `kid`, `dt`, `agent_id`, and
 the JWT payload. See `examples/openssl.sh` for key generation and
 `examples/parking_api.py` for a complete client.
 
-Vehicle descriptions are posted as `text/plain`; the server appends the update
-attribution (`Updated by: user, agent`) to the supplied text.
+The parking event candidate endpoint selects a random event whose description
+has not been updated since its latest history item. Post the generated
+description as `text/plain` with the candidate `Last-Modified` value in an
+`If-Unmodified-Since` header. The update fails with `412 Precondition Failed`
+if event history changed or another worker already updated the description.
+
+The vehicle candidate endpoint selects a random vehicle with a parking event
+description newer than the vehicle description. Vehicle descriptions use the
+same `text/plain` and `If-Unmodified-Since` workflow, failing if a source
+parking event description changed or another worker completed the candidate.
+Both update APIs record their UTC timestamp and authenticated user/agent in
+`description_upd`.

@@ -15,7 +15,6 @@ from ...handlers.web import decorator as deco
 
 _vehicle_doc_class = VehicleDocument
 _vehicle_doc_database =  mod_mongo.mongoengine.connection.get_db(_vehicle_doc_class._meta['db_alias']).name
-_vehicle_doc_collection = _vehicle_doc_class._meta['collection']
 
 class HandlerError(_HandlerError):
     pass
@@ -75,17 +74,18 @@ class Handler(_Handler):
         if param_remarks is not None:
             doc.remarks = param_remarks
         doc.creator = self.get_ref()
-        doc.save()
-
+        doc.validate()
         with mod_mongo.DbSessionController() as db_session:
-            try:
-                db_session[_vehicle_doc_database][_vehicle_doc_collection].update_one(
-                    {'_id': param_vin},
-                    {'$set': {'tag': param_tag}},
-                    True
-                )
-            except mod_mongo.pymongo.errors.DuplicateKeyError:
-                pass
+            with db_session.start_session() as session:
+                def create_event(active_session):
+                    database = db_session[_vehicle_doc_database]
+                    database[
+                        ParkingEventDocument._meta['collection']].insert_one(
+                            doc.to_mongo(), session=active_session)
+                    database[VehicleDocument._meta['collection']].update_one(
+                        {'_id': param_vin}, {'$set': {'tag': param_tag}},
+                        upsert=True, session=active_session)
+                session.with_transaction(create_event)
 
         return doc.id
 

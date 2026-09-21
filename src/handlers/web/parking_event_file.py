@@ -34,8 +34,14 @@ class Handler(_Handler):
         if doc is None:
             raise HandlerError('Doc not found', id_doc)
 
+        file_id = mod_mongo.bson.objectid.ObjectId(file_oid)
+        if not any((item.file_id or item.id) == file_id and item.length for item in doc.history):
+            raise HandlerError('File not found', file_oid)
         with mod_mongo.DbSessionController() as db_session:
-            attachment_file = mod_mongo.gridfs.GridFS(db_session[config.name], 'parking_event.history').get(mod_mongo.bson.objectid.ObjectId(file_oid))
+            attachment_file = mod_mongo.gridfs.GridFS(
+                db_session[config.name],
+                ParkingEventDocument._meta['collection'] + '.history'
+            ).get(file_id)
 
         self.req.setResponseCode(http.client.OK, http.client.responses[http.client.OK])
         self.req.setHeader('Cache-Control', 'public, no-cache')

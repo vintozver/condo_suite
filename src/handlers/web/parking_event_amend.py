@@ -15,27 +15,42 @@ class HandlerError(_HandlerError):
 
 
 class Handler(_Handler):
-    def execute(self, oid: mod_mongo.bson.objectid.ObjectId, description: str, stream: io.BytesIO, content_type: str):
+    def execute(self, oid: mod_mongo.bson.objectid.ObjectId,
+                description: str, stream: io.BytesIO, content_type: str):
         with mod_mongo.DbSessionController() as db_session:
             attachment_oid = mod_mongo.bson.objectid.ObjectId()
 
             if stream is not None and content_type is not None:
-                history_file = mod_mongo.gridfs.GridFS(db_session[config.name], 'parking_event.history').new_file(_id=attachment_oid, content_type=content_type)
+                history_file = mod_mongo.gridfs.GridFS(
+                    db_session[config.name],
+                    ParkingEventDocument._meta['collection'] + '.history'
+                ).new_file(
+                    _id=attachment_oid, content_type=content_type)
                 history_file.write(stream.read())
                 history_file.close()
             else:
                 history_file = None
 
-            history_item = ParkingEventHistoryItem()
-            history_item.id = attachment_oid
-            if history_file is not None:
-                history_item.content_type = history_file.content_type
-                history_item.length = history_file.length
-            history_item.description = description
-            
-            db_session[config.name]['parking_event'].update_one({'_id': oid}, {'$push': {'history': history_item.to_mongo()}})
+            with db_session.start_session() as session:
+                def append_history(active_session):
+                    history_item = ParkingEventHistoryItem(
+                        id=mod_mongo.bson.objectid.ObjectId(),
+                        description=description)
+                    if history_file is not None:
+                        history_item.file_id = attachment_oid
+                        history_item.content_type = history_file.content_type
+                        history_item.length = history_file.length
+                    result = db_session[config.name][
+                        ParkingEventDocument._meta['collection']].update_one(
+                            {'_id': oid},
+                            {'$push': {'history': history_item.to_mongo()}},
+                            session=active_session)
+                    if not result.matched_count:
+                        raise HandlerError('Doc not found', oid)
+                    return history_item.id
+                history_id = session.with_transaction(append_history)
 
-        return attachment_oid
+        return history_id
 
     @deco.session.Session()
     @deco.session.SessionUser()
