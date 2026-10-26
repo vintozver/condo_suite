@@ -30,6 +30,7 @@ dependencies = [
     "fido2",
     "cryptography",
     "PyJWT",
+    "filetype",
 ]
 
 [project.scripts]
