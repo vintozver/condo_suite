@@ -3,6 +3,7 @@
 from ...handlers.ext.paramed_cgi import Handler as _Handler, HandlerError as _HandlerError
 
 import io
+import filetype
 from ... import config as config
 from ...modules import mongo as mod_mongo
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
@@ -92,13 +93,11 @@ class Handler(_Handler):
             if attachment is not None:
                 attachment_stream = io.BytesIO(attachment.read())
 
-                import imghdr
-                attachment_imgtype = imghdr.what('', attachment_stream.read(256))
-                if not attachment_imgtype:
-                    HandlerError('Unrecognized attachment image')
+                attachment_filetype = filetype.guess(attachment_stream.read(256))
+                if attachment_filetype is None or not attachment_filetype.mime.startswith('image/'):
+                    raise HandlerError('Unrecognized attachment image')
                 attachment_stream.seek(0)
-                content_type = 'image/%s' % attachment_imgtype
-                del attachment_imgtype
+                content_type = attachment_filetype.mime
             else:
                 attachment_stream = None
                 content_type = None
