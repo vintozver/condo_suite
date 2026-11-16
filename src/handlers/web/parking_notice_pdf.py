@@ -25,7 +25,7 @@ def generate_notice(business_name, vin, tag, reason, generated_at, events):
     content_height = page_height - 2 * margin
     output = BytesIO()
     canvas = Canvas(output, pagesize=(page_width, page_height))
-    canvas.setTitle('Parking Violation')
+    canvas.setTitle('Parking Notice')
     # Font sizes, column widths, spacing, and padding are in PDF points (72 per inch).
     text_style = ParagraphStyle(
         'notice', fontName='ParkingNotice', fontSize=8, leading=10,
@@ -37,7 +37,7 @@ def generate_notice(business_name, vin, tag, reason, generated_at, events):
         return Paragraph(escape(str(value or '')).replace('\n', '<br/>'), style)
 
     content = [
-        paragraph('Parking Violation', ParagraphStyle(
+        paragraph('Parking Notice', ParagraphStyle(
             'title', parent=text_style, fontSize=16, leading=19)),
         paragraph(business_name, ParagraphStyle(
             'business', parent=text_style, fontSize=10, leading=12)),

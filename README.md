@@ -96,8 +96,8 @@ Both update APIs record their UTC timestamp and authenticated user/agent in
 
 Vehicle and parking event views include a **Create parking notice PDF** link.
 The `/parking/notice` page accepts `vin`, `tag`, and `reason` query parameters
-to prefill an editable form. **Generate PDF** downloads a single 4×6-inch
-parking violation notice with the configured business name, the entered
+to prefill an editable form. **Generate PDF** returns a single 4×6-inch
+parking notice with the configured business name, the entered
 details, generation time, and the vehicle's latest 20 parking events
 (date/time, observed tag, reason, and remarks). All times use the configured
 `timezone`. An authenticated user with a selected agent and

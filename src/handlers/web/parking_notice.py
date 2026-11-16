@@ -65,7 +65,6 @@ class Handler(_Handler):
                     datetime.now(config.timezone), events)
                 self.req.setResponseCode(http.client.OK, http.client.responses[http.client.OK])
                 self.req.setHeader('Content-Type', 'application/pdf')
-                self.req.setHeader('Content-Disposition', 'attachment; filename="parking-notice.pdf"')
                 self.req.write(content)
                 return
 
