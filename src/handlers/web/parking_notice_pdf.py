@@ -31,21 +31,21 @@ def generate_notice(business_name, vin, tag, reason, generated_at, events):
         'notice', fontName='ParkingNotice', fontSize=8, leading=10,
         spaceAfter=4, splitLongWords=True)
     cell_style = ParagraphStyle(
-        'event', parent=text_style, fontSize=5.5, leading=7, spaceAfter=0)
+        'event', parent=text_style, fontSize=8, leading=9, spaceAfter=0)
 
     def paragraph(value, style=text_style):
         return Paragraph(escape(str(value or '')).replace('\n', '<br/>'), style)
 
     content = [
         paragraph('Parking Notice', ParagraphStyle(
-            'title', parent=text_style, fontSize=16, leading=19)),
+            'title', parent=text_style, fontSize=24, leading=28)),
         paragraph(business_name, ParagraphStyle(
-            'business', parent=text_style, fontSize=10, leading=12)),
+            'business', parent=text_style, fontSize=16, leading=19)),
         Spacer(1, 4),
         paragraph('VIN: %s' % vin),
         paragraph('Tag: %s' % tag),
         paragraph('Reason: %s' % reason),
-        paragraph('Generated: %s' % generated_at.strftime('%Y-%m-%d %H:%M:%S %Z %z')),
+        paragraph('Generated: %s' % generated_at.strftime('%Y-%m-%d %H:%M:%S %Z')),
         Spacer(1, 4),
         paragraph('Last 20 parking events'),
     ]
@@ -57,7 +57,13 @@ def generate_notice(business_name, vin, tag, reason, generated_at, events):
             paragraph(event['reason'], cell_style),
             paragraph(event['remarks'], cell_style),
         ])
-    table = Table(rows, colWidths=(63, 39, 65, 97), hAlign='LEFT')
+    # Keep the date readable, match reason width to tag, and give remaining
+    # printable width to remarks.
+    date_width, tag_width, reason_width = 70, 39, 39
+    remarks_width = content_width - date_width - tag_width - reason_width
+    table = Table(
+        rows, colWidths=(date_width, tag_width, reason_width, remarks_width),
+        hAlign='LEFT')
     table.setStyle(TableStyle([
         ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),

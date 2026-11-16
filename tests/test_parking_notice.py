@@ -54,8 +54,9 @@ class NoticePDFTests(unittest.TestCase):
         content = pdf_streams(pdf)
         self.assertNotIn(b'Parking Violation', content)
         for value in (b'Parking Notice', b'Condo & Suite', VIN.encode(), b'ABC123',
-                      b'Fire lane', b'2026-07-01 12:30:00 EDT -0400', b'No parking events.'):
+                      b'Fire lane', b'2026-07-01 12:30:00 EDT', b'No parking events.'):
             self.assertIn(value, content)
+        self.assertNotIn(b'-0400', content)
 
     def test_twenty_events_and_long_text_fit_one_page(self):
         events = [{
