@@ -1,0 +1,17 @@
+{% extends "skeleton" %}
+
+{% block body_content %}
+<div class="parking_notice">
+	<h1>Parking Violation Notice</h1>
+	{% if error %}<p role="alert">{{ error|escape }}</p>{% endif %}
+	<form action="/parking/notice" method="post">
+	<table class="header">
+	<tr><th><label for="notice-vin">VIN</label></th><td><input id="notice-vin" name="vin" type="text" size="17" maxlength="17" required {{ {'value': vin}|xmlattr }} /></td></tr>
+	<tr><th><label for="notice-tag">Tag</label></th><td><input id="notice-tag" name="tag" type="text" maxlength="20" required {{ {'value': tag}|xmlattr }} /></td></tr>
+	<tr><th><label for="notice-reason">Reason</label></th><td><textarea id="notice-reason" name="reason" rows="3" cols="50" maxlength="500" required>{{ reason|escape }}</textarea></td></tr>
+	</table>
+	<p>The notice includes the last 20 parking events for this VIN. Times use the configured local timezone.</p>
+	<input type="submit" value="Generate PDF" />
+	</form>
+</div>
+{%- endblock %}

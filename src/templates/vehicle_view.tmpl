@@ -35,6 +35,7 @@
 
 	<h3>Actions</h3>
 	<div>
+	<p><a {{ {'href': {'netloc': '', 'path': '/parking/notice', 'query': {'vin': VIN, 'tag': tag or '', 'reason': ''}}|url}|xmlattr }}>Create parking notice PDF</a></p>
 	<p><a {{ {'href': {'netloc': '', 'path': '/parking/event/new', 'query': {'VIN': VIN, 'tag': tag}}|url}|xmlattr }}>Add new parking event for this vehicle</a></p>
 	</div>
 </div>
