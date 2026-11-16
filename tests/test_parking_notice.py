@@ -19,7 +19,7 @@ with patch.object(mongo, 'DbSessionController') as controller:
     from condo_suite.handlers.web import parking_notice
 
 from condo_suite.modules.templates.filesystem import TemplateFactory
-from condo_suite.util.parking_notice import generate_notice
+from condo_suite.handlers.web.parking_notice_pdf import generate_notice
 
 
 VIN = '1HGCM82633A004352'

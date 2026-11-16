@@ -7,6 +7,7 @@ from xml.sax.saxutils import escape
 import reportlab
 from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import inch
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen.canvas import Canvas
@@ -18,9 +19,14 @@ pdfmetrics.registerFont(TTFont(
 
 
 def generate_notice(business_name, vin, tag, reason, generated_at, events):
+    page_width, page_height = 4 * inch, 6 * inch
+    margin = inch / 6
+    content_width = page_width - 2 * margin
+    content_height = page_height - 2 * margin
     output = BytesIO()
-    canvas = Canvas(output, pagesize=(288, 432))
+    canvas = Canvas(output, pagesize=(page_width, page_height))
     canvas.setTitle('Parking Violation')
+    # Font sizes, column widths, spacing, and padding are in PDF points (72 per inch).
     text_style = ParagraphStyle(
         'notice', fontName='ParkingNotice', fontSize=8, leading=10,
         spaceAfter=4, splitLongWords=True)
@@ -66,9 +72,10 @@ def generate_notice(business_name, vin, tag, reason, generated_at, events):
         content.append(paragraph('No parking events.'))
 
     # Fit variable-length fields and all 20 rows onto a single 4x6-inch page.
-    frame = KeepInFrame(264, 408, content, mode='shrink', hAlign='LEFT', vAlign='TOP')
-    _, height = frame.wrapOn(canvas, 264, 408)
-    frame.drawOn(canvas, 12, 420 - height)
+    frame = KeepInFrame(content_width, content_height, content,
+                        mode='shrink', hAlign='LEFT', vAlign='TOP')
+    _, height = frame.wrapOn(canvas, content_width, content_height)
+    frame.drawOn(canvas, margin, page_height - margin - height)
     canvas.showPage()
     canvas.save()
     return output.getvalue()

@@ -9,7 +9,7 @@ from ...handlers.ext.paramed_cgi import Handler as _Handler
 from ...handlers.web import decorator as deco
 from ...handlers.web import skeleton as mod_tmpl
 from ...modules.mongo.parking_event import Document as ParkingEventDocument
-from ...util.parking_notice import generate_notice
+from .parking_notice_pdf import generate_notice
 
 
 class Handler(_Handler):
