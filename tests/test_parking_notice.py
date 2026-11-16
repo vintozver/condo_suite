@@ -50,8 +50,10 @@ class NoticePDFTests(unittest.TestCase):
     def test_notice_content_and_local_time(self):
         pdf = self.generate([])
         self.assert_notice_page(pdf)
+        self.assertIn(b'/Title (Parking Notice)', pdf)
         content = pdf_streams(pdf)
-        for value in (b'Parking Violation', b'Condo & Suite', VIN.encode(), b'ABC123',
+        self.assertNotIn(b'Parking Violation', content)
+        for value in (b'Parking Notice', b'Condo & Suite', VIN.encode(), b'ABC123',
                       b'Fire lane', b'2026-07-01 12:30:00 EDT -0400', b'No parking events.'):
             self.assertIn(value, content)
 
@@ -126,6 +128,9 @@ class NoticeHandlerTests(unittest.TestCase):
         self.assertEqual(args[5][0]['tag'], 'OLDTAG')
         self.assertEqual(args[5][0]['remarks'], 'Historical remarks')
         req.setHeader.assert_any_call('Content-Type', 'application/pdf')
+        self.assertFalse(any(
+            call.args[0].lower() == 'content-disposition'
+            for call in req.setHeader.call_args_list))
         req.write.assert_called_once_with(b'%PDF-test')
 
     def test_invalid_input_never_queries_database(self):
