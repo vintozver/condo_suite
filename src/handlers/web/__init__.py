@@ -22,6 +22,7 @@ class Handler(_Handler):
         ]},
         {'regex': re.compile(r'^/\bparking\b'), 'map': [
             {'regex': re.compile(r'^/?$'), 'handler': 'web.parking_menu'},
+            {'regex': re.compile(r'^/notice/?$'), 'handler': 'web.parking_notice'},
             {'regex': re.compile(r'^/vehicle/visitor/?$'), 'handler': 'web.parking_vehicle_visitor'},
             {'regex': re.compile(r'^/event/?$'), 'handler': 'web.parking_event_search'},
             {'regex': re.compile(r'^/event/new/?$'), 'handler': 'web.parking_event_new'},

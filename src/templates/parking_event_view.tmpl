@@ -13,6 +13,8 @@
 	<tr><th>Description updated</th><td>{% if description_upd %}{{ description_upd['dt']|datetime('%Y-%m-%d %H:%M') }}{% if description_upd['by'] %} by {{ description_upd['by']|escape }}{% endif %}{% else %}-{% endif %}</td></tr>
 	</table>
 
+	<p><a {{ {'href': {'netloc': '', 'path': '/parking/notice', 'query': {'vin': VIN, 'tag': tag or '', 'reason': reason or ''}}|url}|xmlattr }}>Create parking notice PDF</a></p>
+
 	<h3>History</h3>
 	<div class="history">
 	{% if history|length > 0 %}
