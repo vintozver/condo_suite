@@ -11,7 +11,7 @@ from urllib.parse import urlsplit
 
 from wsgiref.headers import Headers
 
-from ..api.common import ApiError, BaseHandler
+from ..api.common import ApiError, BaseHandler, config
 from ...util.handler import Handler as RequestHandler
 
 
@@ -87,27 +87,37 @@ class InvalidParams(Exception):
     pass
 
 
+def normalized_origin(value):
+    if (not isinstance(value, str) or not value or
+            any(char.isspace() or ord(char) < 32 or ord(char) == 127 for char in value) or
+            any(char in value for char in ('*', '\\', '%', '?', '#'))):
+        raise ValueError('Invalid origin')
+    origin = urlsplit(value)
+    if (origin.scheme not in ('http', 'https') or not origin.hostname or
+            origin.username is not None or origin.password is not None or
+            origin.path or origin.query or origin.fragment or
+            origin.netloc.endswith(':')):
+        raise ValueError('Invalid origin')
+    port = origin.port
+    return (origin.scheme, origin.hostname.lower(),
+            port if port is not None else (443 if origin.scheme == 'https' else 80))
+
+
 def same_origin(req):
     origins = req.request_headers.get_all('Origin') or []
     if not origins:
         return True
     if len(origins) != 1:
         return False
-    scheme = req.scheme
-    host = req.request_headers.get('Host', '')
     try:
-        origin = urlsplit(origins[0])
-        target = urlsplit(scheme + '://' + host)
-        if (scheme not in ('http', 'https') or origin.scheme != scheme or
-                not origin.hostname or not target.hostname or
-                origin.username is not None or origin.password is not None or
-                target.username is not None or target.password is not None or
-                origin.path or origin.query or origin.fragment or
-                target.path or target.query or target.fragment):
+        allowed = config.mcp_allowed_origins
+        if not isinstance(allowed, list):
             return False
-        default_port = 443 if scheme == 'https' else 80
-        return (origin.hostname.lower(), origin.port or default_port) == (
-            target.hostname.lower(), target.port or default_port)
+        allowed = {normalized_origin(value) for value in allowed}
+        origin = normalized_origin(origins[0])
+        target = normalized_origin(
+            req.scheme + '://' + req.request_headers.get('Host', ''))
+        return origin in allowed and origin == target
     except (ValueError, TypeError):
         return False
 
@@ -214,6 +224,7 @@ class Handler(BaseHandler):
         request = ApiRequest(definition['method'], body, headers)
         module = importlib.import_module('..api.' + definition['module'], __package__)
         # This override is local to the delegated instance, not a token or global patch.
+        # API handlers must remain CGI-independent: parsing here would consume text/binary bodies.
         delegated = module.Handler.__new__(module.Handler)
         RequestHandler.__init__(delegated, request)
         delegated._authenticate = lambda: (authentication[0], authentication[1], payload)

@@ -20,5 +20,8 @@ google_redirect_uri = google.get('redirect_uri')
 google_javascript_origin = google.get('javascript_origin')
 timezone = ZoneInfo(settings.get('timezone', 'UTC'))
 rabbit = settings.get('rabbit', {})
+mcp = settings.get('mcp', {})
+mcp_allowed_origins = mcp.get('allowed_origins', []) if isinstance(mcp, dict) else None
 
-__all__ = ['settings', 'mongodb_uri', 'name', 'google', 'timezone', 'rabbit']
+__all__ = ['settings', 'mongodb_uri', 'name', 'google', 'timezone', 'rabbit',
+           'mcp_allowed_origins']

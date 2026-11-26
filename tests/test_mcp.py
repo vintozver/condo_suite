@@ -164,13 +164,16 @@ class MCPTests(unittest.TestCase):
         req, _ = self.invoke(raw=b'{', headers={'Authorization': None})
         self.assertEqual(req.status_code, 401)
 
+    @patch.object(mcp.config, 'mcp_allowed_origins',
+                  ['https://condo.example', 'http://condo.example'])
     def test_origin(self):
         for origin, status in [(None, 200), ('https://condo.example', 200),
                                ('https://CONDO.example:443', 200),
                                ('http://condo.example', 403), ('https://evil.example', 403),
                                ('null', 403), ('https://condo.example/path', 403),
                                ('https://user@condo.example', 403),
-                               ('https://condo.example:invalid', 403)]:
+                               ('https://condo.example:invalid', 403),
+                               ('https://condo.example:0', 403)]:
             req, _ = self.invoke(headers={'Origin': origin})
             self.assertEqual(req.status_code, status, origin)
         req, _ = self.invoke(headers={'Origin': 'https://condo.example',
@@ -184,6 +187,27 @@ class MCPTests(unittest.TestCase):
         req.request_headers.add_header('Origin', 'https://condo.example')
         mcp.Handler(req)()
         self.assertEqual(req.status_code, 403)
+
+    def test_origin_allowlist_rejects_dns_rebinding(self):
+        with patch.object(mcp.config, 'mcp_allowed_origins', ['https://condo.example']):
+            req, _ = self.invoke(headers={'Origin': 'https://attacker.example',
+                                         'Host': 'attacker.example'})
+            self.assertEqual(req.status_code, 403)
+            req, _ = self.invoke(headers={'Origin': 'https://condo.example'})
+            self.assertEqual(req.status_code, 200)
+
+    def test_origin_default_and_invalid_configuration_fail_closed(self):
+        for allowed in ([], None, 'https://condo.example', {},
+                        ['*'], ['https://condo.example/'], [True],
+                        ['https://condo.example', 'https://*.example'],
+                        ['https://condo.example:'], ['https://condo.example#'],
+                        [' https://condo.example']):
+            with self.subTest(allowed=allowed), \
+                    patch.object(mcp.config, 'mcp_allowed_origins', allowed):
+                req, _ = self.invoke(headers={'Origin': 'https://condo.example'})
+                self.assertEqual(req.status_code, 403)
+                req, _ = self.invoke()
+                self.assertEqual(req.status_code, 200)
 
     def test_real_auth_invalid_expired_and_header_types(self):
         for overrides in [{'dt': time.time() - 301}, {'dt': time.time() + 301},

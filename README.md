@@ -147,9 +147,20 @@ type. Description updates require `if_unmodified_since` copied exactly from
 the candidate's `lastModified`; stale updates return an operation error with
 status 412. Case linking queues the existing Celery transaction.
 
-Browser requests with an `Origin` header must match the request's scheme and
-Host (otherwise 403); machine clients may omit Origin. No wildcard CORS is
-enabled. Configure trusted ingress to enforce allowed Host names and set the
+Browser requests with an `Origin` header must appear in an explicit origin
+allowlist **and** match the request's scheme and Host (otherwise 403). Configure
+canonical HTTP(S) origins without paths, credentials, or wildcards:
+
+```yaml
+mcp:
+  allowed_origins:
+    - https://condo.example
+```
+
+The default empty allowlist rejects all requests bearing Origin; invalid
+allowlist configuration fails closed as well. Authenticated machine clients may
+omit Origin. No wildcard CORS is enabled. Configure trusted ingress to enforce
+allowed Host names and set the
 WSGI URL scheme correctly when terminating TLS. Forwarded headers are not
 trusted by the MCP endpoint.
 
