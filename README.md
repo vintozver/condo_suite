@@ -92,6 +92,67 @@ parking event description changed or another worker completed the candidate.
 Both update APIs record their UTC timestamp and authenticated user/agent in
 `description_upd`.
 
+## MCP server
+
+The canonical endpoint is `/mcp/` (`/mcp` also works). It implements stateless
+Streamable HTTP with JSON responses, protocol versions `2025-03-26` and
+`2025-06-18`, and no sessions or SSE stream. POST JSON-RPC messages with
+`Content-Type: application/json` and
+`Accept: application/json, text/event-stream`. GET and other unsupported
+methods return 405 after authentication. Batch requests are unsupported.
+
+**Every request**, including `initialize`, `tools/list`, notifications, and
+unsupported HTTP methods, requires the `Authorization` header with the
+`Bearer` scheme followed by your signed JWT.
+Use TLS; bearer tokens grant access to anyone holding them. Sign using an
+asymmetric algorithm supported by the API (for example RS256) and a private
+key whose DER public key **or** DER certificate is registered in the user's
+keyset. The JWT header must contain `user_id`, `kid`, `dt` (Unix timestamp or
+ISO datetime), `agent_id`, and `agent_position`; the agent must belong to that
+user. Tokens are accepted only within 300 seconds of `dt`; refresh them before
+expiry. Unsigned tokens and symmetric signatures are not accepted.
+
+Unlike the legacy API, **MCP tool arguments belong in `params.arguments`, not
+the JWT payload**. The payload can be `{}`. For example, generate the token
+using PyJWT and your registered private key:
+
+```python
+import time
+import jwt
+
+with open("/path/to/private-key.pem", "rb") as key:
+    token = jwt.encode({}, key.read(), algorithm="RS256", headers={
+        "user_id": "YOUR_USER_OBJECT_ID", "kid": "YOUR_REGISTERED_KEY_ID",
+        "dt": time.time(), "agent_id": "YOUR_AGENT_OBJECT_ID",
+        "agent_position": "YOUR_ASSIGNED_POSITION",
+    })
+```
+
+Send `initialize` with `protocolVersion`, `capabilities: {}`, and
+`clientInfo: {"name": "your-client", "version": "1"}`, then
+`notifications/initialized` (HTTP 202, empty body). Use
+`MCP-Protocol-Version: 2025-06-18` on subsequent requests. An example tool call:
+
+```json
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"parking_search","arguments":{"VIN":"1HGCM82633A004352","limit":20}}}
+```
+
+`tools/list` advertises schemas for parking search/view/comment/file and
+description candidates/updates; vehicle search and description
+candidates/updates; and case view/create/status/comment/link operations.
+All operations reuse API authorization and update logic with the authenticated
+user/agent. Tool results contain JSON text with `status`, `data`, and optional
+`lastModified`; failures use `isError: true`. File data is base64 with a MIME
+type. Description updates require `if_unmodified_since` copied exactly from
+the candidate's `lastModified`; stale updates return an operation error with
+status 412. Case linking queues the existing Celery transaction.
+
+Browser requests with an `Origin` header must match the request's scheme and
+Host (otherwise 403); machine clients may omit Origin. No wildcard CORS is
+enabled. Configure trusted ingress to enforce allowed Host names and set the
+WSGI URL scheme correctly when terminating TLS. Forwarded headers are not
+trusted by the MCP endpoint.
+
 ## Parking notices
 
 Vehicle and parking event views include a **Create parking notice PDF** link.

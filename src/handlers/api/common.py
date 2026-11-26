@@ -4,10 +4,12 @@ import datetime
 import email.utils
 import http.client
 import json
+import math
 import time
 
 import jwt
 from cryptography import x509
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import serialization
 
 from ... import config
@@ -70,28 +72,35 @@ class BaseHandler(_Handler):
 
     def _authenticate(self):
         token = self.req.request_headers.get('Authorization', '')
-        if not token.startswith('Bearer '):
+        parts = token.split()
+        if len(parts) != 2 or parts[0].lower() != 'bearer':
             raise ApiError(http.client.UNAUTHORIZED, 'Authorization required')
+        token = parts[1]
         try:
-            header = jwt.get_unverified_header(token[7:])
+            header = jwt.get_unverified_header(token)
         except jwt.InvalidTokenError:
             raise ApiError(http.client.UNAUTHORIZED, 'Invalid token')
         user_id, key_id, dt, algorithm = (header.get(name) for name in ('user_id', 'kid', 'dt', 'alg'))
         agent_id, agent_position = header.get('agent_id'), header.get('agent_position')
-        if not user_id or not key_id or not dt or not algorithm or not agent_id or agent_position is None:
+        if (not all(isinstance(value, str) and value for value in
+                    (user_id, key_id, algorithm, agent_id)) or
+                not isinstance(agent_position, str) or
+                isinstance(dt, bool) or not isinstance(dt, (int, float, str))):
             raise ApiError(http.client.UNAUTHORIZED, 'Token header is incomplete')
         try:
             token_time = float(dt)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, OverflowError):
             try:
                 token_time = datetime.datetime.fromisoformat(str(dt).replace('Z', '+00:00')).timestamp()
-            except (TypeError, ValueError):
+            except (TypeError, ValueError, OverflowError, OSError):
                 raise ApiError(http.client.UNAUTHORIZED, 'Invalid token datetime')
+        if not math.isfinite(token_time):
+            raise ApiError(http.client.UNAUTHORIZED, 'Invalid token datetime')
         if abs(time.time() - token_time) > self.TOKEN_MAX_AGE:
             raise ApiError(http.client.UNAUTHORIZED, 'Token has expired')
         try:
             user = UserDocument.objects(id=mod_mongo.bson.objectid.ObjectId(str(user_id))).first()
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, mod_mongo.bson.errors.InvalidId):
             user = None
         if user is None:
             raise ApiError(http.client.UNAUTHORIZED, 'Unknown user')
@@ -100,12 +109,12 @@ class BaseHandler(_Handler):
             raise ApiError(http.client.UNAUTHORIZED, 'Unknown signing key')
         try:
             public_key = serialization.load_der_public_key(key.pub) if key.pub else x509.load_der_x509_certificate(key.crt).public_key()
-            payload = jwt.decode(token[7:], public_key, algorithms=[algorithm], options={'verify_aud': False})
-        except (ValueError, TypeError, jwt.InvalidTokenError):
+            payload = jwt.decode(token, public_key, algorithms=[algorithm], options={'verify_aud': False})
+        except (ValueError, TypeError, jwt.PyJWTError, UnsupportedAlgorithm):
             raise ApiError(http.client.UNAUTHORIZED, 'Invalid signature')
         try:
             requested_agent_id = mod_mongo.bson.objectid.ObjectId(str(agent_id))
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, mod_mongo.bson.errors.InvalidId):
             raise ApiError(http.client.UNAUTHORIZED, 'Invalid agent')
         agent = next((item for item in user.agents if item.id == requested_agent_id and item.position == agent_position), None)
         if agent is None:
