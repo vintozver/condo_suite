@@ -19,6 +19,9 @@ class Request(object):
         self.context = Context()
 
         self.secure = 'HTTPS' in env
+        self.scheme = env.get(
+            'wsgi.url_scheme',
+            'https' if env.get('HTTPS', '').lower() in ('on', '1') else 'http')
         self.method = env.get('REQUEST_METHOD', 'GET')
         self.path = env.get('PATH_INFO', '/')
         self.query_string = env.get('QUERY_STRING', '')

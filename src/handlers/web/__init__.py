@@ -14,6 +14,7 @@ from ...util.logger import Logger
 
 class Handler(_Handler):
     ROUTE_MAP = [
+        {'regex': re.compile(r'^/mcp/?$'), 'handler': 'mcp'},
         {'regex': re.compile(r'^/$'), 'handler': 'web.index'},
         {'regex': re.compile(r'^/static(/.*)$'), 'handler': 'web.static', 'params': {'path': lambda rex: rex.group(1)}},
         {'regex': re.compile(r'^/\bvehicle\b'), 'map': [
