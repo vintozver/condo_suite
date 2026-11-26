@@ -201,7 +201,7 @@ class MCPTests(unittest.TestCase):
         self.assertEqual(req.status_code, 401)
         req, _ = self.invoke(token='not-a-token')
         self.assertEqual(req.status_code, 401)
-        req, _ = self.invoke(token=jwt.encode({}, self.public, algorithm='HS256', headers={
+        req, _ = self.invoke(token=jwt.encode({}, b'test-only-hmac-key', algorithm='HS256', headers={
             'user_id': OID, 'kid': 'key-1', 'dt': time.time(),
             'agent_id': AGENT_ID, 'agent_position': 'Manager'}))
         self.assertEqual(req.status_code, 401)
